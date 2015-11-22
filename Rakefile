@@ -15,10 +15,10 @@ require 'jeweler'
 Jeweler::Tasks.new do |gem|
   # gem is a Gem::Specification... see http://guides.rubygems.org/specification-reference/ for more options
   gem.name = "maestrano-connector-rails"
-  gem.homepage = "http://github.com/berardpi/maestrano-connector-rails"
+  gem.homepage = "http://github.com/maestrano/maestrano-connector-rails"
   gem.license = "MIT"
-  gem.summary = %Q{TODO: one-line summary of your gem}
-  gem.description = %Q{TODO: longer description of your gem}
+  gem.summary = "Rails framework to build connector with Maestrano"
+  gem.description = "Maestrano is the next generation marketplace for SME applications. See https://maestrano.com for details."
   gem.email = "pierre.berard@maestrano.com"
   gem.authors = ["Pierre Berard"]
   # dependencies defined in Gemfile
