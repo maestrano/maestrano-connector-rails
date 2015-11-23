@@ -1,12 +1,4 @@
-module Maestrano
-  module Connector
-    module Rails
-
-
-      class IdMap < ActiveRecord::Base
-      end
-
-
-    end
+module Maestrano::Connector::Rails
+  class IdMap < ActiveRecord::Base
   end
 end
