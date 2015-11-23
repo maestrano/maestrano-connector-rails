@@ -5,7 +5,7 @@ module Maestrano
 
       class Entity
 
-        @@external_name = "EXTERNAL NAME NOT SET"
+        @@external_name = External.name
 
         # ----------------------------------------------
         #                 Mapper methods
@@ -85,13 +85,23 @@ module Maestrano
 
         def create_entity_to_connec(client, mapped_external_entity)
           Rails.logger.info "Create #{self.connec_entity_name}: #{mapped_external_entity} to Connec!"
-          response = client.post("/#{self.connec_entity_name.downcase.pluralize}", { "#{self.connec_entity_name.downcase.pluralize}": mapped_external_entity })
+          response = client.post("/#{self.connec_entity_name.downcase.pluralize}", { "#{self.connec_entity_name.downcase.pluralize}".to_sym => mapped_external_entity })
           JSON.parse(response.body)["#{self.connec_entity_name.downcase.pluralize}"]
         end
 
         def update_entity_to_connec(client, mapped_external_entity, connec_id)
           Rails.logger.info "Update #{self.connec_entity_name}: #{mapped_external_entity} to Connec!"
-          client.put("/#{self.connec_entity_name.downcase.pluralize}/#{connec_id}", { "#{self.connec_entity_name.downcase.pluralize}": mapped_external_entity })
+          client.put("/#{self.connec_entity_name.downcase.pluralize}/#{connec_id}", { "#{self.connec_entity_name.downcase.pluralize}".to_sym => mapped_external_entity })
+        end
+
+        def map_to_external_with_idmap(entity, organization)
+          idmap = IdMap.find_by(connec_id: entity['id'], connec_entity: self.connec_entity_name, organization_id: organization.id)
+
+          if idmap && idmap.last_push_to_external && idmap.last_push_to_external > entity['updated_at']
+            nil
+          else
+            {entity: self.map_to_external(entity), idmap: idmap || IdMap.create(connec_id: entity['id'], connec_entity: self.connec_entity_name, organization_id: organization.id)}
+          end
         end
 
         # ----------------------------------------------
