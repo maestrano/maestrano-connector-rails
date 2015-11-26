@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.require_paths = ["lib"]
   s.authors = ["Pierre Berard"]
-  s.date = "2015-11-23"
+  s.date = "2015-11-26"
   s.description = "Maestrano is the next generation marketplace for SME applications. See https://maestrano.com for details."
   s.email = "pierre.berard@maestrano.com"
   s.executables = ["rails"]
@@ -26,12 +26,17 @@ Gem::Specification.new do |s|
     "README.md",
     "Rakefile",
     "VERSION",
+    "app/controllers/maestrano/connector/rails/admin_controller.rb",
     "app/controllers/maestrano/connector/rails/application_controller.rb",
+    "app/controllers/maestrano/connector/rails/home_controller.rb",
     "app/controllers/maestrano/connector/rails/maestrano/account/group_users_controller.rb",
     "app/controllers/maestrano/connector/rails/maestrano/account/groups_contoller.rb",
     "app/controllers/maestrano/connector/rails/maestrano/auth/saml_controller.rb",
+    "app/controllers/maestrano/connector/rails/sessions_controller.rb",
     "app/helpers/maestrano/connector/rails/session_helper.rb",
     "app/jobs/maestrano/connector/rails/synchronization_job.rb",
+    "app/models/maestrano/connector/rails/concerns/entity.rb",
+    "app/models/maestrano/connector/rails/concerns/external.rb",
     "app/models/maestrano/connector/rails/entity.rb",
     "app/models/maestrano/connector/rails/external.rb",
     "app/models/maestrano/connector/rails/id_map.rb",
@@ -46,6 +51,13 @@ Gem::Specification.new do |s|
     "db/migrate/20151122162613_create_maestrano_connector_rails_user_organization_rels.rb",
     "db/migrate/20151122163325_create_maestrano_connector_rails_synchronizations.rb",
     "db/migrate/20151122163449_create_maestrano_connector_rails_id_maps.rb",
+    "lib/generators/USAGE",
+    "lib/generators/install_generator.rb",
+    "lib/generators/templates/admin_index.html.erb",
+    "lib/generators/templates/entity.rb",
+    "lib/generators/templates/example_entity.rb",
+    "lib/generators/templates/external.rb",
+    "lib/generators/templates/home_index.html.erb",
     "lib/maestrano-connector-rails.rb",
     "lib/maestrano/connector/rails.rb",
     "maestrano-connector-rails.gemspec",

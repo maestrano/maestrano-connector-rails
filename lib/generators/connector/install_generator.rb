@@ -1,6 +1,6 @@
-module Generators
+module Connector::Generators
   class InstallGenerator < ::Rails::Generators::Base
-    source_root File.expend_path("../templates", __FILE__)
+    source_root File.expand_path("../templates", __FILE__)
 
     def copy_entity
       template 'entity.rb', 'app/models/maestrano/connector/rails/entity.rb'
