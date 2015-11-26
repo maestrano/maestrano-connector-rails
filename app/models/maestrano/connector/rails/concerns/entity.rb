@@ -1,6 +1,15 @@
 module Maestrano::Connector::Rails::Concerns::Entity
   extend ActiveSupport::Concern
 
+  module ClassMethods
+    # Return an array of all the entities that the connector can synchronize
+    # If you add new entities, you need to generate
+    # a migration to add them to existing organizations
+    def entities_list
+      raise "Not implemented"
+    end
+  end
+
   @@external_name = Maestrano::Connector::Rails::External.external_name
 
   # ----------------------------------------------
