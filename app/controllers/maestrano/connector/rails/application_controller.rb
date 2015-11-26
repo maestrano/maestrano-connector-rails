@@ -1,15 +1,7 @@
-module Maestrano
-  module Connector
-    module Rails
+module Maestrano::Connector::Rails
+  class ApplicationController < ActionController::Base
+    include SessionHelper
 
-
-      class ApplicationController < ActionController::Base
-        include SessionHelper
-
-        protect_from_forgery with: :exception
-      end
-
-
-    end
+    protect_from_forgery with: :exception
   end
 end

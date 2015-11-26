@@ -1,0 +1,52 @@
+<!-- TODO -->
+<!-- This template is given as an example of the informations that
+can be displayed on the admin panel -->
+<!-- Note that by default, all users can acces this page, but the admin
+fonctionnality should only be accessible to admin users. You can change this
+default behaviour by overiding the engine admin controller -->
+<!-- If the user is not an admin, then no @organization is set -->
+<% unless @organization %>
+  <p> You need to be Admin or Super Admin in your company to access this panel.</p>
+<% else %>
+  <ul>
+    <li>
+      Maestrano account
+      <%= link_to "Disconnect your Maestrano account", signout_path %>
+    </li>
+
+    <li>
+      External account
+      <% if @organization.oauth_uid %>
+        <%= link_to "Disconnect #{@organization.name} (#{@organization.uid})", 'some_path' %>
+      <% else %>
+        <%= link_to "Connect #{@organization.name} (#{@organization.uid})", 'some_other_path' %>
+      <% end %>
+    </li>
+
+    <li>
+      <%= link_to "Force a synchronization", admin_synchronize_path, method: :post %>
+    </li>
+  </ul>
+
+  <h3>Synchronized entities</h3>
+  <p>You can customize which entities are synchronized by the connector.</p>
+  <%= form_tag admin_update_path(id: @organization.id), method: :put do %>
+    <% @organization.synchronized_entities.each do |k, v| %>
+        <label for="<%= k %>">#{k.to_s.humanize}</label>
+        <input checked="<%= v %>" id="<%= k %>" name="<%= k %>" type="checkbox"></input>
+        <% if v %>
+          <%= link_to "Force a synchronization for #{k.to_s.pluralize} only", admin_synchronize_path(opts: {only_entities: [k.to_s]}), method: :post %>
+        <% end %>
+    <% end %>
+    <%= submit_tag :Update%>
+  <% end %>
+
+  <h3>IdMap</h3>
+  <% @idmaps.each do |idmap| %>
+    <%= idmap.connec_entity ? idmap.connec_entity.humanize : nil %>
+    <%= idmap.connec_id %>
+    <%= idmap.external_entity ? idmap.external_entity.humanize : nil %>
+    <%= idmap.external_id %>
+  <% end %>
+
+<% end %>

@@ -1,0 +1,34 @@
+<!-- TODO -->
+<!-- This template is given as an example of the informations that
+can be displayed on the home page -->
+<div class='home'>
+  <% unless current_user %>
+    <%= link_to "Link your Maestrano account", init_maestrano_auth_saml_index_path(tenant: :default) %>
+    <p>Some generic information about the connector</p>
+
+  <% else %>
+    <% unless @organization.oauth_uid %>
+      Not linked to external app
+      <% if is_admin?(current_user, @organization) %>
+        <%= link_to "Link this company to ...", 'some_path' %>
+      <% end %>
+    <% else %>
+      Linked to external app
+    <% end %>
+  <% end %>
+
+  <h2>Last synchronization</h2>
+  <% if @synchronizations.first %>
+    <%= "#{@synchronizations.first.updated_at} #{@synchronizations.first.status}" %>
+    <%= @synchronizations.first.message if @synchronizations.first.status == 'ERROR' %>
+  <% end %>
+
+  <h2>Synchronizations history</h2>
+  <% @synchronizations.each do |sync| %>
+    <%= sync.updated_at %>
+    <%= sync.status %>
+    <% if sync.status == 'ERROR' %>
+      <%= sync.message %>
+    <% end %>
+  <% end %>
+</div>
