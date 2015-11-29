@@ -1,5 +1,5 @@
 module Maestrano::Connector::Rails
-  class Maestrano::Auth::SamlController < Maestrano::Rails::SamlBaseController
+  class Maestrano::Auth::SamlController < ::Maestrano::Rails::SamlBaseController
 
     #== POST '/maestrano/auth/saml/consume'
     def consume
@@ -15,7 +15,7 @@ module Maestrano::Connector::Rails
       session[:"role_#{organization.uid}"] = user_group_rel_hash[:role]
       session[:tenant] = 'default' #TODO change
 
-      redirect_to root_path
+      redirect_to main_app.root_path
     end
   end
 end

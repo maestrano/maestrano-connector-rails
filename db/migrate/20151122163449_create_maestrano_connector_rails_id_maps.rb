@@ -6,6 +6,8 @@ class CreateMaestranoConnectorRailsIdMaps < ActiveRecord::Migration
       t.string :external_id
       t.string :external_entity
       t.integer :organization_id
+      t.datetime :last_push_to_connec
+      t.datetime :last_push_to_external
 
       t.timestamps null: false
     end

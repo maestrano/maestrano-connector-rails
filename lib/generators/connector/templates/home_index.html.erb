@@ -2,8 +2,9 @@
 <!-- This template is given as an example of the informations that
 can be displayed on the home page -->
 <div class='home'>
+  <%= link_to 'Admin panel', admin_index_path %>
   <% unless current_user %>
-    <%= link_to "Link your Maestrano account", init_maestrano_auth_saml_index_path(tenant: :default) %>
+    <%= link_to "Link your Maestrano account", maestrano_connector_rails.init_maestrano_auth_saml_index_path(tenant: :default) %>
     <p>Some generic information about the connector</p>
 
   <% else %>
@@ -15,20 +16,20 @@ can be displayed on the home page -->
     <% else %>
       Linked to external app
     <% end %>
-  <% end %>
 
-  <h2>Last synchronization</h2>
-  <% if @synchronizations.first %>
-    <%= "#{@synchronizations.first.updated_at} #{@synchronizations.first.status}" %>
-    <%= @synchronizations.first.message if @synchronizations.first.status == 'ERROR' %>
-  <% end %>
+    <h2>Last synchronization</h2>
+    <% if @synchronizations.first %>
+      <%= "#{@synchronizations.first.updated_at} #{@synchronizations.first.status}" %>
+      <%= @synchronizations.first.message if @synchronizations.first.status == 'ERROR' %>
+    <% end %>
 
-  <h2>Synchronizations history</h2>
-  <% @synchronizations.each do |sync| %>
-    <%= sync.updated_at %>
-    <%= sync.status %>
-    <% if sync.status == 'ERROR' %>
-      <%= sync.message %>
+    <h2>Synchronizations history</h2>
+    <% @synchronizations.each do |sync| %>
+      <%= sync.updated_at %>
+      <%= sync.status %>
+      <% if sync.status == 'ERROR' %>
+        <%= sync.message %>
+      <% end %>
     <% end %>
   <% end %>
 </div>

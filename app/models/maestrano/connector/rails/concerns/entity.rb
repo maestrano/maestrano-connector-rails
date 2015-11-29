@@ -100,12 +100,13 @@ module Maestrano::Connector::Rails::Concerns::Entity
   end
 
   def map_to_external_with_idmap(entity, organization)
-    idmap = IdMap.find_by(connec_id: entity['id'], connec_entity: self.connec_entity_name, organization_id: organization.id)
+    idmap = Maestrano::Connector::Rails::IdMap.find_by(connec_id: entity['id'], connec_entity: self.connec_entity_name.downcase, organization_id: organization.id)
 
     if idmap && idmap.last_push_to_external && idmap.last_push_to_external > entity['updated_at']
+      Rails.logger.info "Discard Connec! #{self.connec_entity_name} : #{entity}"
       nil
     else
-      {entity: self.map_to_external(entity), idmap: idmap || IdMap.create(connec_id: entity['id'], connec_entity: self.connec_entity_name, organization_id: organization.id)}
+      {entity: self.map_to_external(entity), idmap: idmap || Maestrano::Connector::Rails::IdMap.create(connec_id: entity['id'], connec_entity: self.connec_entity_name.downcase, organization_id: organization.id)}
     end
   end
 

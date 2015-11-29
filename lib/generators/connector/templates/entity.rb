@@ -15,6 +15,7 @@ class Maestrano::Connector::Rails::Entity
     Rails.logger.info "Fetching #{@@external_name} #{self.external_entity_name.pluralize}"
     # TODO
     # This method should return only entities that have been updated since the last_synchronization
+    # It should also implements an option to do a full synchronization when opts[:full_sync] == true or when there is no last_synchronization
     # Rails.logger.info "Source=#{@@external_name}, Entity=#{self.external_entity_name}, Response=#{entities}"
   end
 
@@ -47,7 +48,10 @@ class Maestrano::Connector::Rails::Entity
     #   end
 
     #   # Entity has not been modified since its last push to connec!
-    #   next nil if idmap.last_push_to_connec && idmap.last_push_to_connec > ENTITY_LAST_UPDATE_DATE
+    #   if idmap.last_push_to_connec && idmap.last_push_to_connec > ENTITY_LAST_UPDATE_DATE
+    #     Rails.logger.info "Discard #{@@external_name} #{self.external_entity_name} : #{entity}"
+    #     next nil
+    #   end
 
     #   # Check for conflict with entities from connec!
     #   if idmap.connec_id && connec_entity = connec_entities.detect{|connec_entity| connec_entity['id'] == idmap.connec_id}
@@ -63,7 +67,7 @@ class Maestrano::Connector::Rails::Entity
     #   end
     # }.compact!
 
-    # The method map_to_external_with_idmap is provided by the gem
+    # # The method map_to_external_with_idmap is provided by the gem
     # connec_entities.map!{|entity|
     #   self.map_to_external_with_idmap(entity, organization)
     # }.compact!

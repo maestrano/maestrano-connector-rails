@@ -4,6 +4,7 @@ class CreateMaestranoConnectorRailsSynchronizations < ActiveRecord::Migration
       t.integer :organization_id
       t.string  :status
       t.text    :message
+      t.boolean :partial, default: false
 
       t.timestamps null: false
     end

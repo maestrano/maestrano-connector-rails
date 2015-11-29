@@ -1,4 +1,6 @@
 require 'maestrano'
+require 'maestrano-rails'
+require 'hash_mapper'
 
 module Maestrano
   module Connector

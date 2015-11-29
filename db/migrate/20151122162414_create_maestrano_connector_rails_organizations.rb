@@ -12,6 +12,8 @@ class CreateMaestranoConnectorRailsOrganizations < ActiveRecord::Migration
       t.string :refresh_token
       t.string :instance_url
 
+      t.string :synchronized_entities
+
       t.timestamps null: false
     end
     add_index :maestrano_connector_rails_organizations, [:uid, :tenant], name: 'orga_uid_index'
