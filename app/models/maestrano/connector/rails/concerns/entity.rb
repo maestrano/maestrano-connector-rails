@@ -39,36 +39,40 @@ module Maestrano::Connector::Rails::Concerns::Entity
   #                 Connec! methods
   # ----------------------------------------------
   def get_connec_entities(client, last_synchronization, opts={})
-    Rails.logger.info "Fetching Connec! #{self.connec_entity_name.pluralize}"
+    get_connec_entities_by_name(client, last_synchronization, self.connec_entity_name, opts)
+  end
+
+  def get_connec_entities_by_name(client, last_synchronization, entity_name, opts={})
+    Rails.logger.info "Fetching Connec! #{entity_name}"
 
     entities = []
 
     # Fetch first page
     if last_synchronization.blank? || opts[:full_sync]
-      response = client.get("/#{self.connec_entity_name.downcase.pluralize}")
+      response = client.get("/#{entity_name.downcase.pluralize}")
     else
       query_param = URI.encode("$filter=updated_at gt '#{last_synchronization.updated_at.strftime('%F')}'")
-      response = client.get("/#{self.connec_entity_name.downcase.pluralize}?#{query_param}")
+      response = client.get("/#{entity_name.downcase.pluralize}?#{query_param}")
     end
 
     response_hash = JSON.parse(response.body)
-    if response_hash["#{self.connec_entity_name.downcase.pluralize}"]
-      entities << response_hash["#{self.connec_entity_name.downcase.pluralize}"]
+    if response_hash["#{entity_name.downcase.pluralize}"]
+      entities << response_hash["#{entity_name.downcase.pluralize}"]
     else
-      raise "No data received from Connec! when trying to fetch #{self.connec_entity_name.pluralize}."
+      raise "No data received from Connec! when trying to fetch #{entity_name.pluralize}."
     end
 
     # Fetch subsequent pages
     while response_hash['pagination'] && response_hash['pagination']['next']
       # ugly way to convert https://api-connec/api/v2/group_id/organizations?next_page_params to /organizations?next_page_params
-      next_page = response_hash['pagination']['next'].gsub(/^(.*)\/#{self.connec_entity_name.downcase.pluralize}/, self.connec_entity_name.downcase.pluralize)
+      next_page = response_hash['pagination']['next'].gsub(/^(.*)\/#{entity_name.downcase.pluralize}/, entity_name.downcase.pluralize)
       response = client.get(next_page)
       response_hash = JSON.parse(response.body)
-      entities << response_hash["#{self.connec_entity_name.downcase.pluralize}"]
+      entities << response_hash["#{entity_name.downcase.pluralize}"]
     end
 
     entities = entities.flatten
-    Rails.logger.info "Source=Connec!, Entity=#{self.connec_entity_name}, Response=#{entities}"
+    Rails.logger.info "Source=Connec!, Entity=#{entity_name}, Response=#{entities}"
     entities
   end
 
@@ -114,7 +118,11 @@ module Maestrano::Connector::Rails::Concerns::Entity
   #                 External methods
   # ----------------------------------------------
   def get_external_entities(client, last_synchronization, opts={})
-    Rails.logger.info "Fetching #{@@external_name} #{self.external_entity_name.pluralize}"
+    get_external_entities_by_name(client, last_synchronization, self.external_entity_name, opts)
+  end
+
+  def get_external_entities_by_name(client, last_synchronization, entity_name, opts={})
+    Rails.logger.info "Fetching #{@@external_name} #{entity_name.pluralize}"
     raise "Not implemented"
   end
 
