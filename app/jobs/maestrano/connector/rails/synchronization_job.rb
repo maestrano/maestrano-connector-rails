@@ -36,16 +36,16 @@ module Maestrano::Connector::Rails
     end
 
     def sync_entity(entity, organization, connec_client, external_client, last_synchronization, opts)
-      entity_class = "Entities::#{entity.titleize.split.join}".constantize.new
-      entity_class.set_mapper_organization(organization.id)
+      entity_instance = "Entities::#{entity.titleize.split.join}".constantize.new
+      entity_instance.set_mapper_organization(organization.id)
 
-      external_entities = entity_class.get_external_entities(external_client, last_synchronization, opts)
-      connec_entities = entity_class.get_connec_entities(connec_client, last_synchronization, opts)
-      entity_class.consolidate_and_map_data(connec_entities, external_entities, organization)
-      entity_class.push_entities_to_external(external_client, connec_entities)
-      entity_class.push_entities_to_connec(connec_client, external_entities)
+      external_entities = entity_instance.get_external_entities(external_client, last_synchronization, opts)
+      connec_entities = entity_instance.get_connec_entities(connec_client, last_synchronization, opts)
+      entity_instance.consolidate_and_map_data(connec_entities, external_entities, organization)
+      entity_instance.push_entities_to_external(external_client, connec_entities)
+      entity_instance.push_entities_to_connec(connec_client, external_entities)
 
-      entity_class.unset_mapper_organization
+      entity_instance.unset_mapper_organization
     end
   end
 end
