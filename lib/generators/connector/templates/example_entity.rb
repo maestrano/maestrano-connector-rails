@@ -14,8 +14,8 @@
 #     'Contact'
 #   end
 
-#   def mapper_name
-#     "ExampleEntityMapper"
+#   def mapper_class
+#     ExampleEntityMapper
 #   end
 # end
 

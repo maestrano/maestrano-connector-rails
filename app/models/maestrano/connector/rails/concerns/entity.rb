@@ -18,21 +18,21 @@ module Maestrano::Connector::Rails::Concerns::Entity
   # Used to set a class variable in the mapper in order to
   # have access to the organization for the idmaps queries
   def set_mapper_organization(organization_id)
-    self.mapper_name.constantize.set_organization(organization_id)
+    self.mapper_class.set_organization(organization_id)
   end
 
   def unset_mapper_organization
-    self.mapper_name.constantize.set_organization(nil)
+    self.mapper_class.set_organization(nil)
   end
 
   # Map a Connec! entity to the external format
   def map_to_external(entity)
-    self.mapper_name.constantize.normalize(entity)
+    self.mapper_class.normalize(entity)
   end
 
   # Map an external entity to Connec! format
   def map_to_connec(entity)
-    self.mapper_name.constantize.denormalize(entity)
+    self.mapper_class.denormalize(entity)
   end
 
   # ----------------------------------------------
