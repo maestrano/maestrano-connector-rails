@@ -1,7 +1,6 @@
 module Maestrano::Connector::Rails::Concerns::External
   extend ActiveSupport::Concern
 
-
   module ClassMethods
     def get_client(organization)
       raise 'Not implemented'
@@ -9,6 +8,14 @@ module Maestrano::Connector::Rails::Concerns::External
 
     def external_name
       raise 'Not implemented'
+    end
+
+    def get_id_from_external_entity_hash(entity)
+      raise "Not implemented"
+    end
+
+    def get_last_update_date_from_external_entity_hash(entity)
+      raise "Not implemented"
     end
   end
 end
