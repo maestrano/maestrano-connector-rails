@@ -10,11 +10,11 @@ module Maestrano::Connector::Rails::Concerns::External
       raise 'Not implemented'
     end
 
-    def get_id_from_external_entity_hash(entity)
+    def get_id_from_entity_hash(entity)
       raise "Not implemented"
     end
 
-    def get_last_update_date_from_external_entity_hash(entity)
+    def get_last_update_date_from_entity_hash(entity)
       raise "Not implemented"
     end
   end
