@@ -1,11 +1,15 @@
 module Maestrano::Connector::Rails
-  class SubComplexEntityBase
+  class SubComplexEntityBase < Entity
 
     def external?
       raise "Not implemented"
     end
 
-    def entity_name
+    def external_entity_name
+      raise "Not implemented"
+    end
+
+    def connec_entity_name
       raise "Not implemented"
     end
 
@@ -20,14 +24,14 @@ module Maestrano::Connector::Rails
     def create_idmap(entity, organization)
       if self.external?
         Maestrano::Connector::Rails::IdMap.create(
-          external_id: Maestrano::Connector::Rails::External.get_id_from_entity_hash(entity),
-          external_entity: self.entity_name.downcase,
+          external_id: self.get_id_from_external_entity_hash(entity),
+          external_entity: self.external_entity_name.downcase,
           organization_id: organization.id
         )
       else
         Maestrano::Connector::Rails::IdMap.create(
           connec_id: entity['id'],
-          connec_entity: self.entity_name.downcase,
+          connec_entity: self.connec_entity_name.downcase,
           organization_id: organization.id
         )
       end
