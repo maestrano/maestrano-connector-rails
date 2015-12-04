@@ -5,11 +5,11 @@ module Maestrano::Connector::Rails
       raise "Not implemented"
     end
 
-    def external_entity_name
+    def entity_name
       raise "Not implemented"
     end
 
-    def connec_entity_name
+    def mapper_classes
       raise "Not implemented"
     end
 
@@ -17,8 +17,26 @@ module Maestrano::Connector::Rails
       raise "Not implemented"
     end
 
-    def set_mapper_organization(organization_id)
-      self.mapper_class.set_organization(organization_id)
+    def external_entity_name
+      if self.external?
+        self.entity_name
+      else
+        raise "Forbidden call"
+      end
+    end
+
+    def connec_entity_name
+      if self.external?
+        raise "Forbidden call"
+      else
+        self.entity_name
+      end
+    end
+
+    def set_mappers_organization(organization_id)
+      self.mapper_classes.each do |klass|
+        klass.set_organization(organization_id)
+      end
     end
 
     def create_idmap(entity, organization)
