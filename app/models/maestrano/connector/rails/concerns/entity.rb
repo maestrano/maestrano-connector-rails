@@ -47,7 +47,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
     if last_synchronization.blank? || opts[:full_sync]
       response = client.get("/#{self.connec_entity_name.downcase.pluralize}")
     else
-      query_param = URI.encode("$filter=updated_at gt '#{last_synchronization.updated_at.strftime('%F')}'")
+      query_param = URI.encode("$filter=updated_at gt '#{last_synchronization.updated_at.iso8601}'")
       response = client.get("/#{self.connec_entity_name.downcase.pluralize}?#{query_param}")
     end
 
