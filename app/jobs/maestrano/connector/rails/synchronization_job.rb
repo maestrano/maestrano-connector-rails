@@ -5,6 +5,7 @@ module Maestrano::Connector::Rails
     #  * :forced => true  synchronization has been triggered manually (for logging purposes only)
     #  * :only_entities => [person, tasks_list]
     #  * :full_sync => true  synchronization is performed without date filtering
+    #  * :connec_preemption => true|false : preemption is always|never given to connec in case of conflict (if not set, the most recently updated entity is kept)
     def perform
       Rails.logger.info "Start synchronization, organization=#{organization.uid} #{opts[:forced] ? 'forced=true' : ''}"
       current_synchronization = Synchronization.create(organization_id: organization.id, status: 'RUNNING')
@@ -41,7 +42,7 @@ module Maestrano::Connector::Rails
 
       external_entities = entity_instance.get_external_entities(external_client, last_synchronization, opts)
       connec_entities = entity_instance.get_connec_entities(connec_client, last_synchronization, opts)
-      entity_instance.consolidate_and_map_data(connec_entities, external_entities, organization)
+      entity_instance.consolidate_and_map_data(connec_entities, external_entities, organization, opts)
       entity_instance.push_entities_to_external(external_client, connec_entities)
       entity_instance.push_entities_to_connec(connec_client, external_entities)
 

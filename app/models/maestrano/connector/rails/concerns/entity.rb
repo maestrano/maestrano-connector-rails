@@ -170,7 +170,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
   # * Discards entities that do not need to be pushed because they have not been updated since their last push
   # * Discards entities from one of the two source in case of conflict
   # * Maps not discarded entities and associates them with their idmap, or create one if there isn't any
-  def consolidate_and_map_data(connec_entities, external_entities, organization)
+  def consolidate_and_map_data(connec_entities, external_entities, organization, opts)
     external_entities.map!{|entity|
       idmap = Maestrano::Connector::Rails::IdMap.find_by(external_id: self.get_id_from_external_entity_hash(entity), external_entity: self.external_entity_name.downcase, organization_id: organization.id)
 
@@ -188,7 +188,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
       # Check for conflict with entities from connec!
       if idmap.connec_id && connec_entity = connec_entities.detect{|connec_entity| connec_entity['id'] == idmap.connec_id}
         # We keep the most recently updated entity
-        if connec_entity['updated_at'] < self.get_last_update_date_from_external_entity_hash(entity)
+        if !opts[:connec_preemption] || connec_entity['updated_at'] < self.get_last_update_date_from_external_entity_hash(entity)
           Rails.logger.info "Conflict between #{@@external_name} #{self.external_entity_name} #{entity} and Connec! #{self.connec_entity_name} #{connec_entity}. Entity from #{@@external_name} kept"
           connec_entities.delete(connec_entity)
           {entity: self.map_to_connec(entity), idmap: idmap}
