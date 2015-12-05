@@ -1,11 +1,8 @@
 <!-- TODO -->
-<!-- This template is given as an example of the informations that
-can be displayed on the admin panel -->
-<!-- Note that by default, all users can acces this page, but the admin
-fonctionnality should only be accessible to admin users. You can change this
-default behaviour by overiding the engine admin controller -->
+<!-- This template is given as an example of the informations
+and functions available on the admin panel -->
+<!-- This view is designed according to the admin controller supplied -->
 <div class='admin'>
-  <!-- If the user is not an admin, then no @organization is set -->
   <% unless @organization %>
     <p> You need to be Admin or Super Admin in your company to access this panel.</p>
   <% else %>

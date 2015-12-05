@@ -6,8 +6,9 @@ class Maestrano::Connector::Rails::Entity
   # a migration to add them to existing organizations
   def self.entities_list
     # TODO
-    # By convention, entities name are returned as singular downcase connec one,
+    # The names in this list should match the names of your entities class
     # e.g %w(person, tasks_list)
+    #  will synchronized Entities::Person and Entities::TasksList
   end
 
   # Return an array of entities from the external app
@@ -19,13 +20,13 @@ class Maestrano::Connector::Rails::Entity
     # Rails.logger.info "Source=#{@@external_name}, Entity=#{self.external_entity_name}, Response=#{entities}"
   end
 
-  def create_entity_to_external(client, mapped_connec_entity)
+  def create_entity_to_external(client, mapped_connec_entity, external_entity_name)
     Rails.logger.info "Create #{self.external_entity_name}: #{mapped_connec_entity} to #{@@external_name}"
     # TODO
     # This method creates the entity in the external app and returns the external id
   end
 
-  def update_entity_to_external(client, mapped_connec_entity, external_id)
+  def update_entity_to_external(client, mapped_connec_entity, external_id, external_entity_name)
     Rails.logger.info "Update #{self.external_entity_name} (id=#{external_id}): #{mapped_connec_entity} to #{@@external_name}"
     # TODO
     # This method updates the entity with the given id in the external app

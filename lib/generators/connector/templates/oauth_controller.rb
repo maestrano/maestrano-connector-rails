@@ -11,8 +11,8 @@ class OauthController < ApplicationController
     if organization && is_admin?(current_user, organization)
       # TODO
       # Perform oauth request here. The oauth process should be able to
-      # remember the organization, either by a param in the request or with
-      # the session
+      # remember the organization, either by a param in the request or using
+      # a session
     else
       redirect_to root_url
     end

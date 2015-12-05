@@ -1,3 +1,12 @@
+# TODO
+# This controller is given as an example of a possible admin implementation
+# The admin functions should be restricted to admin users
+# Admin funcitons :
+#  * Link account to external application
+#  * Disconnect account from external application
+#  * Launch a manual syncrhonization for all entities or a sub-part of them
+#  * Chose which entities are synchronized by the connector
+#  * Access a list of the organization's idmaps
 class AdminController < ApplicationController
 
   def index
