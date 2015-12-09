@@ -20,5 +20,6 @@ module Maestrano::Connector::Rails
     # Validation
     #===================================
     validates :email, presence: true
+    validates :tenant, presence: true
   end
 end

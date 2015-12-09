@@ -50,6 +50,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
       query_param = URI.encode("$filter=updated_at gt '#{last_synchronization.updated_at.iso8601}'")
       response = client.get("/#{self.connec_entity_name.downcase.pluralize}?#{query_param}")
     end
+    raise "No data received from Connec! when trying to fetch #{self.connec_entity_name.pluralize}." unless response
 
     response_hash = JSON.parse(response.body)
     if response_hash["#{self.connec_entity_name.downcase.pluralize}"]

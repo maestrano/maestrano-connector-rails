@@ -27,6 +27,7 @@ module Maestrano::Connector::Rails
     # Validation
     #===================================
     validates :name, presence: true
+    validates :tenant, presence: true
 
     #===================================
     # Serialized field
@@ -34,7 +35,7 @@ module Maestrano::Connector::Rails
     serialize :synchronized_entities
 
     def add_member(user)
-      unless self.member?(user)
+      if self.tenant == user.tenant && !self.member?(user)
         self.user_organization_rels.create(user:user)
       end
     end

@@ -4,5 +4,7 @@ module Maestrano::Connector::Rails
     # Associations
     #===================================
     belongs_to :organization
+
+    validates :status, presence: true
   end
 end
