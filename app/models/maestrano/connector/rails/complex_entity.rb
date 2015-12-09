@@ -64,7 +64,7 @@ module Maestrano::Connector::Rails
       end
     end
 
-    def self.map_to_external_with_idmap(entity, organization, connec_entity_name, external_entity_name, sub_entity_instance)
+    def map_to_external_with_idmap(entity, organization, connec_entity_name, external_entity_name, sub_entity_instance)
       idmap = Maestrano::Connector::Rails::IdMap.find_by(connec_id: entity['id'], connec_entity: connec_entity_name.downcase, external_entity: external_entity_name.downcase, organization_id: organization.id)
 
       if idmap && idmap.last_push_to_external && idmap.last_push_to_external > entity['updated_at']
@@ -144,7 +144,7 @@ module Maestrano::Connector::Rails
         entities_in_external_model.each do |external_entity_name, entities|
           sub_entity_instance = "SubComplexEntities::#{connec_entity_name.titleize.split.join}".constantize.new
           entities.map!{|entity|
-            ComplexEntity.map_to_external_with_idmap(entity, organization, connec_entity_name, external_entity_name, sub_entity_instance)
+            self.map_to_external_with_idmap(entity, organization, connec_entity_name, external_entity_name, sub_entity_instance)
           }.compact!
         end
       end
