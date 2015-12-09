@@ -8,5 +8,6 @@ class CreateMaestranoConnectorRailsSynchronizations < ActiveRecord::Migration
 
       t.timestamps null: false
     end
+    add_index :maestrano_connector_rails_synchronizations, :organization_id, name: 'synchronization_orga_id_index'
   end
 end
