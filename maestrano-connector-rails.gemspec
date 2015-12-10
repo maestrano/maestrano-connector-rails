@@ -11,36 +11,39 @@ Gem::Specification.new do |s|
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.require_paths = ["lib"]
   s.authors = ["Pierre Berard"]
-  s.date = "2015-11-26"
+  s.date = "2015-12-10"
   s.description = "Maestrano is the next generation marketplace for SME applications. See https://maestrano.com for details."
   s.email = "pierre.berard@maestrano.com"
   s.executables = ["rails"]
   s.extra_rdoc_files = [
     "LICENSE",
-    "README.md"
+    "README.md",
+    "TODO"
   ]
   s.files = [
+    ".rspec",
     "Gemfile",
     "Gemfile.lock",
     "LICENSE",
     "README.md",
     "Rakefile",
     "VERSION",
-    "app/controllers/maestrano/connector/rails/admin_controller.rb",
     "app/controllers/maestrano/connector/rails/application_controller.rb",
-    "app/controllers/maestrano/connector/rails/home_controller.rb",
     "app/controllers/maestrano/connector/rails/maestrano/account/group_users_controller.rb",
     "app/controllers/maestrano/connector/rails/maestrano/account/groups_contoller.rb",
     "app/controllers/maestrano/connector/rails/maestrano/auth/saml_controller.rb",
     "app/controllers/maestrano/connector/rails/sessions_controller.rb",
     "app/helpers/maestrano/connector/rails/session_helper.rb",
     "app/jobs/maestrano/connector/rails/synchronization_job.rb",
+    "app/models/maestrano/connector/rails/complex_entity.rb",
     "app/models/maestrano/connector/rails/concerns/entity.rb",
     "app/models/maestrano/connector/rails/concerns/external.rb",
+    "app/models/maestrano/connector/rails/connector_logger.rb",
     "app/models/maestrano/connector/rails/entity.rb",
     "app/models/maestrano/connector/rails/external.rb",
     "app/models/maestrano/connector/rails/id_map.rb",
     "app/models/maestrano/connector/rails/organization.rb",
+    "app/models/maestrano/connector/rails/sub_complex_entity_base.rb",
     "app/models/maestrano/connector/rails/synchronization.rb",
     "app/models/maestrano/connector/rails/user.rb",
     "app/models/maestrano/connector/rails/user_organization_rel.rb",
@@ -52,18 +55,102 @@ Gem::Specification.new do |s|
     "db/migrate/20151122163325_create_maestrano_connector_rails_synchronizations.rb",
     "db/migrate/20151122163449_create_maestrano_connector_rails_id_maps.rb",
     "lib/generators/connector/USAGE",
+    "lib/generators/connector/complex_entity_generator.rb",
     "lib/generators/connector/install_generator.rb",
+    "lib/generators/connector/templates/admin_controller.rb",
     "lib/generators/connector/templates/admin_index.html.erb",
+    "lib/generators/connector/templates/complex_entity_example/contact.rb",
+    "lib/generators/connector/templates/complex_entity_example/contact_and_lead.rb",
+    "lib/generators/connector/templates/complex_entity_example/contact_mapper.rb",
+    "lib/generators/connector/templates/complex_entity_example/lead.rb",
+    "lib/generators/connector/templates/complex_entity_example/lead_mapper.rb",
+    "lib/generators/connector/templates/complex_entity_example/person.rb",
+    "lib/generators/connector/templates/contact_and_lead.rb",
     "lib/generators/connector/templates/entity.rb",
     "lib/generators/connector/templates/example_entity.rb",
     "lib/generators/connector/templates/external.rb",
+    "lib/generators/connector/templates/home_controller.rb",
     "lib/generators/connector/templates/home_index.html.erb",
+    "lib/generators/connector/templates/oauth_controller.rb",
     "lib/maestrano-connector-rails.rb",
     "lib/maestrano/connector/rails.rb",
     "maestrano-connector-rails.gemspec",
     "maestrano.png",
-    "test/helper.rb",
-    "test/test_maestrano-connector-rails.rb"
+    "spec/dummy/README.md",
+    "spec/dummy/Rakefile",
+    "spec/dummy/app/assets/images/.keep",
+    "spec/dummy/app/assets/javascripts/application.js",
+    "spec/dummy/app/assets/stylesheets/application.css",
+    "spec/dummy/app/controllers/admin_controller.rb",
+    "spec/dummy/app/controllers/application_controller.rb",
+    "spec/dummy/app/controllers/concerns/.keep",
+    "spec/dummy/app/controllers/home_controller.rb",
+    "spec/dummy/app/controllers/maestrano/account/group_users_controller.rb",
+    "spec/dummy/app/controllers/maestrano/account/groups_controller.rb",
+    "spec/dummy/app/controllers/maestrano/auth/saml_controller.rb",
+    "spec/dummy/app/controllers/oauth_controller.rb",
+    "spec/dummy/app/helpers/application_helper.rb",
+    "spec/dummy/app/mailers/.keep",
+    "spec/dummy/app/models/.keep",
+    "spec/dummy/app/models/concerns/.keep",
+    "spec/dummy/app/models/entities/example_entitiy.rb",
+    "spec/dummy/app/models/maestrano/connector/rails/entity.rb",
+    "spec/dummy/app/models/maestrano/connector/rails/external.rb",
+    "spec/dummy/app/views/admin/index.html.erb",
+    "spec/dummy/app/views/home/index.html.erb",
+    "spec/dummy/app/views/layouts/application.html.erb",
+    "spec/dummy/bin/bundle",
+    "spec/dummy/bin/rails",
+    "spec/dummy/bin/rake",
+    "spec/dummy/bin/setup",
+    "spec/dummy/config.ru",
+    "spec/dummy/config/application.rb",
+    "spec/dummy/config/boot.rb",
+    "spec/dummy/config/database.yml",
+    "spec/dummy/config/environment.rb",
+    "spec/dummy/config/environments/development.rb",
+    "spec/dummy/config/environments/production.rb",
+    "spec/dummy/config/environments/test.rb",
+    "spec/dummy/config/initializers/assets.rb",
+    "spec/dummy/config/initializers/backtrace_silencers.rb",
+    "spec/dummy/config/initializers/cookies_serializer.rb",
+    "spec/dummy/config/initializers/filter_parameter_logging.rb",
+    "spec/dummy/config/initializers/inflections.rb",
+    "spec/dummy/config/initializers/maestrano.rb",
+    "spec/dummy/config/initializers/mime_types.rb",
+    "spec/dummy/config/initializers/session_store.rb",
+    "spec/dummy/config/initializers/wrap_parameters.rb",
+    "spec/dummy/config/locales/en.yml",
+    "spec/dummy/config/routes.rb",
+    "spec/dummy/config/secrets.yml",
+    "spec/dummy/db/development.sqlite3",
+    "spec/dummy/db/migrate/20151209134445_create_maestrano_connector_rails_users.maestrano_connector_rails.rb",
+    "spec/dummy/db/migrate/20151209134446_create_maestrano_connector_rails_organizations.maestrano_connector_rails.rb",
+    "spec/dummy/db/migrate/20151209134447_create_maestrano_connector_rails_user_organization_rels.maestrano_connector_rails.rb",
+    "spec/dummy/db/migrate/20151209134448_create_maestrano_connector_rails_synchronizations.maestrano_connector_rails.rb",
+    "spec/dummy/db/migrate/20151209134449_create_maestrano_connector_rails_id_maps.maestrano_connector_rails.rb",
+    "spec/dummy/db/schema.rb",
+    "spec/dummy/db/test.sqlite3",
+    "spec/dummy/lib/assets/.keep",
+    "spec/dummy/log/.keep",
+    "spec/dummy/log/test.log",
+    "spec/dummy/public/404.html",
+    "spec/dummy/public/422.html",
+    "spec/dummy/public/500.html",
+    "spec/dummy/public/favicon.ico",
+    "spec/factories.rb",
+    "spec/jobs/syncrhonization_job_spec.rb",
+    "spec/models/complex_entity_spec.rb",
+    "spec/models/connector_logger_spec.rb",
+    "spec/models/entity_spec.rb",
+    "spec/models/external_spec.rb",
+    "spec/models/id_map_spec.rb",
+    "spec/models/organizaztion_spec.rb",
+    "spec/models/sub_compex_entity_base_spec.rb",
+    "spec/models/synchronization_spec.rb",
+    "spec/models/user_organization_rel_spec.rb",
+    "spec/models/user_spec.rb",
+    "spec/spec_helper.rb"
   ]
   s.homepage = "http://github.com/maestrano/maestrano-connector-rails"
   s.licenses = ["MIT"]
@@ -82,6 +169,10 @@ Gem::Specification.new do |s|
       s.add_development_dependency(%q<bundler>, ["~> 1.0"])
       s.add_development_dependency(%q<jeweler>, ["~> 2.0.1"])
       s.add_development_dependency(%q<simplecov>, [">= 0"])
+      s.add_development_dependency(%q<rspec-rails>, [">= 0"])
+      s.add_development_dependency(%q<factory_girl_rails>, [">= 0"])
+      s.add_development_dependency(%q<sqlite3>, [">= 0"])
+      s.add_development_dependency(%q<shoulda-matchers>, [">= 0"])
     else
       s.add_dependency(%q<maestrano-rails>, ["~> 0.12.0"])
       s.add_dependency(%q<hash_mapper>, ["~> 0.2.1"])
@@ -91,6 +182,10 @@ Gem::Specification.new do |s|
       s.add_dependency(%q<bundler>, ["~> 1.0"])
       s.add_dependency(%q<jeweler>, ["~> 2.0.1"])
       s.add_dependency(%q<simplecov>, [">= 0"])
+      s.add_dependency(%q<rspec-rails>, [">= 0"])
+      s.add_dependency(%q<factory_girl_rails>, [">= 0"])
+      s.add_dependency(%q<sqlite3>, [">= 0"])
+      s.add_dependency(%q<shoulda-matchers>, [">= 0"])
     end
   else
     s.add_dependency(%q<maestrano-rails>, ["~> 0.12.0"])
@@ -101,6 +196,10 @@ Gem::Specification.new do |s|
     s.add_dependency(%q<bundler>, ["~> 1.0"])
     s.add_dependency(%q<jeweler>, ["~> 2.0.1"])
     s.add_dependency(%q<simplecov>, [">= 0"])
+    s.add_dependency(%q<rspec-rails>, [">= 0"])
+    s.add_dependency(%q<factory_girl_rails>, [">= 0"])
+    s.add_dependency(%q<sqlite3>, [">= 0"])
+    s.add_dependency(%q<shoulda-matchers>, [">= 0"])
   end
 end
 
