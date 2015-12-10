@@ -88,9 +88,9 @@ describe Maestrano::Connector::Rails::ComplexEntity do
       }
 
       it 'calls get_connec_entities on each connec sub complex entities' do
-        expect_any_instance_of(SubComplexEntities::ScE1).to receive(:get_connec_entities).with(nil, nil, {opts: true})
-        expect_any_instance_of(SubComplexEntities::ScE2).to receive(:get_connec_entities).with(nil, nil, {opts: true})
-        subject.get_connec_entities(nil, nil, {opts: true})
+        expect_any_instance_of(SubComplexEntities::ScE1).to receive(:get_connec_entities).with(nil, nil, nil, {opts: true})
+        expect_any_instance_of(SubComplexEntities::ScE2).to receive(:get_connec_entities).with(nil, nil, nil, {opts: true})
+        subject.get_connec_entities(nil, nil, nil, {opts: true})
       end
 
       let(:arr1) { [{'name' => 'Water'}, {'name' => 'Sugar'}] }
@@ -98,7 +98,7 @@ describe Maestrano::Connector::Rails::ComplexEntity do
       it 'returns an hash of the connec_entities keyed by connec_entity_name' do
         allow_any_instance_of(SubComplexEntities::ScE1).to receive(:get_connec_entities).and_return(arr1)
         allow_any_instance_of(SubComplexEntities::ScE2).to receive(:get_connec_entities).and_return(arr2)
-        expect(subject.get_connec_entities(nil, nil, {opts: true})).to eql({'sc_e1' => arr1, 'ScE2' => arr2})
+        expect(subject.get_connec_entities(nil, nil, nil, {opts: true})).to eql({'sc_e1' => arr1, 'ScE2' => arr2})
       end
     end
 
@@ -108,9 +108,9 @@ describe Maestrano::Connector::Rails::ComplexEntity do
       }
 
       it 'calls get_external_entities on each connec sub complex entities' do
-        expect_any_instance_of(SubComplexEntities::ScE1).to receive(:get_external_entities).with(nil, nil, {opts: true})
-        expect_any_instance_of(SubComplexEntities::ScE2).to receive(:get_external_entities).with(nil, nil, {opts: true})
-        subject.get_external_entities(nil, nil, {opts: true})
+        expect_any_instance_of(SubComplexEntities::ScE1).to receive(:get_external_entities).with(nil, nil, nil, {opts: true})
+        expect_any_instance_of(SubComplexEntities::ScE2).to receive(:get_external_entities).with(nil, nil, nil, {opts: true})
+        subject.get_external_entities(nil, nil, nil, {opts: true})
       end
 
       let(:arr1) { [{'name' => 'Water'}, {'name' => 'Sugar'}] }
@@ -118,7 +118,7 @@ describe Maestrano::Connector::Rails::ComplexEntity do
       it 'returns an hash of the external_entities keyed by external_entity_name' do
         allow_any_instance_of(SubComplexEntities::ScE1).to receive(:get_external_entities).and_return(arr1)
         allow_any_instance_of(SubComplexEntities::ScE2).to receive(:get_external_entities).and_return(arr2)
-        expect(subject.get_external_entities(nil, nil, {opts: true})).to eql({'sc_e1' => arr1, 'ScE2' => arr2})
+        expect(subject.get_external_entities(nil, nil, nil, {opts: true})).to eql({'sc_e1' => arr1, 'ScE2' => arr2})
       end
     end
 
@@ -336,9 +336,9 @@ describe Maestrano::Connector::Rails::ComplexEntity do
       }
 
       it 'calls push_entities_to_connec on each sub complex entity' do
-        expect_any_instance_of(SubComplexEntities::ScE1).to receive(:push_entities_to_connec_to).once.with(nil, [mapped_entity_with_idmap], 'connec1')
+        expect_any_instance_of(SubComplexEntities::ScE1).to receive(:push_entities_to_connec_to).once.with(nil, [mapped_entity_with_idmap], 'connec1', nil)
         expect_any_instance_of(SubComplexEntities::ScE2).to receive(:push_entities_to_connec_to).twice
-        subject.push_entities_to_connec(nil, external_hash)
+        subject.push_entities_to_connec(nil, external_hash, nil)
       end
     end
 
@@ -353,9 +353,9 @@ describe Maestrano::Connector::Rails::ComplexEntity do
       }
 
       it 'calls push_entities_to_connec on each sub complex entity' do
-        expect_any_instance_of(SubComplexEntities::ScE1).to receive(:push_entities_to_external_to).once.with(nil, [mapped_entity_with_idmap], 'ext1')
+        expect_any_instance_of(SubComplexEntities::ScE1).to receive(:push_entities_to_external_to).once.with(nil, [mapped_entity_with_idmap], 'ext1', nil)
         expect_any_instance_of(SubComplexEntities::ScE2).to receive(:push_entities_to_external_to).twice
-        subject.push_entities_to_external(nil, connec_hash)
+        subject.push_entities_to_external(nil, connec_hash, nil)
       end
     end
   end

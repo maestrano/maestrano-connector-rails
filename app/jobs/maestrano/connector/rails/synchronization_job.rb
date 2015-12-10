@@ -7,7 +7,7 @@ module Maestrano::Connector::Rails
     #  * :full_sync => true  synchronization is performed without date filtering
     #  * :connec_preemption => true|false : preemption is always|never given to connec in case of conflict (if not set, the most recently updated entity is kept)
     def perform
-      Rails.logger.info "Start synchronization, organization=#{organization.uid} #{opts[:forced] ? 'forced=true' : ''}"
+      ConnectorLogger.log('info', organization, "Start synchronization, opts=#{opts}")
       current_synchronization = Synchronization.create(organization_id: organization.id, status: 'RUNNING')
 
       begin
@@ -16,7 +16,7 @@ module Maestrano::Connector::Rails
         external_client = External.get_client(organization)
 
         if opts[:only_entities]
-          Rails.logger.info "Synchronization is partial and will synchronize only #{opts[:only_entities].join(' ')}"
+          ConnectorLogger.log('info', organization, "Synchronization is partial and will synchronize only #{opts[:only_entities].join(' ')}")
           # The synchronization is marked as partial and will not be considered as the last-synchronization for the next sync
           current_synchronization.update_attributes(partial: true)
           opts[:only_entities].each do |entity|
@@ -28,10 +28,10 @@ module Maestrano::Connector::Rails
           end
         end
 
-        Rails.logger.info "Finished synchronization, organization=#{organization.uid}, status=success"
+        ConnectorLogger.log('info', organization, "Finished synchronization, organization=#{organization.uid}, status=success")
         current_synchronization.update_attributes(status: 'SUCCESS')
       rescue => e
-        Rails.logger.info "Finished synchronization, organization=#{organization.uid}, status=error, message=#{e.message} backtrace=#{e.backtrace.join("\n\t")}"
+        ConnectorLogger.log('info', organization, "Finished synchronization, organization=#{organization.uid}, status=error, message=#{e.message} backtrace=#{e.backtrace.join("\n\t")}")
         current_synchronization.update_attributes(status: 'ERROR', message: e.message)
       end
     end
@@ -39,11 +39,11 @@ module Maestrano::Connector::Rails
     def sync_entity(entity, organization, connec_client, external_client, last_synchronization, opts)
       entity_instance = "Entities::#{entity.titleize.split.join}".constantize.new
 
-      external_entities = entity_instance.get_external_entities(external_client, last_synchronization, opts)
-      connec_entities = entity_instance.get_connec_entities(connec_client, last_synchronization, opts)
+      external_entities = entity_instance.get_external_entities(external_client, last_synchronization, organization, opts)
+      connec_entities = entity_instance.get_connec_entities(connec_client, last_synchronization, organization, opts)
       entity_instance.consolidate_and_map_data(connec_entities, external_entities, organization, opts)
-      entity_instance.push_entities_to_external(external_client, connec_entities)
-      entity_instance.push_entities_to_connec(connec_client, external_entities)
+      entity_instance.push_entities_to_external(external_client, connec_entities, organization)
+      entity_instance.push_entities_to_connec(connec_client, external_entities, organization)
     end
   end
 end
