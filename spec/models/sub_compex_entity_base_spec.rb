@@ -52,20 +52,4 @@ describe Maestrano::Connector::Rails::SubComplexEntityBase do
       it { expect{ subject.connec_entity_name }.to raise_error }
     end
   end
-
-  describe 'set_mappers_organization' do
-      before(:each) {
-        class AMapper
-          def self.set_organization(organization_id)
-          end
-        end
-        allow_any_instance_of(Maestrano::Connector::Rails::SubComplexEntityBase).to receive(:mapper_classes).and_return([AMapper])
-      }
-
-      it 'calls set_organization on the mapper_classes' do
-        expect(AMapper).to receive(:set_organization).with(12)
-        subject.set_mappers_organization(12)
-      end
-  end
-
 end

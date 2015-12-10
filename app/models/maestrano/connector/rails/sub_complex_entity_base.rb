@@ -13,7 +13,7 @@ module Maestrano::Connector::Rails
       raise "Not implemented"
     end
 
-    def map_to(name, entity)
+    def map_to(name, entity, organization)
       raise "Not implemented"
     end
 
@@ -30,12 +30,6 @@ module Maestrano::Connector::Rails
         raise "Forbidden call"
       else
         self.entity_name
-      end
-    end
-
-    def set_mappers_organization(organization_id)
-      self.mapper_classes.each do |klass|
-        klass.set_organization(organization_id)
       end
     end
   end

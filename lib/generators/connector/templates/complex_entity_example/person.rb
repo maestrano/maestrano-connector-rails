@@ -14,7 +14,7 @@
 #     [SubComplexEntities::ContactMapper, SubComplexEntities::LeadMapper]
 #   end
 
-#   def map_to(name, entity)
+#   def map_to(name, entity, organization)
 #     case name
 #     when 'lead'
 #       SubComplexEntities::LeadMapper.normalize(entity)

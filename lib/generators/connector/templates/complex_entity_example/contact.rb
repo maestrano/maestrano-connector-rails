@@ -15,7 +15,7 @@
 #     [SubComplexEntities::ContactMapper]
 #   end
 
-#   def map_to(name, entity)
+#   def map_to(name, entity, organization)
 #     case name
 #     when 'person'
 #       SubComplexEntities::ContactMapper.denormalize(entity)

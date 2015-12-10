@@ -21,13 +21,6 @@ describe Maestrano::Connector::Rails::ComplexEntity do
   describe 'general methods' do
     subject { Maestrano::Connector::Rails::ComplexEntity.new }
 
-    describe 'set_mapper_organization' do
-      #TODO
-    end
-    describe 'unset_mapper_organization' do
-      #TODO
-    end
-    #def map_to_external_with_idmap(entity, organization, connec_entity_name, external_entity_name, sub_entity_instance)
     describe 'map_to_external_with_idmap' do
       let(:organization) { create(:organization) }
       let(:id) { '322j-bbfg4' }
@@ -184,12 +177,12 @@ describe Maestrano::Connector::Rails::ComplexEntity do
           allow(subject).to receive(:connec_model_to_external_model!)
           allow_any_instance_of(SubComplexEntities::ScE1).to receive(:get_id_from_external_entity_hash).with(entity1).and_return(id1)
           allow_any_instance_of(SubComplexEntities::ScE1).to receive(:get_last_update_date_from_external_entity_hash).and_return(1.minute.ago)
-          allow_any_instance_of(SubComplexEntities::ScE1).to receive(:map_to).with('connec1', entity1).and_return(mapped_entity1)
+          allow_any_instance_of(SubComplexEntities::ScE1).to receive(:map_to).with('connec1', entity1, organization).and_return(mapped_entity1)
           allow_any_instance_of(SubComplexEntities::ScE2).to receive(:get_id_from_external_entity_hash).with(entity1).and_return(id1)
           allow_any_instance_of(SubComplexEntities::ScE2).to receive(:get_id_from_external_entity_hash).with(entity2).and_return(id2)
           allow_any_instance_of(SubComplexEntities::ScE2).to receive(:get_last_update_date_from_external_entity_hash).and_return(1.minute.ago)
-          allow_any_instance_of(SubComplexEntities::ScE2).to receive(:map_to).with('connec1', entity1).and_return(mapped_entity1)
-          allow_any_instance_of(SubComplexEntities::ScE2).to receive(:map_to).with('connec2', entity2).and_return(mapped_entity2)
+          allow_any_instance_of(SubComplexEntities::ScE2).to receive(:map_to).with('connec1', entity1, organization).and_return(mapped_entity1)
+          allow_any_instance_of(SubComplexEntities::ScE2).to receive(:map_to).with('connec2', entity2, organization).and_return(mapped_entity2)
         }
 
         context 'when entities have no idmaps' do

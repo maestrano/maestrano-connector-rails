@@ -23,32 +23,17 @@ describe Maestrano::Connector::Rails::Entity do
         allow(subject).to receive(:mapper_class).and_return(AMapper)
       }
 
-      # Mapper methods
-      describe 'set_mapper_organization' do
-        it 'calls the mapper set organization with the id' do
-          expect(AMapper).to receive(:set_organization).with(12)
-          subject.set_mapper_organization(12)
-        end
-      end
-
-      describe 'unset_mapper_organization' do
-        it 'calls the mapper set organization with nil' do
-          expect(AMapper).to receive(:set_organization).with(nil)
-          subject.unset_mapper_organization
-        end
-      end
-
       describe 'map_to_external' do
         it 'calls the setter normalize' do
           expect(AMapper).to receive(:normalize).with({})
-          subject.map_to_external({})
+          subject.map_to_external({}, nil)
         end
       end
 
       describe 'map_to_connec' do
         it 'calls the setter denormalize' do
           expect(AMapper).to receive(:denormalize).with({})
-          subject.map_to_connec({})
+          subject.map_to_connec({}, nil)
         end
       end
     end

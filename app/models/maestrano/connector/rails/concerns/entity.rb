@@ -15,23 +15,13 @@ module Maestrano::Connector::Rails::Concerns::Entity
   # ----------------------------------------------
   #                 Mapper methods
   # ----------------------------------------------
-  # Used to set a class variable in the mapper in order to
-  # have access to the organization for the idmaps queries
-  def set_mapper_organization(organization_id)
-    self.mapper_class.set_organization(organization_id)
-  end
-
-  def unset_mapper_organization
-    self.mapper_class.set_organization(nil)
-  end
-
   # Map a Connec! entity to the external format
-  def map_to_external(entity)
+  def map_to_external(entity, organization)
     self.mapper_class.normalize(entity)
   end
 
   # Map an external entity to Connec! format
-  def map_to_connec(entity)
+  def map_to_connec(entity, organization)
     self.mapper_class.denormalize(entity)
   end
 
@@ -114,7 +104,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
       Rails.logger.info "Discard Connec! #{self.connec_entity_name} : #{entity}"
       nil
     else
-      {entity: self.map_to_external(entity), idmap: idmap || Maestrano::Connector::Rails::IdMap.create(connec_id: entity['id'], connec_entity: self.connec_entity_name.downcase, organization_id: organization.id)}
+      {entity: self.map_to_external(entity, organization), idmap: idmap || Maestrano::Connector::Rails::IdMap.create(connec_id: entity['id'], connec_entity: self.connec_entity_name.downcase, organization_id: organization.id)}
     end
   end
 
@@ -180,7 +170,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
 
       # No idmap: creating one, nothing else to do
       unless idmap
-        next {entity: self.map_to_connec(entity), idmap: Maestrano::Connector::Rails::IdMap.create(external_id: self.get_id_from_external_entity_hash(entity), external_entity: self.external_entity_name.downcase, organization_id: organization.id)}
+        next {entity: self.map_to_connec(entity, organization), idmap: Maestrano::Connector::Rails::IdMap.create(external_id: self.get_id_from_external_entity_hash(entity), external_entity: self.external_entity_name.downcase, organization_id: organization.id)}
       end
 
       # Entity has not been modified since its last push to connec!
@@ -201,14 +191,14 @@ module Maestrano::Connector::Rails::Concerns::Entity
         if keep_external
           Rails.logger.info "Conflict between #{@@external_name} #{self.external_entity_name} #{entity} and Connec! #{self.connec_entity_name} #{connec_entity}. Entity from #{@@external_name} kept"
           connec_entities.delete(connec_entity)
-          {entity: self.map_to_connec(entity), idmap: idmap}
+          {entity: self.map_to_connec(entity, organization), idmap: idmap}
         else
           Rails.logger.info "Conflict between #{@@external_name} #{self.external_entity_name} #{entity} and Connec! #{self.connec_entity_name} #{connec_entity}. Entity from Connec! kept"
           nil
         end
 
       else
-        {entity: self.map_to_connec(entity), idmap: idmap}
+        {entity: self.map_to_connec(entity, organization), idmap: idmap}
       end
     }.compact!
 
