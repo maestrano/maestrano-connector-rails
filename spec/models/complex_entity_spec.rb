@@ -45,28 +45,25 @@ describe Maestrano::Connector::Rails::ComplexEntity do
       end
 
       context 'when entity has an idmap without last_push_to_external' do
-        let(:idmap) { create(:idmap, organization: organization, connec_id: id, connec_entity: connec_name, last_push_to_external: nil, external_entity: external_name) }
+        let!(:idmap) { create(:idmap, organization: organization, connec_id: id, connec_entity: connec_name, last_push_to_external: nil, external_entity: external_name) }
 
         it 'returns the mapped entity with its idmap' do
-          idmap
           expect(subject.map_to_external_with_idmap(entity, organization, connec_name, external_name, sub_instance)).to eql({entity: mapped_entity, idmap: idmap})
         end
       end
 
       context 'when entity has an idmap with an older last_push_to_external' do
-        let(:idmap) { create(:idmap, organization: organization, connec_id: id, connec_entity: connec_name, last_push_to_external: 1.year.ago, external_entity: external_name) }
+        let!(:idmap) { create(:idmap, organization: organization, connec_id: id, connec_entity: connec_name, last_push_to_external: 1.year.ago, external_entity: external_name) }
 
         it 'returns the mapped entity with its idmap' do
-          idmap
           expect(subject.map_to_external_with_idmap(entity, organization, connec_name, external_name, sub_instance)).to eql({entity: mapped_entity, idmap: idmap})
         end
       end
 
       context 'when entity has an idmap with a more recent last_push_to_external' do
-        let(:idmap) { create(:idmap, organization: organization, connec_id: id, connec_entity: connec_name, last_push_to_external: 1.second.ago, external_entity: external_name) }
+        let!(:idmap) { create(:idmap, organization: organization, connec_id: id, connec_entity: connec_name, last_push_to_external: 1.second.ago, external_entity: external_name) }
 
         it 'discards the entity' do
-          idmap
           expect(subject.map_to_external_with_idmap(entity, organization, connec_name, external_name, sub_instance)).to be_nil
         end
       end
@@ -205,14 +202,11 @@ describe Maestrano::Connector::Rails::ComplexEntity do
         end
 
         context 'when entities have idmaps with more recent last_push_to_connec' do
-          let(:idmap1) { create(:idmap, organization: organization, external_id: id1, external_entity: 'sc_e1', connec_entity: 'connec1', last_push_to_connec: 1.second.ago) }
-          let(:idmap21) { create(:idmap, organization: organization, external_id: id1, external_entity: 'sce2', connec_entity: 'connec1', last_push_to_connec: 1.second.ago) }
-          let(:idmap22) { create(:idmap, organization: organization, external_id: id2, external_entity: 'sce2', connec_entity: 'connec2', last_push_to_connec: 1.second.ago) }
+          let!(:idmap1) { create(:idmap, organization: organization, external_id: id1, external_entity: 'sc_e1', connec_entity: 'connec1', last_push_to_connec: 1.second.ago) }
+          let!(:idmap21) { create(:idmap, organization: organization, external_id: id1, external_entity: 'sce2', connec_entity: 'connec1', last_push_to_connec: 1.second.ago) }
+          let!(:idmap22) { create(:idmap, organization: organization, external_id: id2, external_entity: 'sce2', connec_entity: 'connec2', last_push_to_connec: 1.second.ago) }
 
           it 'discards the entities' do
-            idmap1
-            idmap21
-            idmap22
             subject.consolidate_and_map_data({}, external_hash, organization, opt)
             expect(external_hash).to eql(            {
               'sc_e1' => {'connec1' => []},
@@ -233,15 +227,10 @@ describe Maestrano::Connector::Rails::ComplexEntity do
             allow_any_instance_of(SubComplexEntities::Connec1).to receive(:map_to).and_return({'name' => 'Jacob'})
           }
           let(:connec_id1) { '67ttf-5rr4d' }
-          let(:idmap1) { create(:idmap, organization: organization, external_id: id1, external_entity: 'sc_e1', connec_entity: 'connec1', last_push_to_connec: 1.year.ago, connec_id: connec_id1) }
-          let(:idmap21) { create(:idmap, organization: organization, external_id: id1, external_entity: 'sce2', connec_entity: 'connec1', last_push_to_connec: 1.year.ago) }
-          let(:idmap22) { create(:idmap, organization: organization, external_id: id2, external_entity: 'sce2', connec_entity: 'connec2', last_push_to_connec: 1.year.ago) }
+          let!(:idmap1) { create(:idmap, organization: organization, external_id: id1, external_entity: 'sc_e1', connec_entity: 'connec1', last_push_to_connec: 1.year.ago, connec_id: connec_id1) }
+          let!(:idmap21) { create(:idmap, organization: organization, external_id: id1, external_entity: 'sce2', connec_entity: 'connec1', last_push_to_connec: 1.year.ago) }
+          let!(:idmap22) { create(:idmap, organization: organization, external_id: id2, external_entity: 'sce2', connec_entity: 'connec2', last_push_to_connec: 1.year.ago) }
           let(:connec_hash) { {'connec1' => {'sc_e1' => [{'id' => connec_id1, 'first_name' => 'Jacob', 'updated_at' => 1.hour.ago}]}, 'connec2' => {'sc_e1' => [], 'ScE2' => []}} }
-          before{
-            idmap1
-            idmap21
-            idmap22
-          }
 
           context 'without conflict' do
             it 'returns the entity with their idmaps' do

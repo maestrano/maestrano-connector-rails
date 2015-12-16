@@ -195,11 +195,7 @@ describe Maestrano::Connector::Rails::Entity do
         }
 
         context 'when entity has an idmap' do
-          let(:idmap) { create(:idmap, organization: organization, connec_entity: connec_name, connec_id: id, last_push_to_external: 3.hour.ago)}
-          before{
-            #Mysteriously the idmap is not set if it is not explicitly called...
-            idmap
-          }
+          let!(:idmap) { create(:idmap, organization: organization, connec_entity: connec_name, connec_id: id, last_push_to_external: 3.hour.ago)}
 
           context 'when updated_at field is most recent than idmap last_push_to_external' do
             let(:entity) { {'id' => id, 'name' => 'John', 'updated_at' => 2.hour.ago } }
@@ -356,10 +352,9 @@ describe Maestrano::Connector::Rails::Entity do
         end
 
         context 'when entity has an idmap with a last_push_to_connec more recent than date' do
-          let(:idmap) { create(:idmap, external_entity: external_name, external_id: id, organization: organization, last_push_to_connec: 2.minute.ago) }
+          let!(:idmap) { create(:idmap, external_entity: external_name, external_id: id, organization: organization, last_push_to_connec: 2.minute.ago) }
 
           it 'discards the entity' do
-            idmap
             subject.consolidate_and_map_data([], entities, organization)
             expect(entities).to eql([])
           end
@@ -368,10 +363,9 @@ describe Maestrano::Connector::Rails::Entity do
         context 'when entity has an idmap with a last_push_to_connec older than date' do
 
           context 'with no conflict' do
-            let(:idmap) { create(:idmap, external_entity: external_name, external_id: id, organization: organization, last_push_to_connec: 2.day.ago) }
+            let!(:idmap) { create(:idmap, external_entity: external_name, external_id: id, organization: organization, last_push_to_connec: 2.day.ago) }
 
             it 'returns the mapped entity with its idmap' do
-              idmap
               subject.consolidate_and_map_data([], entities, organization)
               expect(entities).to eql([{entity: mapped_entity, idmap: idmap}])
             end
@@ -379,10 +373,9 @@ describe Maestrano::Connector::Rails::Entity do
 
           context 'with conflict' do
             let(:connec_id) { '34uuu-778aa' }
-            let(:idmap) { create(:idmap, connec_id: connec_id, external_entity: external_name, external_id: id, organization: organization, last_push_to_connec: 2.day.ago) }
+            let!(:idmap) { create(:idmap, connec_id: connec_id, external_entity: external_name, external_id: id, organization: organization, last_push_to_connec: 2.day.ago) }
             before {
               allow(subject).to receive(:map_to_external_with_idmap)
-              idmap
             }
 
             context 'with connec_preemption opt' do
