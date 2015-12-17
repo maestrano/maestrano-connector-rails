@@ -6,6 +6,12 @@ module Maestrano::Connector::Rails::Maestrano::Auth
       user = Maestrano::Connector::Rails::User.find_or_create_for_maestrano(user_auth_hash)
       organization = Maestrano::Connector::Rails::Organization.find_or_create_for_maestrano(group_auth_hash)
 
+      #Optimizable
+      user.tenant = session[:tenant]
+      user.save
+      organization.tenant = session[:tenant]
+      organization.save
+
       unless organization.member?(user)
         organization.add_member(user)
       end
@@ -13,7 +19,6 @@ module Maestrano::Connector::Rails::Maestrano::Auth
       session[:uid] = user.uid
       session[:org_uid] = organization.uid
       session[:"role_#{organization.uid}"] = user_group_rel_hash[:role]
-      session[:tenant] = 'default' #TODO change
 
       redirect_to main_app.root_path
     end
