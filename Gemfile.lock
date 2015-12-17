@@ -39,11 +39,6 @@ GEM
     addressable (2.3.8)
     arel (6.0.3)
     builder (3.2.2)
-    delayed_job (4.0.6)
-      activesupport (>= 3.0, < 5.0)
-    delayed_job_active_record (4.0.3)
-      activerecord (>= 3.0, < 5.0)
-      delayed_job (>= 3.0, < 4.1)
     descendants_tracker (0.0.4)
       thread_safe (~> 0.3, >= 0.3.1)
     diff-lcs (1.2.5)
@@ -211,7 +206,6 @@ PLATFORMS
 
 DEPENDENCIES
   bundler (~> 1.0)
-  delayed_job_active_record
   factory_girl_rails
   hash_mapper (~> 0.2.1)
   jeweler (~> 2.0.1)
