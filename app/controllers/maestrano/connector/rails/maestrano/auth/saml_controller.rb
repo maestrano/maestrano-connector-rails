@@ -1,10 +1,10 @@
-module Maestrano::Connector::Rails
-  class Maestrano::Auth::SamlController < ::Maestrano::Rails::SamlBaseController
+module Maestrano::Connector::Rails::Maestrano::Auth
+  class SamlController < ::Maestrano::Rails::SamlBaseController
 
     #== POST '/maestrano/auth/saml/consume'
     def consume
-      user = User.find_or_create_for_maestrano(user_auth_hash)
-      organization = Organization.find_or_create_for_maestrano(group_auth_hash)
+      user = Maestrano::Connector::Rails::User.find_or_create_for_maestrano(user_auth_hash)
+      organization = Maestrano::Connector::Rails::Organization.find_or_create_for_maestrano(group_auth_hash)
 
       unless organization.member?(user)
         organization.add_member(user)

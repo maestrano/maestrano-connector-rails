@@ -155,7 +155,7 @@ Gem::Specification.new do |s|
   s.homepage = "http://github.com/maestrano/maestrano-connector-rails"
   s.licenses = ["MIT"]
   s.rubygems_version = "2.4.7"
-  s.summary = "Rails framework to build connector with Maestrano"
+  s.summary = "Rails framework to build connectors with Maestrano"
 
   if s.respond_to? :specification_version then
     s.specification_version = 4
