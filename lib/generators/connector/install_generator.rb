@@ -4,6 +4,7 @@ module Connector
       source_root File.expand_path("../templates", __FILE__)
 
       def maestrano_generator
+        #Temporary
         # generate 'maestrano:initializer'
       end
 
