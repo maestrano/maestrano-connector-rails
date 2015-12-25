@@ -1,7 +1,7 @@
 # TODO
 # This file is provided as an example and should be removed
 # See README for explanation
-# class SubComplexEntities::Person < Maestrano::Connector::Rails::SubComplexEntityBase
+# class Enities::SubEntities::Person < Maestrano::Connector::Rails::SubEntityBase
 #   def external?
 #     false
 #   end
@@ -11,15 +11,15 @@
 #   end
 
 #   def mapper_classes
-#     [SubComplexEntities::ContactMapper, SubComplexEntities::LeadMapper]
+#     [Enities::SubEntities::ContactMapper, SubComplexEntities::LeadMapper]
 #   end
 
 #   def map_to(name, entity, organization)
 #     case name
 #     when 'lead'
-#       SubComplexEntities::LeadMapper.normalize(entity)
+#       Enities::SubEntities::LeadMapper.normalize(entity)
 #     when 'contact'
-#       SubComplexEntities::ContactMapper.normalize(entity)
+#       Enities::SubEntities::ContactMapper.normalize(entity)
 #     else
 #       raise "Impossible mapping from #{self.entity_name} to #{name}"
 #     end

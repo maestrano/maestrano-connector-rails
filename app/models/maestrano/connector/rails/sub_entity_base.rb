@@ -1,5 +1,5 @@
 module Maestrano::Connector::Rails
-  class SubComplexEntityBase < Entity
+  class SubEntityBase < Entity
 
     def external?
       raise "Not implemented"

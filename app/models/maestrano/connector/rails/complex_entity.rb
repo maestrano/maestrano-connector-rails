@@ -70,7 +70,7 @@ module Maestrano::Connector::Rails
       entities = ActiveSupport::HashWithIndifferentAccess.new
 
       self.connec_entities_names.each do |connec_entity_name|
-        sub_entity_instance = "SubComplexEntities::#{connec_entity_name.titleize.split.join}".constantize.new
+        sub_entity_instance = "Entities::SubEntities::#{connec_entity_name.titleize.split.join}".constantize.new
         entities[connec_entity_name] = sub_entity_instance.get_connec_entities(client, last_synchronization, organization, opts)
       end
       entities
@@ -80,7 +80,7 @@ module Maestrano::Connector::Rails
       entities = ActiveSupport::HashWithIndifferentAccess.new
 
       self.external_entities_names.each do |external_entity_name|
-        sub_entity_instance = "SubComplexEntities::#{external_entity_name.titleize.split.join}".constantize.new
+        sub_entity_instance = "Entities::SubEntities::#{external_entity_name.titleize.split.join}".constantize.new
         entities[external_entity_name] = sub_entity_instance.get_external_entities(client, last_synchronization, organization, opts)
       end
       entities
@@ -92,7 +92,7 @@ module Maestrano::Connector::Rails
 
       external_entities.each do |external_entity_name, entities_in_connec_model|
         entities_in_connec_model.each do |connec_entity_name, entities|
-          sub_entity_instance = "SubComplexEntities::#{external_entity_name.titleize.split.join}".constantize.new
+          sub_entity_instance = "Entities::SubEntities::#{external_entity_name.titleize.split.join}".constantize.new
 
           entities.map!{|entity|
             idmap = IdMap.find_by(external_id: sub_entity_instance.get_id_from_external_entity_hash(entity), external_entity: external_entity_name.downcase, connec_entity: connec_entity_name.downcase, organization_id: organization.id)
@@ -136,7 +136,7 @@ module Maestrano::Connector::Rails
 
       connec_entities.each do |connec_entity_name, entities_in_external_model|
         entities_in_external_model.each do |external_entity_name, entities|
-          sub_entity_instance = "SubComplexEntities::#{connec_entity_name.titleize.split.join}".constantize.new
+          sub_entity_instance = "Entities::SubEntities::#{connec_entity_name.titleize.split.join}".constantize.new
           entities.map!{|entity|
             self.map_to_external_with_idmap(entity, organization, connec_entity_name, external_entity_name, sub_entity_instance)
           }.compact!
@@ -155,7 +155,7 @@ module Maestrano::Connector::Rails
     #          }
     def push_entities_to_connec(connec_client, mapped_external_entities_with_idmaps, organization)
       mapped_external_entities_with_idmaps.each do |external_entity_name, entities_in_connec_model|
-        sub_entity_instance = "SubComplexEntities::#{external_entity_name.titleize.split.join}".constantize.new
+        sub_entity_instance = "Entities::SubEntities::#{external_entity_name.titleize.split.join}".constantize.new
         entities_in_connec_model.each do |connec_entity_name, mapped_entities_with_idmaps|
           sub_entity_instance.push_entities_to_connec_to(connec_client, mapped_entities_with_idmaps, connec_entity_name, organization)
         end
@@ -165,7 +165,7 @@ module Maestrano::Connector::Rails
 
     def push_entities_to_external(external_client, mapped_connec_entities_with_idmaps, organization)
       mapped_connec_entities_with_idmaps.each do |connec_entity_name, entities_in_external_model|
-        sub_entity_instance = "SubComplexEntities::#{connec_entity_name.titleize.split.join}".constantize.new
+        sub_entity_instance = "Entities::SubEntities::#{connec_entity_name.titleize.split.join}".constantize.new
         entities_in_external_model.each do |external_entity_name, mapped_entities_with_idmaps|
           sub_entity_instance.push_entities_to_external_to(external_client, mapped_entities_with_idmaps, external_entity_name, organization)
         end

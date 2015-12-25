@@ -1,7 +1,7 @@
 # TODO
 # This file is provided as an example and should be removed
 # See README for explanation
-# class SubComplexEntities::ContactMapper < Maestrano::Connector::Rails::GenericMapper
+# class Entities::SubEntities::ContactMapper
 #   extend HashMapper
 
 #   map from('title'), to('Salutation')

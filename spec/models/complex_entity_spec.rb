@@ -5,16 +5,16 @@ describe Maestrano::Connector::Rails::ComplexEntity do
   #Connec specific methods
   describe 'connec specific methods' do
     describe 'connec_entities_names' do
-      it { expect{ subject.connec_entities_names }.to raise_error }
+      it { expect{ subject.connec_entities_names }.to raise_error('Not implemented') }
     end
     describe 'external_entities_names' do
-      it { expect{ subject.external_entities_names }.to raise_error }
+      it { expect{ subject.external_entities_names }.to raise_error('Not implemented') }
     end
     describe 'connec_model_to_external_model!' do
-      it { expect{ subject.connec_model_to_external_model!({}) }.to raise_error }
+      it { expect{ subject.connec_model_to_external_model!({}) }.to raise_error('Not implemented') }
     end
     describe 'external_model_to_connec_model!' do
-      it { expect{ subject.external_model_to_connec_model!({}) }.to raise_error }
+      it { expect{ subject.external_model_to_connec_model!({}) }.to raise_error('Not implemented') }
     end
   end
 
@@ -28,7 +28,7 @@ describe Maestrano::Connector::Rails::ComplexEntity do
       let(:mapped_entity) { {'first_name' => 'John'} }
       let(:connec_name) { 'connec_name' }
       let(:external_name) { 'external_name' }
-      let(:sub_instance) { Maestrano::Connector::Rails::SubComplexEntityBase.new }
+      let(:sub_instance) { Maestrano::Connector::Rails::SubEntityBase.new }
       before {
         allow(sub_instance).to receive(:map_to).and_return(mapped_entity)
       }
@@ -73,9 +73,9 @@ describe Maestrano::Connector::Rails::ComplexEntity do
 
   describe 'methods with sub complex entities' do
     before {
-      class SubComplexEntities::ScE1 < Maestrano::Connector::Rails::SubComplexEntityBase
+      class Entities::SubEntities::ScE1 < Maestrano::Connector::Rails::SubEntityBase
       end
-      class SubComplexEntities::ScE2 < Maestrano::Connector::Rails::SubComplexEntityBase
+      class Entities::SubEntities::ScE2 < Maestrano::Connector::Rails::SubEntityBase
       end
     }
 
@@ -85,16 +85,16 @@ describe Maestrano::Connector::Rails::ComplexEntity do
       }
 
       it 'calls get_connec_entities on each connec sub complex entities' do
-        expect_any_instance_of(SubComplexEntities::ScE1).to receive(:get_connec_entities).with(nil, nil, nil, {opts: true})
-        expect_any_instance_of(SubComplexEntities::ScE2).to receive(:get_connec_entities).with(nil, nil, nil, {opts: true})
+        expect_any_instance_of(Entities::SubEntities::ScE1).to receive(:get_connec_entities).with(nil, nil, nil, {opts: true})
+        expect_any_instance_of(Entities::SubEntities::ScE2).to receive(:get_connec_entities).with(nil, nil, nil, {opts: true})
         subject.get_connec_entities(nil, nil, nil, {opts: true})
       end
 
       let(:arr1) { [{'name' => 'Water'}, {'name' => 'Sugar'}] }
       let(:arr2) { [{'price' => 92}, {'price' => 300}] }
       it 'returns an hash of the connec_entities keyed by connec_entity_name' do
-        allow_any_instance_of(SubComplexEntities::ScE1).to receive(:get_connec_entities).and_return(arr1)
-        allow_any_instance_of(SubComplexEntities::ScE2).to receive(:get_connec_entities).and_return(arr2)
+        allow_any_instance_of(Entities::SubEntities::ScE1).to receive(:get_connec_entities).and_return(arr1)
+        allow_any_instance_of(Entities::SubEntities::ScE2).to receive(:get_connec_entities).and_return(arr2)
         expect(subject.get_connec_entities(nil, nil, nil, {opts: true})).to eql({'sc_e1' => arr1, 'ScE2' => arr2})
       end
     end
@@ -105,16 +105,16 @@ describe Maestrano::Connector::Rails::ComplexEntity do
       }
 
       it 'calls get_external_entities on each connec sub complex entities' do
-        expect_any_instance_of(SubComplexEntities::ScE1).to receive(:get_external_entities).with(nil, nil, nil, {opts: true})
-        expect_any_instance_of(SubComplexEntities::ScE2).to receive(:get_external_entities).with(nil, nil, nil, {opts: true})
+        expect_any_instance_of(Entities::SubEntities::ScE1).to receive(:get_external_entities).with(nil, nil, nil, {opts: true})
+        expect_any_instance_of(Entities::SubEntities::ScE2).to receive(:get_external_entities).with(nil, nil, nil, {opts: true})
         subject.get_external_entities(nil, nil, nil, {opts: true})
       end
 
       let(:arr1) { [{'name' => 'Water'}, {'name' => 'Sugar'}] }
       let(:arr2) { [{'price' => 92}, {'price' => 300}] }
       it 'returns an hash of the external_entities keyed by external_entity_name' do
-        allow_any_instance_of(SubComplexEntities::ScE1).to receive(:get_external_entities).and_return(arr1)
-        allow_any_instance_of(SubComplexEntities::ScE2).to receive(:get_external_entities).and_return(arr2)
+        allow_any_instance_of(Entities::SubEntities::ScE1).to receive(:get_external_entities).and_return(arr1)
+        allow_any_instance_of(Entities::SubEntities::ScE2).to receive(:get_external_entities).and_return(arr2)
         expect(subject.get_external_entities(nil, nil, nil, {opts: true})).to eql({'sc_e1' => arr1, 'ScE2' => arr2})
       end
     end
@@ -172,14 +172,14 @@ describe Maestrano::Connector::Rails::ComplexEntity do
         before{
           allow(subject).to receive(:external_model_to_connec_model!)
           allow(subject).to receive(:connec_model_to_external_model!)
-          allow_any_instance_of(SubComplexEntities::ScE1).to receive(:get_id_from_external_entity_hash).with(entity1).and_return(id1)
-          allow_any_instance_of(SubComplexEntities::ScE1).to receive(:get_last_update_date_from_external_entity_hash).and_return(1.minute.ago)
-          allow_any_instance_of(SubComplexEntities::ScE1).to receive(:map_to).with('connec1', entity1, organization).and_return(mapped_entity1)
-          allow_any_instance_of(SubComplexEntities::ScE2).to receive(:get_id_from_external_entity_hash).with(entity1).and_return(id1)
-          allow_any_instance_of(SubComplexEntities::ScE2).to receive(:get_id_from_external_entity_hash).with(entity2).and_return(id2)
-          allow_any_instance_of(SubComplexEntities::ScE2).to receive(:get_last_update_date_from_external_entity_hash).and_return(1.minute.ago)
-          allow_any_instance_of(SubComplexEntities::ScE2).to receive(:map_to).with('connec1', entity1, organization).and_return(mapped_entity1)
-          allow_any_instance_of(SubComplexEntities::ScE2).to receive(:map_to).with('connec2', entity2, organization).and_return(mapped_entity2)
+          allow_any_instance_of(Entities::SubEntities::ScE1).to receive(:get_id_from_external_entity_hash).with(entity1).and_return(id1)
+          allow_any_instance_of(Entities::SubEntities::ScE1).to receive(:get_last_update_date_from_external_entity_hash).and_return(1.minute.ago)
+          allow_any_instance_of(Entities::SubEntities::ScE1).to receive(:map_to).with('connec1', entity1, organization).and_return(mapped_entity1)
+          allow_any_instance_of(Entities::SubEntities::ScE2).to receive(:get_id_from_external_entity_hash).with(entity1).and_return(id1)
+          allow_any_instance_of(Entities::SubEntities::ScE2).to receive(:get_id_from_external_entity_hash).with(entity2).and_return(id2)
+          allow_any_instance_of(Entities::SubEntities::ScE2).to receive(:get_last_update_date_from_external_entity_hash).and_return(1.minute.ago)
+          allow_any_instance_of(Entities::SubEntities::ScE2).to receive(:map_to).with('connec1', entity1, organization).and_return(mapped_entity1)
+          allow_any_instance_of(Entities::SubEntities::ScE2).to receive(:map_to).with('connec2', entity2, organization).and_return(mapped_entity2)
         }
 
         context 'when entities have no idmaps' do
@@ -220,11 +220,11 @@ describe Maestrano::Connector::Rails::ComplexEntity do
 
         context 'when entities have idmaps with older last_push_to_connec' do
           before{
-            class SubComplexEntities::Connec1 < Maestrano::Connector::Rails::SubComplexEntityBase
+            class Entities::SubEntities::Connec1 < Maestrano::Connector::Rails::SubEntityBase
             end
-            class SubComplexEntities::Connec2 < Maestrano::Connector::Rails::SubComplexEntityBase
+            class Entities::SubEntities::Connec2 < Maestrano::Connector::Rails::SubEntityBase
             end
-            allow_any_instance_of(SubComplexEntities::Connec1).to receive(:map_to).and_return({'name' => 'Jacob'})
+            allow_any_instance_of(Entities::SubEntities::Connec1).to receive(:map_to).and_return({'name' => 'Jacob'})
           }
           let(:connec_id1) { '67ttf-5rr4d' }
           let!(:idmap1) { create(:idmap, organization: organization, external_id: id1, external_entity: 'sc_e1', connec_entity: 'connec1', last_push_to_connec: 1.year.ago, connec_id: connec_id1) }
@@ -325,8 +325,8 @@ describe Maestrano::Connector::Rails::ComplexEntity do
       }
 
       it 'calls push_entities_to_connec on each sub complex entity' do
-        expect_any_instance_of(SubComplexEntities::ScE1).to receive(:push_entities_to_connec_to).once.with(nil, [mapped_entity_with_idmap], 'connec1', nil)
-        expect_any_instance_of(SubComplexEntities::ScE2).to receive(:push_entities_to_connec_to).twice
+        expect_any_instance_of(Entities::SubEntities::ScE1).to receive(:push_entities_to_connec_to).once.with(nil, [mapped_entity_with_idmap], 'connec1', nil)
+        expect_any_instance_of(Entities::SubEntities::ScE2).to receive(:push_entities_to_connec_to).twice
         subject.push_entities_to_connec(nil, external_hash, nil)
       end
     end
@@ -342,8 +342,8 @@ describe Maestrano::Connector::Rails::ComplexEntity do
       }
 
       it 'calls push_entities_to_connec on each sub complex entity' do
-        expect_any_instance_of(SubComplexEntities::ScE1).to receive(:push_entities_to_external_to).once.with(nil, [mapped_entity_with_idmap], 'ext1', nil)
-        expect_any_instance_of(SubComplexEntities::ScE2).to receive(:push_entities_to_external_to).twice
+        expect_any_instance_of(Entities::SubEntities::ScE1).to receive(:push_entities_to_external_to).once.with(nil, [mapped_entity_with_idmap], 'ext1', nil)
+        expect_any_instance_of(Entities::SubEntities::ScE2).to receive(:push_entities_to_external_to).twice
         subject.push_entities_to_external(nil, connec_hash, nil)
       end
     end

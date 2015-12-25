@@ -1,7 +1,7 @@
 # TODO
 # This file is provided as an example and should be removed
 # See README for explanation
-# class SubComplexEntities::Lead < Maestrano::Connector::Rails::SubComplexEntityBase
+# class Entities::SubEntities::Lead < Maestrano::Connector::Rails::SubEntityBase
 
 #   def external?
 #     true
@@ -12,13 +12,13 @@
 #   end
 
 #   def mapper_classes
-#     [SubComplexEntities::LeadMapper]
+#     [Entities::SubEntities::LeadMapper]
 #   end
 
 #   def map_to(name, entity, organization)
 #     case name
 #     when 'person'
-#       SubComplexEntities::LeadMapper.denormalize(entity).merge(is_lead: true)
+#       Entities::SubEntities::LeadMapper.denormalize(entity).merge(is_lead: true)
 #     else
 #       raise "Impossible mapping from #{self.entity_name} to #{name}"
 #     end

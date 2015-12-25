@@ -46,11 +46,11 @@ describe Maestrano::Connector::Rails::Entity do
       let(:connec_name) { 'person' }
       let(:external_name) { 'external_name' }
       let(:sync) { create(:synchronization) }
+      before {
+        allow(subject).to receive(:connec_entity_name).and_return(connec_name)
+      }
 
       describe 'get_connec_entities' do
-        before {
-          allow(subject).to receive(:connec_entity_name).and_return(connec_name)
-        }
 
         describe 'with response' do
           before {
@@ -101,7 +101,10 @@ describe Maestrano::Connector::Rails::Entity do
         end
 
         describe 'without response' do
-          it { expect{ subject.get_connec_entities(client, nil, organization) }.to raise_error }
+          before {
+            allow(client).to receive(:get).and_return(nil)
+          }
+          it { expect{ subject.get_connec_entities(client, nil, organization) }.to raise_error("No data received from Connec! when trying to fetch #{connec_name.pluralize}") }
         end
       end
 
@@ -144,8 +147,9 @@ describe Maestrano::Connector::Rails::Entity do
       end
 
       describe 'create_entity_to_connec' do
+        let(:entity) { {name: 'John'} }
+
         describe 'with a response' do
-          let(:entity) { {name: 'John'} }
           before {
             allow(client).to receive(:post).and_return(ActionDispatch::Response.new(200, {}, {people: entity}.to_json, {}))
           }
@@ -161,15 +165,19 @@ describe Maestrano::Connector::Rails::Entity do
         end
 
         describe 'without response' do
-          it { expect{ subject.create_entity_to_connec(client, entity, connec_name, organization) }.to raise_error }
+          before {
+            allow(client).to receive(:post).and_return(nil)
+          }
+          it { expect{ subject.create_entity_to_connec(client, entity, connec_name, organization) }.to raise_error("No response received from Connec! when trying to create a #{connec_name}") }
         end
       end
 
-     describe 'update_entity_to_connec' do
-      let(:organization) { create(:organization) }
+       describe 'update_entity_to_connec' do
+        let(:organization) { create(:organization) }
+        let(:entity) { {name: 'John'} }
+        let(:id) { '88ye-777ab' }
+
         describe 'with a response' do
-          let(:entity) { {name: 'John'} }
-          let(:id) { '88ye-777ab' }
           before {
             allow(client).to receive(:put).and_return(ActionDispatch::Response.new(200, {}, {}.to_json, {}))
           }
@@ -181,7 +189,10 @@ describe Maestrano::Connector::Rails::Entity do
         end
 
         describe 'without response' do
-          it { expect{ subject.create_entity_to_connec(client, entity, connec_name, organization) }.to raise_error }
+          before {
+            allow(client).to receive(:put).and_return(nil)
+          }
+          it { expect{ subject.update_entity_to_connec(client, entity, id, connec_name, organization) }.to raise_error("No response received from Connec! when trying to update a #{connec_name}") }
         end
       end
 
@@ -241,7 +252,7 @@ describe Maestrano::Connector::Rails::Entity do
       let(:entities_with_idmaps) { [entity_with_idmap1, entity_with_idmap2] }
 
       describe 'get_external_entities' do
-        it { expect{ subject.get_external_entities(nil, nil, organization) }.to raise_error }
+        it { expect{ subject.get_external_entities(nil, nil, organization) }.to raise_error('Not implemented') }
       end
 
       describe 'push_entities_to_external' do
@@ -294,19 +305,23 @@ describe Maestrano::Connector::Rails::Entity do
       end
 
       describe 'create_entity_to_external' do
-        it { expect{ subject.create_entity_to_external(nil, nil, nil) }.to raise_error }
+        let(:organization) { create(:organization) }
+
+        it { expect{ subject.create_entity_to_external(nil, nil, nil, organization) }.to raise_error('Not implemented') }
       end
 
       describe 'update_entity_to_external' do
-        it { expect{ subject.update_entity_to_external(nil, nil, nil, nil) }.to raise_error }
+        let(:organization) { create(:organization) }
+
+        it { expect{ subject.update_entity_to_external(nil, nil, nil, nil, organization) }.to raise_error('Not implemented') }
       end
 
       describe 'get_id_from_external_entity_hash' do
-        it { expect{ subject.get_id_from_external_entity_hash(nil) }.to raise_error }
+        it { expect{ subject.get_id_from_external_entity_hash(nil) }.to raise_error('Not implemented') }
       end
 
       describe 'get_last_update_date_from_external_entity_hash' do
-        it { expect{ subject.get_last_update_date_from_external_entity_hash(nil) }.to raise_error }
+        it { expect{ subject.get_last_update_date_from_external_entity_hash(nil) }.to raise_error('Not implemented') }
       end
     end
 
@@ -427,15 +442,15 @@ describe Maestrano::Connector::Rails::Entity do
 
     # Entity specific methods
     describe 'connec_entity_name' do
-      it { expect{ subject.connec_entity_name }.to raise_error }
+      it { expect{ subject.connec_entity_name }.to raise_error('Not implemented') }
     end
 
     describe 'external_entity_name' do
-      it { expect{ subject.external_entity_name }.to raise_error }
+      it { expect{ subject.external_entity_name }.to raise_error('Not implemented') }
     end
 
     describe 'mapper_class' do
-      it { expect{ subject.mapper_class }.to raise_error }
+      it { expect{ subject.mapper_class }.to raise_error('Not implemented') }
     end
   end
 
