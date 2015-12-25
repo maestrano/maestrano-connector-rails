@@ -10,4 +10,66 @@ describe Maestrano::Connector::Rails::Synchronization do
 
   #Associations
   it { should belong_to(:organization) }
+
+  describe 'class methods' do
+    subject { Maestrano::Connector::Rails::Synchronization }
+
+    describe 'create_running' do
+      let(:organization) { create(:organization) }
+
+      it 'creates an organization' do
+        expect{ subject.create_running(organization) }.to change{ Maestrano::Connector::Rails::Synchronization.count }.by(1)
+      end
+
+      it { expect(subject.create_running(organization).status).to eql('RUNNING') }
+    end
+  end
+
+  describe 'instance methods' do
+    describe 'is_success?' do
+      it { expect(Maestrano::Connector::Rails::Synchronization.new(status: 'SUCCESS').is_success?).to be(true) }
+      it { expect(Maestrano::Connector::Rails::Synchronization.new(status: 'ERROR').is_success?).to be(false) }
+    end
+
+    describe 'is_error?' do
+      it { expect(Maestrano::Connector::Rails::Synchronization.new(status: 'ERROR').is_error?).to be(true) }
+      it { expect(Maestrano::Connector::Rails::Synchronization.new(status: 'RUNNING').is_error?).to be(false) }
+    end
+
+    describe 'is_running?' do
+      it { expect(Maestrano::Connector::Rails::Synchronization.new(status: 'RUNNING').is_running?).to be(true) }
+      it { expect(Maestrano::Connector::Rails::Synchronization.new(status: 'ERROR').is_running?).to be(false) }
+    end
+
+    describe 'set_success' do
+      let(:sync) { create(:synchronization, status: 'RUNNING') }
+
+      it 'set the synchronization status to success' do
+        sync.set_success
+        sync.reload
+        expect(sync.status).to eql('SUCCESS')
+      end
+    end
+
+    describe 'set_error' do
+      let(:sync) { create(:synchronization, status: 'RUNNING') }
+
+      it 'set the synchronization status to error with the message' do
+        sync.set_error('msg')
+        sync.reload
+        expect(sync.status).to eql('ERROR')
+        expect(sync.message).to eql('msg')
+      end
+    end
+
+    describe 'set_partial' do
+      let(:sync) { create(:synchronization, partial: false) }
+
+      it 'set the synchronization status to error with the message' do
+        sync.set_partial
+        sync.reload
+        expect(sync.partial).to be(true)
+      end
+    end
+  end
 end
