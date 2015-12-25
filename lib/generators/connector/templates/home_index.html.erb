@@ -21,15 +21,21 @@ can be displayed on the home page -->
     <h2>Last synchronization</h2>
     <% if @synchronizations.first %>
       <%= "#{@synchronizations.first.updated_at} #{@synchronizations.first.status}" %>
-      <%= @synchronizations.first.message if @synchronizations.first.status == 'ERROR' %>
+      <% if @synchronizations.first.is_error? %>
+        <%= @synchronizations.first.message %>
+      <% elsif @synchronizations.first.is_success? && @synchronizations.first.partial? %>
+        Partial synchronization
+      <% end %>
     <% end %>
 
     <h2>Synchronizations history</h2>
     <% @synchronizations.each do |sync| %>
       <%= sync.updated_at %>
       <%= sync.status %>
-      <% if sync.status == 'ERROR' %>
+      <% if sync.is_error %>
         <%= sync.message %>
+      <% elsif sync.is_success? && sync.partial? %>
+        Partial synchronization
       <% end %>
     <% end %>
   <% end %>
