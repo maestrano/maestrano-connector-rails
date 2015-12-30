@@ -10,10 +10,6 @@
 #     'person'
 #   end
 
-#   def mapper_classes
-#     [Enities::SubEntities::ContactMapper, SubComplexEntities::LeadMapper]
-#   end
-
 #   def map_to(name, entity, organization)
 #     case name
 #     when 'lead'

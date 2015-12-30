@@ -11,10 +11,6 @@ describe Maestrano::Connector::Rails::SubEntityBase do
     it { expect{ subject.entity_name }.to raise_error('Not implemented') }
   end
 
-  describe 'mapper_classes' do
-    it { expect{ subject.mapper_classes }.to raise_error('Not implemented') }
-  end
-
   describe 'map_to' do
     it { expect{ subject.map_to('name', {}, nil) }.to raise_error('Not implemented') }
   end

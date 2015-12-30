@@ -6,7 +6,7 @@ module Connector
       def copy_example_files
         copy_file 'complex_entity_example/contact_and_lead.rb', 'app/models/entities/example_contact_and_lead.rb'
 
-        copy_file 'complex_entity_example/contact.rb', 'app/models/entities/subentities/example_contact.rb'
+        copy_file 'complex_entity_example/contact.rb', 'app/models/entities/sub_entities/example_contact.rb'
         copy_file 'complex_entity_example/contact_mapper.rb', 'app/models/entities/sub_entities/example_contact_mapper.rb'
 
         copy_file 'complex_entity_example/lead.rb', 'app/models/entities/sub_entities/example_lead.rb'

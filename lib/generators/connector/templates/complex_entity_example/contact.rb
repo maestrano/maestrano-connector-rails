@@ -11,10 +11,6 @@
 #     'contact'
 #   end
 
-#   def mapper_classes
-#     [Entities::SubEntities::ContactMapper]
-#   end
-
 #   def map_to(name, entity, organization)
 #     case name
 #     when 'person'

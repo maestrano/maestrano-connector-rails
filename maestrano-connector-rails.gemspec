@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.require_paths = ["lib"]
   s.authors = ["Pierre Berard"]
-  s.date = "2015-12-17"
+  s.date = "2015-12-30"
   s.description = "Maestrano is the next generation marketplace for SME applications. See https://maestrano.com for details."
   s.email = "pierre.berard@maestrano.com"
   s.executables = ["rails"]
@@ -43,7 +43,7 @@ Gem::Specification.new do |s|
     "app/models/maestrano/connector/rails/external.rb",
     "app/models/maestrano/connector/rails/id_map.rb",
     "app/models/maestrano/connector/rails/organization.rb",
-    "app/models/maestrano/connector/rails/sub_complex_entity_base.rb",
+    "app/models/maestrano/connector/rails/sub_entity_base.rb",
     "app/models/maestrano/connector/rails/synchronization.rb",
     "app/models/maestrano/connector/rails/user.rb",
     "app/models/maestrano/connector/rails/user_organization_rel.rb",
@@ -143,7 +143,7 @@ Gem::Specification.new do |s|
     "spec/models/external_spec.rb",
     "spec/models/id_map_spec.rb",
     "spec/models/organizaztion_spec.rb",
-    "spec/models/sub_compex_entity_base_spec.rb",
+    "spec/models/sub_entity_base_spec.rb",
     "spec/models/synchronization_spec.rb",
     "spec/models/user_organization_rel_spec.rb",
     "spec/models/user_spec.rb",
@@ -151,7 +151,7 @@ Gem::Specification.new do |s|
   ]
   s.homepage = "http://github.com/maestrano/maestrano-connector-rails"
   s.licenses = ["MIT"]
-  s.rubygems_version = "2.4.8"
+  s.rubygems_version = "2.4.3"
   s.summary = "Rails framework to build connector with Maestrano"
 
   if s.respond_to? :specification_version then

@@ -17,7 +17,7 @@
 #   end
 # end
 
-# class ExampleEntityMapper < Maestrano::Connector::Rails::GenericMapper
+# class ExampleEntityMapper
 #   extend HashMapper
 
 #   map from('/title'), to('/Salutation')

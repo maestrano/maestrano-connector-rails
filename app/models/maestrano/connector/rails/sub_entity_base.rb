@@ -9,10 +9,6 @@ module Maestrano::Connector::Rails
       raise "Not implemented"
     end
 
-    def mapper_classes
-      raise "Not implemented"
-    end
-
     def map_to(name, entity, organization)
       raise "Not implemented"
     end
