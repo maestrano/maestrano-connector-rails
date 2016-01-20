@@ -1,7 +1,7 @@
 module Maestrano::Connector::Rails
   class Organization < ActiveRecord::Base
     # Enable Maestrano for this group
-    maestrano_group_via :provider, :uid do |group, maestrano|
+    maestrano_group_via :provider, :uid, :tenant do |group, maestrano|
       group.name = (maestrano.name.blank? ? "Default Group name" : maestrano.name)
       group.tenant = 'default' # To be set from SSO parameter
       #group.country_alpha2 = maestrano.country

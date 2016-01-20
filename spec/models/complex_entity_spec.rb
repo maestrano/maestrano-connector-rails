@@ -73,6 +73,8 @@ describe Maestrano::Connector::Rails::ComplexEntity do
 
   describe 'methods with sub complex entities' do
     before {
+      module Entities::SubEntities
+      end
       class Entities::SubEntities::ScE1 < Maestrano::Connector::Rails::SubEntityBase
       end
       class Entities::SubEntities::ScE2 < Maestrano::Connector::Rails::SubEntityBase
