@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.require_paths = ["lib"]
   s.authors = ["Pierre Berard"]
-  s.date = "2016-01-20"
+  s.date = "2016-01-21"
   s.description = "Maestrano is the next generation marketplace for SME applications. See https://maestrano.com for details."
   s.email = "pierre.berard@maestrano.com"
   s.executables = ["rails"]
@@ -27,11 +27,11 @@ Gem::Specification.new do |s|
     "README.md",
     "Rakefile",
     "VERSION",
-    "app/controllers/maestrano/connector/rails/application_controller.rb",
-    "app/controllers/maestrano/connector/rails/maestrano/account/group_users_controller.rb",
-    "app/controllers/maestrano/connector/rails/maestrano/account/groups_contoller.rb",
-    "app/controllers/maestrano/connector/rails/maestrano/auth/saml_controller.rb",
-    "app/controllers/maestrano/connector/rails/sessions_controller.rb",
+    "app/controllers/maestrano/account/group_users_controller.rb",
+    "app/controllers/maestrano/account/groups_controller.rb",
+    "app/controllers/maestrano/application_controller.rb",
+    "app/controllers/maestrano/auth/saml_controller.rb",
+    "app/controllers/maestrano/sessions_controller.rb",
     "app/helpers/maestrano/connector/rails/session_helper.rb",
     "app/jobs/maestrano/connector/rails/synchronization_job.rb",
     "app/models/maestrano/connector/rails/complex_entity.rb",
@@ -155,7 +155,7 @@ Gem::Specification.new do |s|
     s.specification_version = 4
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
-      s.add_runtime_dependency(%q<maestrano-rails>, ["~> 0.13.0"])
+      s.add_runtime_dependency(%q<maestrano-rails>, ["~> 0.14.0"])
       s.add_runtime_dependency(%q<hash_mapper>, ["~> 0.2.1"])
       s.add_development_dependency(%q<shoulda>, [">= 0"])
       s.add_development_dependency(%q<rdoc>, ["~> 3.12"])
@@ -167,7 +167,7 @@ Gem::Specification.new do |s|
       s.add_development_dependency(%q<sqlite3>, [">= 0"])
       s.add_development_dependency(%q<shoulda-matchers>, [">= 0"])
     else
-      s.add_dependency(%q<maestrano-rails>, ["~> 0.13.0"])
+      s.add_dependency(%q<maestrano-rails>, ["~> 0.14.0"])
       s.add_dependency(%q<hash_mapper>, ["~> 0.2.1"])
       s.add_dependency(%q<shoulda>, [">= 0"])
       s.add_dependency(%q<rdoc>, ["~> 3.12"])
@@ -180,7 +180,7 @@ Gem::Specification.new do |s|
       s.add_dependency(%q<shoulda-matchers>, [">= 0"])
     end
   else
-    s.add_dependency(%q<maestrano-rails>, ["~> 0.13.0"])
+    s.add_dependency(%q<maestrano-rails>, ["~> 0.14.0"])
     s.add_dependency(%q<hash_mapper>, ["~> 0.2.1"])
     s.add_dependency(%q<shoulda>, [">= 0"])
     s.add_dependency(%q<rdoc>, ["~> 3.12"])
