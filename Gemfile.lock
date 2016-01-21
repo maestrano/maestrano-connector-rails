@@ -94,16 +94,16 @@ GEM
       nokogiri (>= 1.5.9)
     macaddr (1.7.1)
       systemu (~> 2.6.2)
-    maestrano (0.12.1)
+    maestrano (0.12.2)
       httparty (~> 0.13)
       json (~> 1.8)
       mime-types (~> 1.25)
       nokogiri (>= 1.5.0)
       rest-client (~> 1.4)
       uuid (~> 2.3)
-    maestrano-rails (0.13.0)
+    maestrano-rails (0.14.0)
       jquery-rails
-      maestrano (~> 0.12.1)
+      maestrano (~> 0.12.2)
       rails
     mail (2.6.3)
       mime-types (>= 1.16, < 3)
@@ -114,7 +114,7 @@ GEM
     multi_xml (0.5.5)
     multipart-post (2.0.0)
     netrc (0.11.0)
-    nokogiri (1.6.7.1)
+    nokogiri (1.6.7.2)
       mini_portile2 (~> 2.0.0.rc2)
     oauth2 (1.0.0)
       faraday (>= 0.8, < 0.10)
@@ -211,7 +211,7 @@ DEPENDENCIES
   factory_girl_rails
   hash_mapper (~> 0.2.1)
   jeweler (~> 2.0.1)
-  maestrano-rails (~> 0.13.0)
+  maestrano-rails (~> 0.14.0)
   rdoc (~> 3.12)
   rspec-rails
   shoulda
