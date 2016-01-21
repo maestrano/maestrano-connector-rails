@@ -1,4 +1,4 @@
-module Maestrano::Connector::Rails
+module Maestrano
   class SessionsController < ApplicationController
     # Logout
     def destroy
@@ -6,6 +6,7 @@ module Maestrano::Connector::Rails
       session.delete(:"role_#{session[:org_uid]}")
       session.delete(:org_uid)
       session.delete(:tenant)
+      session.delete(:current_user_id)
       @current_user = nil
 
       redirect_to root_url

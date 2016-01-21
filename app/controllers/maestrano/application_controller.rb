@@ -1,4 +1,4 @@
-module Maestrano::Connector::Rails
+module Maestrano
   class ApplicationController < ActionController::Base
     include SessionHelper
 
