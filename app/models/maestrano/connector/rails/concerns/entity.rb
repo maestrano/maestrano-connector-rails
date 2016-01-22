@@ -35,14 +35,17 @@ module Maestrano::Connector::Rails::Concerns::Entity
 
     # Fetch first page
     if last_synchronization.blank? || opts[:full_sync]
+      Maestrano::Connector::Rails::ConnectorLogger.log('debug', organization, "entity=#{self.connec_entity_name}, fetching all data")
       response = client.get("/#{self.connec_entity_name.downcase.pluralize}")
     else
+      Maestrano::Connector::Rails::ConnectorLogger.log('debug', organization, "entity=#{self.connec_entity_name}, fetching data since #{last_synchronization.updated_at.iso8601}")
       query_param = URI.encode("$filter=updated_at gt '#{last_synchronization.updated_at.iso8601}'")
       response = client.get("/#{self.connec_entity_name.downcase.pluralize}?#{query_param}")
     end
     raise "No data received from Connec! when trying to fetch #{self.connec_entity_name.pluralize}" unless response
 
     response_hash = JSON.parse(response.body)
+    Maestrano::Connector::Rails::ConnectorLogger.log('debug', organization, "received first page entity=#{self.connec_entity_name}, response=#{response.body}")
     if response_hash["#{self.connec_entity_name.downcase.pluralize}"]
       entities << response_hash["#{self.connec_entity_name.downcase.pluralize}"]
     else
@@ -56,6 +59,8 @@ module Maestrano::Connector::Rails::Concerns::Entity
       response = client.get(next_page)
 
       raise "No data received from Connec! when trying to fetch subsequent page of #{self.connec_entity_name.pluralize}" unless response
+      Maestrano::Connector::Rails::ConnectorLogger.log('debug', organization, "received next page entity=#{self.connec_entity_name}, response=#{response.body}")
+
       response_hash = JSON.parse(response.body)
       if response_hash["#{self.connec_entity_name.downcase.pluralize}"]
         entities << response_hash["#{self.connec_entity_name.downcase.pluralize}"]
