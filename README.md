@@ -29,7 +29,7 @@ Before integrating with us you will need an Connec!™ API ID and Connec!™ API
 ## Getting Started
 Create a new rails application using the connector template
 ```console
-rails new <project_name> -m https://raw.githubusercontent.com/Berardpi/maestrano-connector-template/master/maestrano-connector-template.rb
+rails new <project_name> -m https://raw.githubusercontent.com/Berardpi/maestrano-connector-rails/master/template/maestrano-connector-template.rb
 ```
 
 If and only if you have an error in the template's rails generate step, you'll need to re-run the following command in your project folder:
