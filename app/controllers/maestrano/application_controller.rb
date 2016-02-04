@@ -1,6 +1,6 @@
 module Maestrano
   class ApplicationController < ActionController::Base
-    include SessionHelper
+    include Maestrano::Connector::Rails::SessionHelper
 
     protect_from_forgery with: :exception
   end
