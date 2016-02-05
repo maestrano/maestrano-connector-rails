@@ -1,5 +1,7 @@
 module Maestrano::Connector::Rails
   class Synchronization < ActiveRecord::Base
+    self.table_name = "maestrano_connector_rails_synchronizations"
+
     #===================================
     # Associations
     #===================================

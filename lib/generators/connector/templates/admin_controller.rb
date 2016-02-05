@@ -35,7 +35,7 @@ class AdminController < ApplicationController
 
   def synchronize
     if is_admin
-      Delayed::Job.enqueue Maestrano::Connector::Rails::SynchronizationJob.new(current_organization, params['opts'] || {})
+      Maestrano::Connector::Rails::SynchronizationJob.perform_later(current_organization, params['opts'] || {})
     end
 
     redirect_to root_path
