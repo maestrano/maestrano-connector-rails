@@ -27,13 +27,13 @@ and functions available on the admin panel -->
     </ul>
 
     <h3>Synchronized entities</h3>
-    <p>You can customize which entities are synchronized by the connector.</p>
+    <p>You can customize which entities are synchronized by the connector</p>
     <%= form_tag admin_update_path(id: @organization.id), method: :put do %>
       <% @organization.synchronized_entities.each do |k, v| %>
           <label for="<%= k %>">#{k.to_s.humanize}</label>
           <input checked="<%= v %>" id="<%= k %>" name="<%= k %>" type="checkbox"></input>
           <% if v  && @organization.oauth_uid %>
-            <%= link_to "Force a synchronization for #{k.to_s.pluralize} only", admin_synchronize_path(opts: {only_entities: [k.to_s]}), method: :post %>
+            <%= link_to "Force a synchronization for #{k.to_s.humanize.pluralize} only", admin_synchronize_path(opts: {only_entities: [k.to_s]}), method: :post %>
           <% end %>
       <% end %>
       <%= submit_tag :Update%>
