@@ -14,7 +14,7 @@ class Maestrano::ConnecController < Maestrano::Rails::WebHookController
 
             external_client = Maestrano::Connector::Rails::External.get_client(organization)
 
-            if organization.synchronized_entities[entity_instance_hash[:name].to_sym]
+            if organization.sync_enabled && organization.synchronized_entities[entity_instance_hash[:name].to_sym]
               # Build expected input for consolidate_and_map_data
               if entity_instance_hash[:is_complex]
                 entity = Hash[ *entity_instance.connec_entities_names.collect{|name| name == entity_name.singularize ? [name, [entity]] : [ name, []]}.flatten(1) ]
