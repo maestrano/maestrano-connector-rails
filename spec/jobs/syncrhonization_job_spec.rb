@@ -3,32 +3,47 @@ require 'spec_helper'
 describe Maestrano::Connector::Rails::SynchronizationJob do
   let(:organization) { create(:organization) }
   subject { Maestrano::Connector::Rails::SynchronizationJob.perform_now(organization, {}) }
-  
+
   describe 'perform' do
-    it 'creates a synchronization' do
-      expect{ subject }.to change{ Maestrano::Connector::Rails::Synchronization.count }.by(1)
+    context 'with sync_enabled set to false' do
+      it 'does not creates a syncrhonization' do
+        expect{ subject }.to change{ Maestrano::Connector::Rails::Synchronization.count }.by(0)
+      end
+
+      it 'does not calls sync entity' do
+        expect_any_instance_of(Maestrano::Connector::Rails::SynchronizationJob).to_not receive(:sync_entity)
+        subject
+      end
     end
 
-    it 'calls sync entity on all the organization synchronized entities set to true' do
-      organization.synchronized_entities[organization.synchronized_entities.keys.first] = false
-      expect_any_instance_of(Maestrano::Connector::Rails::SynchronizationJob).to receive(:sync_entity).exactly(organization.synchronized_entities.count - 1).times
+    context 'with sync_enabled set to true' do
+      before {organization.update(sync_enabled: true)}
 
-      subject
-    end
+      it 'creates a synchronization' do
+        expect{ subject }.to change{ Maestrano::Connector::Rails::Synchronization.count }.by(1)
+      end
 
-    context 'with options' do
-      context 'with only_entities' do
-        subject { Maestrano::Connector::Rails::SynchronizationJob.perform_now(organization, {only_entities: %w(people price)}) }
+      it 'calls sync entity on all the organization synchronized entities set to true' do
+        organization.synchronized_entities[organization.synchronized_entities.keys.first] = false
+        expect_any_instance_of(Maestrano::Connector::Rails::SynchronizationJob).to receive(:sync_entity).exactly(organization.synchronized_entities.count - 1).times
 
-        it 'calls sync entity on the specified entities' do
-          expect_any_instance_of(Maestrano::Connector::Rails::SynchronizationJob).to receive(:sync_entity).twice
+        subject
+      end
 
-          subject
-        end
+      context 'with options' do
+        context 'with only_entities' do
+          subject { Maestrano::Connector::Rails::SynchronizationJob.perform_now(organization, {only_entities: %w(people price)}) }
 
-        it 'set the current syncrhonization as partial' do
-          subject
-          expect(Maestrano::Connector::Rails::Synchronization.last.partial).to be(true)
+          it 'calls sync entity on the specified entities' do
+            expect_any_instance_of(Maestrano::Connector::Rails::SynchronizationJob).to receive(:sync_entity).twice
+
+            subject
+          end
+
+          it 'set the current syncrhonization as partial' do
+            subject
+            expect(Maestrano::Connector::Rails::Synchronization.last.partial).to be(true)
+          end
         end
       end
     end
