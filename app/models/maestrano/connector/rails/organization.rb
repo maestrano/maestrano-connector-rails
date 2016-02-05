@@ -1,6 +1,5 @@
 module Maestrano::Connector::Rails
   class Organization < ActiveRecord::Base
-    self.table_name = "maestrano_connector_rails_organizations"
 
     # Enable Maestrano for this group
     maestrano_group_via :provider, :uid, :tenant do |group, maestrano|
