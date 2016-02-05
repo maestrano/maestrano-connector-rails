@@ -8,6 +8,7 @@ module Maestrano::Connector::Rails
     #  * :full_sync => true  synchronization is performed without date filtering
     #  * :connec_preemption => true|false : preemption is always|never given to connec in case of conflict (if not set, the most recently updated entity is kept)
     def perform(organization, opts)
+      return unless organization.sync_enabled
       ConnectorLogger.log('info', organization, "Start synchronization, opts=#{opts}")
       current_synchronization = Synchronization.create_running(organization)
 

@@ -1,6 +1,7 @@
-class CreateMaestranoConnectorRailsOrganizations < ActiveRecord::Migration
+# This migration comes from maestrano_connector_rails_engine (originally 20151122162414)
+class CreateOrganizations < ActiveRecord::Migration
   def change
-    create_table :maestrano_connector_rails_organizations do |t|
+    create_table :organizations do |t|
       t.string :provider
       t.string :uid
       t.string :name
@@ -16,6 +17,6 @@ class CreateMaestranoConnectorRailsOrganizations < ActiveRecord::Migration
 
       t.timestamps null: false
     end
-    add_index :maestrano_connector_rails_organizations, [:uid, :tenant], name: 'orga_uid_index'
+    add_index :organizations, [:uid, :tenant], name: 'orga_uid_index'
   end
 end
