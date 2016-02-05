@@ -12,6 +12,7 @@
 # It's strongly recommended that you check this file into your version control system.
 
 ActiveRecord::Schema.define(version: 20160204223451) do
+ActiveRecord::Schema.define(version: 20151122163449) do
 
   create_table "id_maps", force: :cascade do |t|
     t.string   "connec_id"
