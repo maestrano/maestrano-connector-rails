@@ -2,32 +2,32 @@ require 'spec_helper'
 
 describe Maestrano::Connector::Rails::SynchronizationJob do
   let(:organization) { create(:organization) }
-  subject { Maestrano::Connector::Rails::SynchronizationJob.new(organization, {}) }
-
+  subject { Maestrano::Connector::Rails::SynchronizationJob.perform_now(organization, {}) }
+  
   describe 'perform' do
     it 'creates a synchronization' do
-      expect{
-        subject.perform
-      }.to change{ Maestrano::Connector::Rails::Synchronization.count }.by(1)
+      expect{ subject }.to change{ Maestrano::Connector::Rails::Synchronization.count }.by(1)
     end
 
     it 'calls sync entity on all the organization synchronized entities set to true' do
       organization.synchronized_entities[organization.synchronized_entities.keys.first] = false
-      expect(subject).to receive(:sync_entity).exactly(organization.synchronized_entities.count - 1).times
-      subject.perform
+      expect_any_instance_of(Maestrano::Connector::Rails::SynchronizationJob).to receive(:sync_entity).exactly(organization.synchronized_entities.count - 1).times
+
+      subject
     end
 
     context 'with options' do
       context 'with only_entities' do
-        subject { Maestrano::Connector::Rails::SynchronizationJob.new(organization, {only_entities: %w(people price)}) }
+        subject { Maestrano::Connector::Rails::SynchronizationJob.perform_now(organization, {only_entities: %w(people price)}) }
 
         it 'calls sync entity on the specified entities' do
-          expect(subject).to receive(:sync_entity).twice
-          subject.perform
+          expect_any_instance_of(Maestrano::Connector::Rails::SynchronizationJob).to receive(:sync_entity).twice
+
+          subject
         end
 
         it 'set the current syncrhonization as partial' do
-          subject.perform
+          subject
           expect(Maestrano::Connector::Rails::Synchronization.last.partial).to be(true)
         end
       end
@@ -40,6 +40,8 @@ describe Maestrano::Connector::Rails::SynchronizationJob do
       class Entities::Person < Maestrano::Connector::Rails::Entity
       end
     }
+
+    subject { Maestrano::Connector::Rails::SynchronizationJob.new }
 
     it 'calls the five methods' do
       expect_any_instance_of(Entities::Person).to receive(:get_connec_entities)

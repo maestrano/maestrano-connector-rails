@@ -1,8 +1,9 @@
 source "http://rubygems.org"
 
 # Add dependencies required to use your gem here.
-gem 'maestrano-rails', '~> 0.14.0'
-gem 'hash_mapper', '~> 0.2.1'
+gem 'maestrano-rails'
+gem 'hash_mapper'
+gem 'sidekiq'
 
 # Add dependencies to develop your gem here.
 group :development do

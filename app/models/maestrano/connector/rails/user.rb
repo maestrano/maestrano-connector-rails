@@ -1,5 +1,7 @@
 module Maestrano::Connector::Rails
   class User < ActiveRecord::Base
+    self.table_name = "maestrano_connector_rails_users"
+
     # Enable Maestrano for this user
     maestrano_user_via :provider, :uid, :tenant do |user, maestrano|
       user.uid = maestrano.uid

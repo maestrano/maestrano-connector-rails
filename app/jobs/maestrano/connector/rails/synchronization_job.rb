@@ -1,12 +1,13 @@
 module Maestrano::Connector::Rails
-  class SynchronizationJob < Struct.new(:organization, :opts)
+  class SynchronizationJob < ::ActiveJob::Base
+    queue_as :default
 
     # Supported options:
     #  * :forced => true  synchronization has been triggered manually (for logging purposes only)
     #  * :only_entities => [person, tasks_list]
     #  * :full_sync => true  synchronization is performed without date filtering
     #  * :connec_preemption => true|false : preemption is always|never given to connec in case of conflict (if not set, the most recently updated entity is kept)
-    def perform
+    def perform(organization, opts)
       ConnectorLogger.log('info', organization, "Start synchronization, opts=#{opts}")
       current_synchronization = Synchronization.create_running(organization)
 
