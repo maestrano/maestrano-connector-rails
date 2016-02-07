@@ -18,6 +18,12 @@ can be displayed on the home page -->
       Linked to external app
     <% end %>
 
+    <% if !@organization.sync_enabled %>
+      Synchronizations are currently disabled. Go to the
+      <%= link_to " admin panel", admin_index_path %>
+      to enable them.
+    <% end %>
+
     <h2>Last synchronization</h2>
     <% if @synchronizations.first %>
       <%= "#{@synchronizations.first.updated_at} #{@synchronizations.first.status}" %>

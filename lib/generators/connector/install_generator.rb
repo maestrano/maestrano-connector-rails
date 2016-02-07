@@ -30,7 +30,8 @@ module Connector
           "get 'home/index' => 'home#index'",
           "get 'admin/index' => 'admin#index'",
           "put 'admin/update' => 'admin#update'",
-          "post 'admin/synchronize' => 'admin#synchronize'"
+          "post 'admin/synchronize' => 'admin#synchronize'",
+          "put 'admin/enable' => 'admin#enable'"
         ]
 
         in_root do
