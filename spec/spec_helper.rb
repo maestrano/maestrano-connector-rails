@@ -4,6 +4,8 @@ require File.expand_path("../dummy/config/environment.rb",  __FILE__)
 require 'rspec/rails'
 require 'factory_girl_rails'
 require 'shoulda/matchers'
+require 'simplecov'
+SimpleCov.start
 
 Rails.backtrace_cleaner.remove_silencers!
 
@@ -16,4 +18,5 @@ RSpec.configure do |config|
   config.infer_base_class_for_anonymous_controllers = false
   config.order = "random"
   config.include FactoryGirl::Syntax::Methods
+  config.include Maestrano::Connector::Rails::Engine.routes.url_helpers
 end
