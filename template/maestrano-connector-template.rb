@@ -82,8 +82,6 @@ after_bundle do
   RUBY
   end
 
-  
-  run 'rails g maestrano:initializer'
   run 'rails g connector:install'
   run 'bundle exec figaro install'
   run 'rake railties:install:migrations'
