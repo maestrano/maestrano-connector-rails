@@ -1,5 +1,7 @@
+[ ![Codeship Status for maestrano/maestrano-connector-rails](https://codeship.com/projects/e7990b70-b04d-0133-c4e7-5e399acd7f73/status?branch=master)](https://codeship.com/projects/132645)
+
 <p align="center">
-  <img src="https://raw.github.com/berardpi/maestrano-connector-rails/master/maestrano.png" alt="Maestrano Logo">
+  <img src="https://raw.github.com/maestrano/maestrano-connector-rails/master/maestrano.png" alt="Maestrano Logo">
   <br/>
   <br/>
 </p>
