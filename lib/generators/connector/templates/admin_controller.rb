@@ -45,6 +45,7 @@ class AdminController < ApplicationController
     if is_admin
       current_organization = Maestrano::Connector::Rails::Organization.first
       current_organization.update(sync_enabled: !current_organization.sync_enabled)
+      flash[:notice] = current_organization.sync_enabled ? 'Synchronization enabled' : 'Synchronization disabled'
     end
 
     redirect_to admin_index_path
