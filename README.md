@@ -27,7 +27,7 @@ Maestrano Connector Integration is currently in closed beta. Want to know more? 
 Before integrating with us you will need an Connec!™ API ID and Connec!™ API Key. You'll also need to have the connector application created on Maestrano in order to realize the authentication with Maestrano.
 
 ## Getting Started
-Create a new rails application using the connector template
+Create a new rails application using the connector template. The template works with both Ruby 2.2 and jRuby 9.0.4.0, you will be asked which one you want to use.
 ```console
 rails new <project_name> -m https://raw.githubusercontent.com/Berardpi/maestrano-connector-rails/master/template/maestrano-connector-template.rb
 ```
