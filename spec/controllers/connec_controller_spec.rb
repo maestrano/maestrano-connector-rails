@@ -52,6 +52,7 @@ describe Maestrano::ConnecController, type: :controller do
               %w(lead)
             end
           end
+          module Entities::SubEntities end;
           class Entities::SubEntities::Lead < Maestrano::Connector::Rails::SubEntityBase
           end
         }

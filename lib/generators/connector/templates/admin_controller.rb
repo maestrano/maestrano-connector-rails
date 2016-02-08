@@ -41,7 +41,7 @@ class AdminController < ApplicationController
     redirect_to root_path
   end
 
-  def enable
+  def toggle_sync
     if is_admin
       current_organization = Maestrano::Connector::Rails::Organization.first
       current_organization.update(sync_enabled: !current_organization.sync_enabled)
