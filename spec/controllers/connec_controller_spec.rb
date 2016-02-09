@@ -4,10 +4,11 @@ describe Maestrano::ConnecController, type: :controller do
   routes { Maestrano::Connector::Rails::Engine.routes }
 
   describe 'notifications' do
-    let(:notif) { {} }
+    let(:notifications) { {} }
     let(:group_id) { 'cld_333' }
+    let(:params) { {tenant: 'default'}.merge(notifications) }
     let(:entity) { {group_id: group_id, last_name: 'Georges', first_name: 'Teddy'} }
-    subject { post :notifications, tenant: 'default', notification: notif }
+    subject { post :notifications, params }
 
     context 'without authentication' do
       before {
@@ -31,19 +32,19 @@ describe Maestrano::ConnecController, type: :controller do
       end
 
       context "with an unknown entity" do
-        let(:notif) { {people: [entity]} }
+        let(:notifications) { {people: [entity]} }
         before {
           allow(Maestrano::Connector::Rails::Entity).to receive(:entities_list).and_return(%w())
         }
 
         it 'logs a warning' do
-          expect(Rails.logger).to receive(:warn).with('Received notification from Connec! for unknow entity: people')
+          expect(Rails.logger).to receive(:info).with('Received notification from Connec! for unknow entity: people')
           subject
         end
       end
 
       context "with a known complex entity" do
-        let(:notif) { {lead: [entity]} }
+        let(:notifications) { {lead: [entity]} }
 
         before {
           allow(Maestrano::Connector::Rails::Entity).to receive(:entities_list).and_return(%w(contact_and_lead))
@@ -77,7 +78,7 @@ describe Maestrano::ConnecController, type: :controller do
       end
 
       context "with a known non complex entity" do
-        let(:notif) { {people: [entity]} }
+        let(:notifications) { {people: [entity]} }
 
         before {
           allow(Maestrano::Connector::Rails::Entity).to receive(:entities_list).and_return(%w(person))

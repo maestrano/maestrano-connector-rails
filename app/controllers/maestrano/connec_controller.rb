@@ -4,7 +4,7 @@ class Maestrano::ConnecController < Maestrano::Rails::WebHookController
     Rails.logger.debug "Received notification from Connec!: #{params}"
 
     begin
-      params['notification'].each do |entity_name, entities|
+      params.except(:tenant, :controller, :action).each do |entity_name, entities|
         if entity_instance_hash = find_entity_instance(entity_name)
           entity_instance = entity_instance_hash[:instance]
 
@@ -31,7 +31,7 @@ class Maestrano::ConnecController < Maestrano::Rails::WebHookController
             end
           end
         else
-          Rails.logger.warn "Received notification from Connec! for unknow entity: #{entity_name}"
+          Rails.logger.info "Received notification from Connec! for unknow entity: #{entity_name}"
         end
       end
     rescue => e
