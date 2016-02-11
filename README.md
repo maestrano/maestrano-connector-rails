@@ -132,7 +132,7 @@ Maestrano::Connector::Rails::AllSynchronizationsJob
 
 The synchronization of a specific organization can be performed by executing
 ```ruby
-Maestrano::Connector::Rails::SynchronizationJob.perform_later(o, {})
+Maestrano::Connector::Rails::SynchronizationJob.perform_later(organization, {})
 ```
 
 ## Pages controllers and views
