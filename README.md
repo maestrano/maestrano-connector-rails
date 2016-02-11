@@ -124,6 +124,17 @@ def map_to_connec(entity, organization)
 end
 ```
 
+### Triggering synchronizations
+Performing the synchronization of all the linked organizations can be triggered by executing
+```ruby
+Maestrano::Connector::Rails::AllSynchronizationsJob
+```
+
+The synchronization of a specific organization can be performed by executing
+```ruby
+Maestrano::Connector::Rails::SynchronizationJob.perform_later(o, {})
+```
+
 ## Pages controllers and views
 
 The home and admin pages views and controllers are provided as example, but you are free to customize them and the styling is left for you to do.
