@@ -8,6 +8,7 @@ class CreateOrganizations < ActiveRecord::Migration
 
       t.string :oauth_provider
       t.string :oauth_uid
+      t.string :oauth_name
       t.string :oauth_token
       t.string :refresh_token
       t.string :instance_url

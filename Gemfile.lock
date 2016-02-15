@@ -94,16 +94,16 @@ GEM
       nokogiri (>= 1.5.9)
     macaddr (1.7.1)
       systemu (~> 2.6.2)
-    maestrano (0.12.2)
+    maestrano (0.12.3)
       httparty (~> 0.13)
       json (~> 1.8)
       mime-types (~> 1.25)
       nokogiri (>= 1.5.0)
       rest-client (~> 1.4)
       uuid (~> 2.3)
-    maestrano-rails (0.14.0)
+    maestrano-rails (0.15.0)
       jquery-rails
-      maestrano (~> 0.12.2)
+      maestrano
       rails
     mail (2.6.3)
       mime-types (>= 1.16, < 3)
