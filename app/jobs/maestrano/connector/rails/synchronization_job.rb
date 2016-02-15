@@ -12,7 +12,7 @@ module Maestrano::Connector::Rails
 
       # Check if previous synchronization is still running
       previous_synchronization = Synchronization.where(organization_id: organization.id).order(created_at: :desc).first
-      if previous_synchronization && previous_synchronization.status == 'RUNNING'
+      if previous_synchronization && previous_synchronization.status == 'RUNNING' && previous_synchronization.created_at > (Time.now - 30.minutes)
         ConnectorLogger.log('info', organization, "Previous synchronization is still running")
         return
       end
