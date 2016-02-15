@@ -128,11 +128,11 @@ describe Maestrano::Connector::Rails::Entity do
         let(:id) { 'ab12-34re' }
 
         it 'create or update the entities and idmaps according to their idmap state' do
-          allow(subject).to receive(:create_entity_to_connec).and_return({'id' => id})
+          allow(subject).to receive(:create_connec_entity).and_return({'id' => id})
           allow(subject).to receive(:external_entity_name).and_return(external_name)
 
-          expect(subject).to receive(:create_entity_to_connec).with(client, entity2, connec_name, organization)
-          expect(subject).to receive(:update_entity_to_connec).with(client, entity1, idmap1.connec_id, connec_name, organization)
+          expect(subject).to receive(:create_connec_entity).with(client, entity2, connec_name, organization)
+          expect(subject).to receive(:update_connec_entity).with(client, entity1, idmap1.connec_id, connec_name, organization)
           old_push_date = idmap1.last_push_to_connec
 
           subject.push_entities_to_connec_to(client, entities_with_idmaps, connec_name, organization)
@@ -146,7 +146,7 @@ describe Maestrano::Connector::Rails::Entity do
         end
       end
 
-      describe 'create_entity_to_connec' do
+      describe 'create_connec_entity' do
         let(:entity) { {name: 'John'} }
 
         describe 'with a response' do
@@ -156,11 +156,11 @@ describe Maestrano::Connector::Rails::Entity do
 
           it 'sends a post to connec' do
             expect(client).to receive(:post).with("/#{connec_name.pluralize}", {"#{connec_name.pluralize}".to_sym => entity})
-            subject.create_entity_to_connec(client, entity, connec_name, organization)
+            subject.create_connec_entity(client, entity, connec_name, organization)
           end
 
           it 'returns the created entity' do
-            expect(subject.create_entity_to_connec(client, entity, connec_name, organization)).to eql(JSON.parse(entity.to_json))
+            expect(subject.create_connec_entity(client, entity, connec_name, organization)).to eql(JSON.parse(entity.to_json))
           end
         end
 
@@ -168,11 +168,11 @@ describe Maestrano::Connector::Rails::Entity do
           before {
             allow(client).to receive(:post).and_return(nil)
           }
-          it { expect{ subject.create_entity_to_connec(client, entity, connec_name, organization) }.to raise_error("No response received from Connec! when trying to create a #{connec_name}") }
+          it { expect{ subject.create_connec_entity(client, entity, connec_name, organization) }.to raise_error("No response received from Connec! when trying to create a #{connec_name}") }
         end
       end
 
-       describe 'update_entity_to_connec' do
+       describe 'update_connec_entity' do
         let(:organization) { create(:organization) }
         let(:entity) { {name: 'John'} }
         let(:id) { '88ye-777ab' }
@@ -184,7 +184,7 @@ describe Maestrano::Connector::Rails::Entity do
 
           it 'sends a put to connec' do
             expect(client).to receive(:put).with("/#{connec_name.pluralize}/#{id}", {"#{connec_name.pluralize}".to_sym => entity})
-            subject.update_entity_to_connec(client, entity, id, connec_name, organization)
+            subject.update_connec_entity(client, entity, id, connec_name, organization)
           end
         end
 
@@ -192,7 +192,7 @@ describe Maestrano::Connector::Rails::Entity do
           before {
             allow(client).to receive(:put).and_return(nil)
           }
-          it { expect{ subject.update_entity_to_connec(client, entity, id, connec_name, organization) }.to raise_error("No response received from Connec! when trying to update a #{connec_name}") }
+          it { expect{ subject.update_connec_entity(client, entity, id, connec_name, organization) }.to raise_error("No response received from Connec! when trying to update a #{connec_name}") }
         end
       end
 
@@ -273,13 +273,13 @@ describe Maestrano::Connector::Rails::Entity do
 
       describe 'push_entity_to_external' do
         context 'when the entity idmap has an external id' do
-          it 'calls update_entity_to_external' do
-            expect(subject).to receive(:update_entity_to_external).with(nil, entity1, idmap1.external_id, external_name, organization)
+          it 'calls update_external_entity' do
+            expect(subject).to receive(:update_external_entity).with(nil, entity1, idmap1.external_id, external_name, organization)
             subject.push_entity_to_external(nil, entity_with_idmap1, external_name, organization)
           end
 
           it 'updates the idmap last push to external' do
-            allow(subject).to receive(:update_entity_to_external)
+            allow(subject).to receive(:update_external_entity)
             time_before = idmap1.last_push_to_external
             subject.push_entity_to_external(nil, entity_with_idmap1, external_name, organization)
             idmap1.reload
@@ -288,13 +288,13 @@ describe Maestrano::Connector::Rails::Entity do
         end
 
         context 'when the entity idmap does not have an external id' do
-          it 'calls create_entity_to_external' do
-            expect(subject).to receive(:create_entity_to_external).with(nil, entity2, external_name, organization)
+          it 'calls create_external_entity' do
+            expect(subject).to receive(:create_external_entity).with(nil, entity2, external_name, organization)
             subject.push_entity_to_external(nil, entity_with_idmap2, external_name, organization)
           end
 
           it 'updates the idmap external id, entity and last push' do
-            allow(subject).to receive(:create_entity_to_external).and_return('999111')
+            allow(subject).to receive(:create_external_entity).and_return('999111')
             subject.push_entity_to_external(nil, entity_with_idmap2, external_name, organization)
             idmap2.reload
             expect(idmap2.external_id).to eql('999111')
@@ -304,16 +304,16 @@ describe Maestrano::Connector::Rails::Entity do
         end
       end
 
-      describe 'create_entity_to_external' do
+      describe 'create_external_entity' do
         let(:organization) { create(:organization) }
 
-        it { expect{ subject.create_entity_to_external(nil, nil, nil, organization) }.to raise_error('Not implemented') }
+        it { expect{ subject.create_external_entity(nil, nil, nil, organization) }.to raise_error('Not implemented') }
       end
 
-      describe 'update_entity_to_external' do
+      describe 'update_external_entity' do
         let(:organization) { create(:organization) }
 
-        it { expect{ subject.update_entity_to_external(nil, nil, nil, nil, organization) }.to raise_error('Not implemented') }
+        it { expect{ subject.update_external_entity(nil, nil, nil, nil, organization) }.to raise_error('Not implemented') }
       end
 
       describe 'get_id_from_external_entity_hash' do
