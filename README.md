@@ -23,6 +23,7 @@ Maestrano Connector Integration is currently in closed beta. Want to know more? 
   * [Mapping entities](#mapping-entities)
 4. [Pages controllers and views](#pages-controllers-and-views)
 5. [Complex entities](#complex-entities)
+6. [Webhooks](#Webhooks)
 
 - - -
 
@@ -150,5 +151,19 @@ rails g connector:complex_entity
 This will generate some example files demonstrating a one-to-many correspondance between Connec!™ person and external contact and lead data models.
 
 The complex entities workflow uses two methods to pre-process data which you have to implements for each complex entity (see contact_and_lead.rb). They are called before the mapping step, and you can use them to perform any data model specific operations.
+
+## Webhooks
+
+Connec!™ issues webhooks each time an entity is created or updated. This allows real time integration from Connec!™ to the application you're integrating with. All you have to do is subscribe to the webhooks on the entities your interested in (in your Maestrano.rb file), everything else is magically handled by the gem.
+
+If the application you're integrating with support webhooks, you can and should use them to allow a full real time integration. The gem provide a job to help you do that. It will perform the necessary checks, mappings and then push the entities to Connec!™. All you have to do is build a controller and config the necessary routes to catch the webhook, and call this job. For example:
+```ruby
+class ExternalWebhooksController < ApplicationController
+  def notification
+    organization = # find organization from webhook params
+    Maestrano::Connector::Rails::PushToConnecJob.perform_later(organization, params[:notif][:name], parmas[:notif][:objects])
+  end
+end
+```
 
 If you have questions, please contact the technical team <developers@maestrano.com>.
