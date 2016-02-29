@@ -7,7 +7,7 @@
   <br/>
 </p>
 
-Maestrano Connector Engine to implements data syncrhonization between an external application API and Connec!.
+Maestrano Connector is a Rails Engine that bootstraps the implementation of data syncrhonization between an external application API and the Maestrano ecosystem.
 
 Maestrano Connector Integration is currently in closed beta. Want to know more? Send us an email to <contact@maestrano.com>.
 
@@ -27,19 +27,18 @@ Maestrano Connector Integration is currently in closed beta. Want to know more? 
 - - -
 
 ## Getting Setup
-Before integrating with us you will need an Connec!™ API ID and Connec!™ API Key. You'll also need to have the connector application created on Maestrano in order to realize the authentication with Maestrano.
+Before integrating with us you will need to have your application registered on the Maestrano platform. Please refer to the online documentation we provide: https://maestrano.atlassian.net/wiki/display/CONNECAPIV2/Maestrano+Developers
 
 ## Getting Started
 Create a new rails application using the connector template
 ```console
-rails new <project_name> -m https://raw.githubusercontent.com/Berardpi/maestrano-connector-rails/master/template/maestrano-connector-template.rb
+rails new <project_name> -m https://raw.githubusercontent.com/Maestrano/maestrano-connector-rails/master/template/maestrano-connector-template.rb
 ```
 
 If and only if you have an error in the template's rails generate step, you'll need to re-run the following command in your project folder:
 ```console
 bundle
 rails g connector:install
-rails g delayed_job:active_record
 rake db:migrate
 ```
 
@@ -51,17 +50,18 @@ connec_api_id: 'API_ID'
 connec_api_key: 'API_KEY'
 ```
 
-The only other thing you need to do is to set your configuration in config/initializers/maestrano.rb. The one line you need to look for and change is:
+The next thing you need to do is to set your configuration in config/initializers/maestrano.rb. You will need to define where your application will be publicly hosted:
 ```ruby
 config.app.host = 'http://path_to_app'
 ```
 The rest of the config has default values, so you can take a look but you don't really need to change anything else.
+For a more detailed configuration, please refer to https://github.com/maestrano/maestrano-ruby#configuration
 
-Please note that the connectors support multi-tenancy, so you may have to set up configuration for tenant other than Maestrano (the default one).
+Please note that the connectors support multi-tenancy, so you may have to set up configuration for tenants other than the Maestrano platform (the default one).
 
-Those configuration are automatically retrieve by Maestrano via a metadata endpoint that is provided by the gem, so you're all setup as it is.
+These configuration are automatically retrieved by Maestrano via a metadata endpoint that is provided by the gem, so you're all setup as it is.
 
-Time to test! If your launch your application (please make sure that you launch the application on the same path as the one in the config file). If you click on the 'Link your Maestrano account' link on your connector home page, you should be able to do a full sso process with Maestrano.
+Time to test! If your launch your application (please make sure that you launch the application on the same path as the one in the config file). If you click on the 'Link your Maestrano account' link on your connector home page, you should be able to do a full SSO process with Maestrano.
 
 ### Integration with the external application
 
@@ -75,13 +75,13 @@ If all went well, you should now be able to use the 'Link this company to...' li
 
 ## Preparing synchronizations
 
-The aim of the connector is to perform synchronizations between Connec!™ and the external application, meaning fetching data on both ends, process them, and push the result to the relevant end. The Connec!™ part and the synchronization process itself is handle by the engine, so all you have to do is to implements some methods to work with the external application.
+The aim of the connector is to perform synchronizations between Connec!™ and the external application, meaning fetching data on both ends, process them, and push the result to the relevant parties. The Connec!™ part and the synchronization process itself is handled by the engine, so all you have to do is to implements some methods to bridge the calls to the external application.
 
-### External.rb
+### external.rb
 
-First file to look for is the external.rb class (in models/maestrano/connector/rails/). It contains two methods that you need to implements:
+First file to look for is `models/maestrano/connector/rails/external.rb`. It contains two methods that you need to implement:
 
-* external_name, which is used fr logging purpose only, and should only return the name of the external application, e.g.
+* external_name, which is used for logging purpose only, and should only return the name of the external application, e.g.
 ```ruby
 def self.external_name
   'This awesome CRM'
@@ -90,23 +90,23 @@ end
 * get_client, which should return either the external application gem api client, or, in the worst case, a custom HTTParty client.
 
 
-### Entity.rb
+### entity.rb
 
-The second important file is the entity.rb class (in the same folder). It contains a method to declare the entity synchronizable by your connector (more on that later), some methods to get and push data to the external application api, and lastly two methods to extract id and update date from the entity format sent by the external application.
+The second important file is `models/maestrano/connector/rails/entity.rb`. It contains a method to declare the entities synchronizable by your connector (more on that later), some methods to retrieve and send data to the external application API, and lastly two methods to extract `id` and `timestamps` from the entity format sent by the external application.
 
 The details of each methods are explained in the entity.rb file provided.
 
 ### Mapping entities
 
-Now that you're all setup with both Connec!™ and the external application, it's time to decide which entities (contacts, accounts, events, ...) you want to synchronize. For each type of entity your connector will synchronize, you will need to create a class that inherits from Maestrano::Connector::Rails::Entity.
+Now that you're all setup with both Connec!™ and the external application, it's time to decide which entities (contacts, accounts, events, ...) you want to synchronize. For each type of entity your connector will synchronize, you will need to create a class that inherits from `Maestrano::Connector::Rails::Entity`.
 
 An example of such a class in provided in the models/entities/ folder, and demonstrates which methods you'll need to implements for each entity. The main thing to do is the mapping between the external entity and the Connec!™ entity. For the mapping, we use the hash_mapper gem (<https://github.com/ismasan/hash_mapper>).
 
-This type of entity class enable 1 to 1 model correspondance. For more complex needs, please refer to the complex entity section below.
+This type of entity class enable one-to-one model correspondance. For more complex needs, please refer to the complex entity section below.
 
 You'll find the connec API documentation here: <http://maestrano.github.io/connec/>, and should also refer to the external application API documentation.
 
-Also don"t forget that each entity your connector synchronize should be declare in the entity.rb class, and, because the synchronizable entities are stored in th db for each organization, you'll need to create a migration for exisiting organization if you add an entity.
+Also don't forget that each entity your connector synchronize should be declared in the entity.rb class, and, because the synchronizable entities are stored in the local database for each organization, you'll need to create a migration for exisiting organization if you add an new entity.
 
 #### Overriding methods
 
@@ -142,11 +142,13 @@ The home and admin pages views and controllers are provided as example, but you 
 
 ## Complex entities
 
-For more complex correspondances, like 1 to many or many to many ones, you can use the complex entity workflow. To see how it works, you can run
+For more complex correspondances, like one-to-many or many-to-many ones, you can use the complex entity workflow. To see how it works, you can run
 ```console
 rails g connector:complex_entity
 ```
 
-This will generate some example files demonstrating a 1 to 2 correspondance between Connec!™ person and external contact and lead data models.
+This will generate some example files demonstrating a one-to-many correspondance between Connec!™ person and external contact and lead data models.
 
 The complex entities workflow uses two methods to pre-process data which you have to implements for each complex entity (see contact_and_lead.rb). They are called before the mapping step, and you can use them to perform any data model specific operations.
+
+If you have questions, please contact the technical team <developers@maestrano.com>.
