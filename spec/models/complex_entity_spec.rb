@@ -29,8 +29,10 @@ describe Maestrano::Connector::Rails::ComplexEntity do
       let(:connec_name) { 'connec_name' }
       let(:external_name) { 'external_name' }
       let(:sub_instance) { Maestrano::Connector::Rails::SubEntityBase.new }
+      let(:human_name) { 'ET' }
       before {
         allow(sub_instance).to receive(:map_to).and_return(mapped_entity)
+        allow(sub_instance).to receive(:object_name_from_connec_entity_hash).and_return(human_name)
       }
 
       context 'when entity has no idmap' do
@@ -185,6 +187,12 @@ describe Maestrano::Connector::Rails::ComplexEntity do
         }
 
         context 'when entities have no idmaps' do
+          let(:human_name) { 'Jabba' }
+          before {
+            allow_any_instance_of(Entities::SubEntities::ScE1).to receive(:object_name_from_external_entity_hash).and_return(human_name)
+            allow_any_instance_of(Entities::SubEntities::ScE2).to receive(:object_name_from_external_entity_hash).and_return(human_name)
+          }
+
           it 'creates an idmap for each entity' do
             expect{
               subject.consolidate_and_map_data({}, external_hash, organization, opt)

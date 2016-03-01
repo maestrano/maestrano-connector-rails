@@ -15,6 +15,15 @@
 #   def mapper_class
 #     ExampleEntityMapper
 #   end
+
+#   def object_name_from_connec_entity_hash(entity)
+#     "#{entity['first_name']} #{entity['last_name']}"
+#   end
+
+#   def object_name_from_external_entity_hash(entity)
+#     "#{entity['FirstName']} #{entity['LastName']}"
+#   end
+
 # end
 
 # class ExampleEntityMapper
