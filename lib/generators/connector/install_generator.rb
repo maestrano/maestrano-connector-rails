@@ -35,13 +35,16 @@ module Connector
 
       def copy_controllers_and_views
         copy_file 'home_controller.rb', 'app/controllers/home_controller.rb'
+        copy_file 'home_controller_spec.rb', 'spec/controllers/home_controller_spec.rb'
         copy_file 'home_index.haml', 'app/views/home/index.html.haml'
 
         copy_file 'synchronizations_controller.rb', 'app/controllers/synchronizations_controller.rb'
-        copy_file 'shared_entities_index.haml', 'app/views/shared_entities/index.html.haml'
+        copy_file 'synchronizations_controller_spec.rb', 'spec/controllers/synchronizations_controller_spec.rb'
+        copy_file 'synchronizations_index.haml', 'app/views/synchronizations/index.html.haml'
 
         copy_file 'shared_entities_controller.rb', 'app/controllers/shared_entities_controller.rb'
-        copy_file 'synchronizations_index.haml', 'app/views/synchronizations/index.html.haml'
+        copy_file 'shared_entities_controller_spec.rb', 'spec/controllers/shared_entities_controller_spec.rb'
+        copy_file 'shared_entities_index.haml', 'app/views/shared_entities/index.html.haml'
 
         copy_file 'layouts.haml', 'app/views/layouts/application.html.haml'
       end
