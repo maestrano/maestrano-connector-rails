@@ -59,6 +59,7 @@ after_bundle do
   remove_dir 'app/mailers'
   remove_dir 'test'
   remove_file 'app/views/layouts/application.html.erb'
+  remove_file 'app/assets/stylesheets/application.css'
   copy_file 'spec_helper.rb', 'spec/spec_helper.rb'
   copy_file 'factories.rb', 'spec/factories.rb'
   copy_file 'routes.rb', 'config/routes.rb'
