@@ -61,18 +61,35 @@ describe Maestrano::Connector::Rails::PushToConnecJob do
     end
 
     describe 'with entities in syncrhonized entities' do
-      before { organization.update(synchronized_entities: {:"#{entity_name1}" => true, :"#{entity_name2}" => true})}
 
-      it 'calls consolidate and map data on the complex entity with the right arguments' do
-        expect_any_instance_of(Entities::Entity2).to receive(:consolidate_and_map_data).with({}, {"sub"=>[entity21], "ll"=>[]}, organization, {})
-        expect_any_instance_of(Entities::Entity2).to receive(:push_entities_to_connec)
-        subject
+      describe 'complex entity' do
+        before { organization.update(synchronized_entities: {:"#{entity_name1}" => false, :"#{entity_name2}" => true})}
+
+        it 'calls consolidate and map data on the complex entity with the right arguments' do
+          expect_any_instance_of(Entities::Entity2).to receive(:consolidate_and_map_data).with({}, {"sub"=>[entity21], "ll"=>[]}, organization, {})
+          expect_any_instance_of(Entities::Entity2).to receive(:push_entities_to_connec)
+          subject
+        end
+
+        it 'does not calls methods on the non complex entity' do
+          expect_any_instance_of(Entities::Entity1).to_not receive(:consolidate_and_map_data)
+          subject
+        end
       end
 
-      it 'calls consolidate_and_map_data on the non complex entity with the right arguments' do
-        expect_any_instance_of(Entities::Entity1).to receive(:consolidate_and_map_data).with([], [entity11, entity12], organization, {})
-        expect_any_instance_of(Entities::Entity1).to receive(:push_entities_to_connec)
-        subject
+      describe 'non complex entity' do
+        before { organization.update(synchronized_entities: {:"#{entity_name1}" => true, :"#{entity_name2}" => false})}
+
+        it 'calls consolidate_and_map_data on the non complex entity with the right arguments' do
+          expect_any_instance_of(Entities::Entity1).to receive(:consolidate_and_map_data).with([], [entity11, entity12], organization, {})
+          expect_any_instance_of(Entities::Entity1).to receive(:push_entities_to_connec)
+          subject
+        end
+
+        it 'does not calls methods on the complex entity' do
+          expect_any_instance_of(Entities::Entity2).to_not receive(:consolidate_and_map_data)
+          subject
+        end
       end
     end
   end
