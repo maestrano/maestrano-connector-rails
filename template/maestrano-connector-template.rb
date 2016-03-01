@@ -3,7 +3,7 @@ def current_directory
       if __FILE__ =~ %r{\Ahttps?://}
         tempdir = Dir.mktmpdir("maestrano-connector-rails-")
         at_exit { FileUtils.remove_entry(tempdir) }
-        git :clone => "--quiet https://github.com/maestrano/maestrano-connector-rails.git #{tempdir}"
+        git :clone => "--quiet https://github.com/berardpi/maestrano-connector-rails/tree/include-frontend #{tempdir}"
 
         "#{tempdir}/template"
       else
@@ -37,7 +37,6 @@ gem 'figaro'
 gem 'tzinfo-data', platforms: [:mingw, :mswin, :jruby]
 
 gem 'maestrano-connector-rails'
-gem 'delayed_job_active_record'
 
 gem 'sqlite3'
 
@@ -59,6 +58,7 @@ copy_file 'gitignore', '.gitignore'
 after_bundle do
   remove_dir 'app/mailers'
   remove_dir 'test'
+  remove_file 'app/views/layouts/application.html.erb'
   copy_file 'spec_helper.rb', 'spec/spec_helper.rb'
   copy_file 'factories.rb', 'spec/factories.rb'
   copy_file 'routes.rb', 'config/routes.rb'

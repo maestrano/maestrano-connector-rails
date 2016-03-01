@@ -1,0 +1,50 @@
+/ TODO
+/ Replace ApplicationName
+!!!
+%html
+  %head
+    %title ApplicationName Connector for Connec!™
+    = stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track' => true
+    = javascript_include_tag 'application', 'data-turbolinks-track' => true
+    = csrf_meta_tags
+  %body
+    .navbar.navbar-fixed-top.navbar-inverse
+      .container-fluid
+        .collapse.navbar-collapse#maestrano-navbar-collapse
+          %ul.nav.navbar-nav
+            =image_tag "logos/default.png", class: 'external-logo'
+
+          %ul.nav.navbar-nav
+            %li
+              =link_to "Status", root_path
+
+            %li
+              =link_to "History", synchronizations_index_path
+
+            -if is_admin
+              %li
+                =link_to "Mapping", shared_entities_index_path
+
+          -if current_user
+            %ul.nav.navbar-nav.navbar-right
+              %li.dropdown
+                %a{:href=>"#", :class=>"dropdown-toggle", :'data-toggle'=>"dropdown", :role=>"button"}
+                  Hi #{current_user.first_name} #{current_user.last_name}
+
+    .padding-navbar
+
+    .wrapper{style: 'margin-bottom: 15px; '}
+      - if flash.any?
+        - flash.each do |flash_key, message|
+          .alert{:class => "alert-#{flash_key}"}
+            %strong= flash.discard(flash_key)
+
+      = yield
+
+    .footer
+      .container
+        .row
+          .col-xs-12
+            .copyright
+              © Copyright #{Time.now.year} Maestrano Pty Ltd (ABN: 80 152 564 424).
+              All rights reserved. Various trademarks held by their respective owners.
