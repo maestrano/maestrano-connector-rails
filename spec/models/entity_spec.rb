@@ -361,8 +361,8 @@ describe Maestrano::Connector::Rails::Entity do
 
         context 'when entity has no idmap' do
           it 'creates an idmap and returns the mapped entity with its new idmap' do
-            subject.consolidate_and_map_data([], entities, organization)
-            expect(entities).to eql([{entity: mapped_entity, idmap: Maestrano::Connector::Rails::IdMap.last}])
+            mapped_entities = subject.consolidate_and_map_data([], entities, organization)
+            expect(mapped_entities).to eql({connec_entities: [], external_entities: [{entity: mapped_entity, idmap: Maestrano::Connector::Rails::IdMap.last}]})
           end
         end
 
@@ -370,8 +370,8 @@ describe Maestrano::Connector::Rails::Entity do
           let!(:idmap) { create(:idmap, external_entity: external_name, external_id: id, organization: organization, last_push_to_connec: 2.minute.ago) }
 
           it 'discards the entity' do
-            subject.consolidate_and_map_data([], entities, organization)
-            expect(entities).to eql([])
+            mapped_entities = subject.consolidate_and_map_data([], entities, organization)
+            expect(mapped_entities).to eql({connec_entities: [], external_entities: []})
           end
         end
 
@@ -381,8 +381,8 @@ describe Maestrano::Connector::Rails::Entity do
             let!(:idmap) { create(:idmap, external_entity: external_name, external_id: id, organization: organization, last_push_to_connec: 2.day.ago) }
 
             it 'returns the mapped entity with its idmap' do
-              subject.consolidate_and_map_data([], entities, organization)
-              expect(entities).to eql([{entity: mapped_entity, idmap: idmap}])
+              mapped_entities = subject.consolidate_and_map_data([], entities, organization)
+              expect(mapped_entities).to eql({connec_entities: [], external_entities: [{entity: mapped_entity, idmap: idmap}]})
             end
           end
 
@@ -398,16 +398,16 @@ describe Maestrano::Connector::Rails::Entity do
               context 'set to true' do
                 let(:connec_entity) { {'id' => connec_id, 'first_name' => 'Richard', 'updated_at' => 1.day.ago} }
                 it 'discards the entity' do
-                  subject.consolidate_and_map_data([connec_entity], entities, organization, {connec_preemption: true})
-                  expect(entities).to eql([])
+                  mapped_entities = subject.consolidate_and_map_data([connec_entity], entities, organization, {connec_preemption: true})
+                  expect(mapped_entities).to eql({connec_entities: [], external_entities: []})
                 end
               end
 
               context 'set to false' do
                 let(:connec_entity) { {'id' => connec_id, 'first_name' => 'Richard', 'updated_at' => 1.second.ago} }
                 it 'returns the mapped entity with its idmap' do
-                  subject.consolidate_and_map_data([connec_entity], entities, organization, {connec_preemption: false})
-                  expect(entities).to eql([{entity: mapped_entity, idmap: idmap}])
+                  mapped_entities = subject.consolidate_and_map_data([connec_entity], entities, organization, {connec_preemption: false})
+                  expect(mapped_entities).to eql({connec_entities: [], external_entities: [{entity: mapped_entity, idmap: idmap}]})
                 end
               end
             end
@@ -417,8 +417,8 @@ describe Maestrano::Connector::Rails::Entity do
                 let(:connec_entity) { {'id' => connec_id, 'first_name' => 'Richard', 'updated_at' => 1.second.ago} }
 
                 it 'discards the entity' do
-                  subject.consolidate_and_map_data([connec_entity], entities, organization, {connec_preemption: true})
-                  expect(entities).to eql([])
+                  mapped_entities = subject.consolidate_and_map_data([connec_entity], entities, organization, {connec_preemption: true})
+                  expect(mapped_entities).to eql({connec_entities: [], external_entities: []})
                 end
               end
 
@@ -426,8 +426,8 @@ describe Maestrano::Connector::Rails::Entity do
                 let(:connec_entity) { {'id' => connec_id, 'first_name' => 'Richard', 'updated_at' => 1.year.ago} }
 
                 it 'returns the mapped entity with its idmap' do
-                  subject.consolidate_and_map_data([connec_entity], entities, organization, {connec_preemption: false})
-                  expect(entities).to eql([{entity: mapped_entity, idmap: idmap}])
+                  mapped_entities = subject.consolidate_and_map_data([connec_entity], entities, organization, {connec_preemption: false})
+                  expect(mapped_entities).to eql({connec_entities: [], external_entities: [{entity: mapped_entity, idmap: idmap}]})
                 end
               end
             end

@@ -70,7 +70,7 @@ describe Maestrano::ConnecController, type: :controller do
           let!(:organization) { create(:organization, uid: group_id, oauth_uid: 'lala', sync_enabled: true, synchronized_entities: {contact_and_lead: true}) }
 
           it 'process the data and push them' do
-            expect_any_instance_of(Entities::ContactAndLead).to receive(:consolidate_and_map_data).with({"lead"=>[entity]}, {}, organization, {})
+            expect_any_instance_of(Entities::ContactAndLead).to receive(:consolidate_and_map_data).with({"lead"=>[entity]}, {}, organization, {}).and_return({})
             expect_any_instance_of(Entities::ContactAndLead).to receive(:push_entities_to_external)
             subject
           end
@@ -135,7 +135,7 @@ describe Maestrano::ConnecController, type: :controller do
             let!(:organization) { create(:organization, uid: group_id, oauth_uid: 'lala', sync_enabled: true, synchronized_entities: {person: true}) }
 
             it 'process the data and push them' do
-              expect_any_instance_of(Entities::Person).to receive(:consolidate_and_map_data).with([entity], [], organization, {})
+              expect_any_instance_of(Entities::Person).to receive(:consolidate_and_map_data).with([entity], [], organization, {}).and_return({})
               expect_any_instance_of(Entities::Person).to receive(:push_entities_to_external)
               subject
             end
