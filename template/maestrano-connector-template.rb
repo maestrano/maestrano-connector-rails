@@ -3,7 +3,7 @@ def current_directory
       if __FILE__ =~ %r{\Ahttps?://}
         tempdir = Dir.mktmpdir("maestrano-connector-rails-")
         at_exit { FileUtils.remove_entry(tempdir) }
-        git :clone => "--quiet https://github.com/berardpi/maestrano-connector-rails.git #{tempdir}"
+        git :clone => "--quiet https://github.com/maestrano/maestrano-connector-rails.git #{tempdir}"
 
         "#{tempdir}/template"
       else
@@ -61,6 +61,7 @@ after_bundle do
   remove_dir 'test'
   copy_file 'spec_helper.rb', 'spec/spec_helper.rb'
   copy_file 'factories.rb', 'spec/factories.rb'
+  copy_file 'routes.rb', 'config/routes.rb'
 
   application do <<-RUBY
     config.generators do |g|
@@ -71,11 +72,9 @@ after_bundle do
   RUBY
   end
 
-  run 'rails g maestrano:initializer'
   run 'rails g connector:install'
   run 'bundle exec figaro install'
   run 'rake railties:install:migrations'
-  run 'rails g delayed_job:active_record'
   run 'rake db:migrate'
 
   # Init repo and commit
