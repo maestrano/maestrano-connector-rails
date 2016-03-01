@@ -15,15 +15,10 @@
             =image_tag "logos/default.png", class: 'external-logo'
 
           %ul.nav.navbar-nav
-            %li
-              =link_to "Status", root_path
-
-            %li
-              =link_to "History", synchronizations_index_path
-
+            %li=link_to "Status", root_path
+            %li=link_to "History", synchronizations_index_path
             -if is_admin
-              %li
-                =link_to "Mapping", shared_entities_index_path
+              %li=link_to "Mapping", shared_entities_index_path
 
           -if current_user
             %ul.nav.navbar-nav.navbar-right
