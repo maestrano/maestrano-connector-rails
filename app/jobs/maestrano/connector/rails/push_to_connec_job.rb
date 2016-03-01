@@ -14,13 +14,12 @@ module Maestrano::Connector::Rails
           next unless organization.synchronized_entities[entity_instance_hash[:name].to_sym]
 
           if entity_instance_hash[:is_complex]
-            entities = Hash[ *entity_instance.external_entities_names.collect{|name| name == external_entity_name.singularize ? [name, entities] : [ name, []]}.flatten(1) ]
-            entity_instance.consolidate_and_map_data(Hash[ *entity_instance.connec_entities_names.collect{|name| [ name, []]}.flatten(1) ], entities, organization, {})
+            mapped_entities = entity_instance.consolidate_and_map_data(Hash[ *entity_instance.connec_entities_names.collect{|name| [ name, []]}.flatten(1) ], Hash[ *entity_instance.external_entities_names.collect{|name| name == external_entity_name.singularize ? [name, entities] : [ name, []]}.flatten(1) ], organization, {})
           else
-            entity_instance.consolidate_and_map_data([], entities, organization, {})
+            mapped_entities = entity_instance.consolidate_and_map_data([], entities, organization, {})
           end
 
-          entity_instance.push_entities_to_connec(connec_client, entities, organization)
+          entity_instance.push_entities_to_connec(connec_client, mapped_entities[:external_entities], organization)
         else
           Rails.logger.warn "Called push to connec job with unknow entity: #{external_entity_name}"
         end

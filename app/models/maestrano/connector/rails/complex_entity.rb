@@ -28,7 +28,7 @@ module Maestrano::Connector::Rails
     #               external_entities_names[1]: [unmapped_connec_entitiy4]
     #             }
     #          }
-    def connec_model_to_external_model!(connec_hash_of_entities)
+    def connec_model_to_external_model(connec_hash_of_entities)
       raise "Not implemented"
     end
 
@@ -45,7 +45,7 @@ module Maestrano::Connector::Rails
     #               connec_entities_names[0]: [unmapped_external_entity3, unmapped_external_entity4]
     #             }
     #           }
-    def external_model_to_connec_model!(external_hash_of_entities)
+    def external_model_to_connec_model(external_hash_of_entities)
       raise "Not implemented"
     end
 
@@ -87,10 +87,10 @@ module Maestrano::Connector::Rails
     end
 
     def consolidate_and_map_data(connec_entities, external_entities, organization, opts)
-      external_model_to_connec_model!(external_entities)
-      connec_model_to_external_model!(connec_entities)
+      modeled_external_entities = external_model_to_connec_model(external_entities)
+      modeled_connec_entities = connec_model_to_external_model(connec_entities)
 
-      external_entities.each do |external_entity_name, entities_in_connec_model|
+      modeled_external_entities.each do |external_entity_name, entities_in_connec_model|
         entities_in_connec_model.each do |connec_entity_name, entities|
           sub_entity_instance = "Entities::SubEntities::#{external_entity_name.titleize.split.join}".constantize.new
 
@@ -134,7 +134,7 @@ module Maestrano::Connector::Rails
         end
       end
 
-      connec_entities.each do |connec_entity_name, entities_in_external_model|
+      modeled_connec_entities.each do |connec_entity_name, entities_in_external_model|
         entities_in_external_model.each do |external_entity_name, entities|
           sub_entity_instance = "Entities::SubEntities::#{connec_entity_name.titleize.split.join}".constantize.new
           entities.map!{|entity|
@@ -142,6 +142,8 @@ module Maestrano::Connector::Rails
           }.compact!
         end
       end
+
+      return {connec_entities: modeled_connec_entities, external_entities: modeled_external_entities}
     end
 
     # input : {

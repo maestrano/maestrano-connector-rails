@@ -183,10 +183,10 @@ module Maestrano::Connector::Rails::Concerns::Entity
   # * Discards entities that do not need to be pushed because they have not been updated since their last push
   # * Discards entities from one of the two source in case of conflict
   # * Maps not discarded entities and associates them with their idmap, or create one if there isn't any
+  # * Return a hash {connec_entities: [], external_entities: []}
   def consolidate_and_map_data(connec_entities, external_entities, organization, opts={})
-    external_entities.map!{|entity|
+    mapped_external_entities = external_entities.map{|entity|
       idmap = Maestrano::Connector::Rails::IdMap.find_by(external_id: self.get_id_from_external_entity_hash(entity), external_entity: self.external_entity_name.downcase, organization_id: organization.id)
-
       # No idmap: creating one, nothing else to do
       unless idmap
         next {entity: self.map_to_connec(entity, organization), idmap: Maestrano::Connector::Rails::IdMap.create(external_id: self.get_id_from_external_entity_hash(entity), external_entity: self.external_entity_name.downcase, organization_id: organization.id)}
@@ -222,11 +222,15 @@ module Maestrano::Connector::Rails::Concerns::Entity
       else
         {entity: self.map_to_connec(entity, organization), idmap: idmap}
       end
-    }.compact!
+    }
+    mapped_external_entities.compact!
 
-    connec_entities.map!{|entity|
+    mapped_connec_entities = connec_entities.map{|entity|
       self.map_to_external_with_idmap(entity, organization)
-    }.compact!
+    }
+    mapped_connec_entities.compact!
+
+    return {connec_entities: mapped_connec_entities, external_entities: mapped_external_entities}
   end
 
 
