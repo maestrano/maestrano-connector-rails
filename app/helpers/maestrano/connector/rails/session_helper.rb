@@ -6,11 +6,15 @@ module Maestrano::Connector::Rails
     end
 
     def current_organization
-      Organization.find_by(uid: session[:org_uid], tenant: session[:tenant])
+      @current_organization ||= Organization.find_by(uid: session[:org_uid], tenant: session[:tenant])
     end
 
     def current_user
       @current_user ||= User.find_by(uid: session[:uid], tenant: session[:tenant])
+    end
+
+    def is_admin
+      @is_admin ||= current_user && current_organization && is_admin?(current_user, current_organization)
     end
 
   end
