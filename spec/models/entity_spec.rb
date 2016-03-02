@@ -223,6 +223,17 @@ describe Maestrano::Connector::Rails::Entity do
               expect(subject.map_to_external_with_idmap(entity, organization)).to be_nil
             end
           end
+
+          context 'when to_external is set to false' do
+            let(:entity) { {'id' => id, 'name' => 'John' } }
+            before {
+              idmap.update(to_external: false)
+            }
+
+            it 'discards the entity' do
+              expect(subject.map_to_external_with_idmap(entity, organization)).to be_nil
+            end
+          end
         end
 
         context 'when entity has no idmap' do
@@ -336,7 +347,6 @@ describe Maestrano::Connector::Rails::Entity do
 
     # General methods
     describe 'consolidate_and_map_data' do
-      # subject.consolidate_and_map_data(connec_entities, external_entities, organization, opts)
       let(:organization) { create(:organization) }
 
       describe 'connec_entities treatment' do
@@ -381,6 +391,14 @@ describe Maestrano::Connector::Rails::Entity do
           it 'save the name in the idmap' do
             subject.consolidate_and_map_data([], entities, organization)
             expect(Maestrano::Connector::Rails::IdMap.last.name).to eql(human_name)
+          end
+        end
+
+        context 'when entity has an idmap with to_connec set to false' do
+          let!(:idmap) { create(:idmap, external_entity: external_name, external_id: id, organization: organization, to_connec: false) }
+          it 'discards the entity' do
+            mapped_entities = subject.consolidate_and_map_data([], entities, organization)
+            expect(mapped_entities).to eql({connec_entities: [], external_entities: []})
           end
         end
 
