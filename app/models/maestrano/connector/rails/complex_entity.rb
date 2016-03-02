@@ -59,7 +59,7 @@ module Maestrano::Connector::Rails
         ConnectorLogger.log('info', organization, "Discard Connec! #{connec_entity_name} : #{entity}")
         nil
       else
-        {entity: sub_entity_instance.map_to(external_entity_name, entity, organization), idmap: idmap || IdMap.create(connec_id: entity['id'], connec_entity: connec_entity_name.downcase, external_entity: external_entity_name.downcase, organization_id: organization.id)}
+        {entity: sub_entity_instance.map_to(external_entity_name, entity, organization), idmap: idmap || IdMap.create(connec_id: entity['id'], connec_entity: connec_entity_name.downcase, external_entity: external_entity_name.downcase, organization_id: organization.id, name: sub_entity_instance.object_name_from_connec_entity_hash(entity))}
       end
     end
 
@@ -99,7 +99,7 @@ module Maestrano::Connector::Rails
 
             # No idmap: creating one, nothing else to do
             unless idmap
-              next {entity: sub_entity_instance.map_to(connec_entity_name, entity, organization), idmap: IdMap.create(external_id: sub_entity_instance.get_id_from_external_entity_hash(entity), external_entity: external_entity_name.downcase, connec_entity: connec_entity_name.downcase, organization_id: organization.id)}
+              next {entity: sub_entity_instance.map_to(connec_entity_name, entity, organization), idmap: IdMap.create(external_id: sub_entity_instance.get_id_from_external_entity_hash(entity), external_entity: external_entity_name.downcase, connec_entity: connec_entity_name.downcase, organization_id: organization.id, name: sub_entity_instance.object_name_from_external_entity_hash(entity))}
             end
 
             # Entity has not been modified since its last push to connec!

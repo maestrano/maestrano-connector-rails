@@ -118,7 +118,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
       Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Discard Connec! #{self.connec_entity_name} : #{entity}")
       nil
     else
-      {entity: self.map_to_external(entity, organization), idmap: idmap || Maestrano::Connector::Rails::IdMap.create(connec_id: entity['id'], connec_entity: self.connec_entity_name.downcase, organization_id: organization.id)}
+      {entity: self.map_to_external(entity, organization), idmap: idmap || Maestrano::Connector::Rails::IdMap.create(connec_id: entity['id'], connec_entity: self.connec_entity_name.downcase, organization_id: organization.id, name: object_name_from_connec_entity_hash(entity))}
     end
   end
 
@@ -189,7 +189,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
 
       # No idmap: creating one, nothing else to do
       unless idmap
-        next {entity: self.map_to_connec(entity, organization), idmap: Maestrano::Connector::Rails::IdMap.create(external_id: self.get_id_from_external_entity_hash(entity), external_entity: self.external_entity_name.downcase, organization_id: organization.id)}
+        next {entity: self.map_to_connec(entity, organization), idmap: Maestrano::Connector::Rails::IdMap.create(external_id: self.get_id_from_external_entity_hash(entity), external_entity: self.external_entity_name.downcase, organization_id: organization.id, name: self.object_name_from_external_entity_hash(entity))}
       end
 
       # Not pushing entity to Connec!
@@ -234,7 +234,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
   #             Entity specific methods
   # Those methods need to be define in each entity
   # ----------------------------------------------
-  
+
   # Entity name in Connec!
   def connec_entity_name
     raise "Not implemented"
@@ -247,6 +247,16 @@ module Maestrano::Connector::Rails::Concerns::Entity
 
   # Entity Mapper Class
   def mapper_class
+    raise "Not implemented"
+  end
+
+  # Return a string representing the object from a connec! entity hash
+  def object_name_from_connec_entity_hash(entity)
+    raise "Not implemented"
+  end
+
+  # Return a string representing the object from an external entity hash
+  def object_name_from_external_entity_hash(entity)
     raise "Not implemented"
   end
 end

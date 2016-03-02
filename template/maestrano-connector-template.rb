@@ -29,6 +29,18 @@ run 'touch Gemfile'
 
 add_source 'https://rubygems.org'
 
+if yes?("Use JRuby? [y/n]")
+  run 'echo "ruby \'2.2.2\', :engine => \'jruby\', :engine_version => \'9.0.4.0\'" | cat - Gemfile > temp && mv temp Gemfile'
+  gem_group :production do
+    gem 'activerecord-jdbcpostgresql-adapter'
+  end
+  gem_group :test, :develpment do
+    gem 'activerecord-jdbcsqlite3-adapter'
+  end
+else
+  gem 'sqlite3'
+end
+
 gem 'rails', '4.2.4'
 gem 'turbolinks'
 gem 'jquery-rails'
@@ -38,7 +50,6 @@ gem 'tzinfo-data', platforms: [:mingw, :mswin, :jruby]
 
 gem 'maestrano-connector-rails'
 
-gem 'sqlite3'
 
 gem_group :test do
   gem 'simplecov'

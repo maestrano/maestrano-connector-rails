@@ -31,7 +31,7 @@ Maestrano Connector Integration is currently in closed beta. Want to know more? 
 Before integrating with us you will need to have your application registered on the Maestrano platform. Please refer to the online documentation we provide: https://maestrano.atlassian.net/wiki/display/CONNECAPIV2/Maestrano+Developers
 
 ## Getting Started
-Create a new rails application using the connector template
+Create a new rails application using the connector template. The template works with both Ruby 2.2 and jRuby 9.0.4.0, you will be asked which one you want to use.
 ```console
 rails new <project_name> -m https://raw.githubusercontent.com/Maestrano/maestrano-connector-rails/master/template/maestrano-connector-template.rb
 ```
