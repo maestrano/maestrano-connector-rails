@@ -87,7 +87,7 @@ describe Maestrano::Connector::Rails::PushToConnecJob do
         end
 
         it 'does not calls methods on the complex entity' do
-          allow_any_instance_of(Entities::Entity1).to receive(:consolidate_and_map_data)
+          allow_any_instance_of(Entities::Entity1).to receive(:consolidate_and_map_data).and_return({})
           expect_any_instance_of(Entities::Entity2).to_not receive(:consolidate_and_map_data)
           subject
         end
