@@ -55,7 +55,7 @@ module Maestrano::Connector::Rails
     def map_to_external_with_idmap(entity, organization, connec_entity_name, external_entity_name, sub_entity_instance)
       idmap = IdMap.find_by(connec_id: entity['id'], connec_entity: connec_entity_name.downcase, external_entity: external_entity_name.downcase, organization_id: organization.id)
 
-      if idmap && idmap.last_push_to_external && idmap.last_push_to_external > entity['updated_at']
+      if idmap && ((!idmap.to_external) || idmap.last_push_to_external && idmap.last_push_to_external > entity['updated_at'])
         ConnectorLogger.log('info', organization, "Discard Connec! #{connec_entity_name} : #{entity}")
         nil
       else
@@ -101,6 +101,9 @@ module Maestrano::Connector::Rails
             unless idmap
               next {entity: sub_entity_instance.map_to(connec_entity_name, entity, organization), idmap: IdMap.create(external_id: sub_entity_instance.get_id_from_external_entity_hash(entity), external_entity: external_entity_name.downcase, connec_entity: connec_entity_name.downcase, organization_id: organization.id, name: sub_entity_instance.object_name_from_external_entity_hash(entity))}
             end
+
+            # Not pushing entity to Connec!
+            next nil unless idmap.to_connec
 
             # Entity has not been modified since its last push to connec!
             if idmap.last_push_to_connec && idmap.last_push_to_connec > sub_entity_instance.get_last_update_date_from_external_entity_hash(entity)
