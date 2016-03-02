@@ -227,11 +227,19 @@ describe Maestrano::Connector::Rails::Entity do
 
         context 'when entity has no idmap' do
           let(:entity) { {'id' => id, 'name' => 'John', 'updated_at' => 5.hour.ago } }
+          before {
+            allow(subject).to receive(:object_name_from_connec_entity_hash).and_return('human readable stuff')
+          }
 
           it { expect{ subject.map_to_external_with_idmap(entity, organization) }.to change{Maestrano::Connector::Rails::IdMap.count}.by(1) }
 
           it 'returns the entity with its new idmap' do
             expect(subject.map_to_external_with_idmap(entity, organization)).to eql({entity: mapped_entity, idmap: Maestrano::Connector::Rails::IdMap.last})
+          end
+
+          it 'save the entity name in the idmap' do
+            subject.map_to_external_with_idmap(entity, organization)
+            expect(Maestrano::Connector::Rails::IdMap.last.name).to eql('human readable stuff')
           end
         end
       end
@@ -360,9 +368,19 @@ describe Maestrano::Connector::Rails::Entity do
         }
 
         context 'when entity has no idmap' do
+          let(:human_name) { 'alien' }
+          before {
+            allow(subject).to receive(:object_name_from_external_entity_hash).and_return(human_name)
+          }
+
           it 'creates an idmap and returns the mapped entity with its new idmap' do
             subject.consolidate_and_map_data([], entities, organization)
             expect(entities).to eql([{entity: mapped_entity, idmap: Maestrano::Connector::Rails::IdMap.last}])
+          end
+
+          it 'save the name in the idmap' do
+            subject.consolidate_and_map_data([], entities, organization)
+            expect(Maestrano::Connector::Rails::IdMap.last.name).to eql(human_name)
           end
         end
 
@@ -451,6 +469,14 @@ describe Maestrano::Connector::Rails::Entity do
 
     describe 'mapper_class' do
       it { expect{ subject.mapper_class }.to raise_error('Not implemented') }
+    end
+
+    describe 'object_name_from_connec_entity_hash' do
+      it { expect{ subject.object_name_from_connec_entity_hash({}) }.to raise_error('Not implemented') }
+    end
+
+    describe 'object_name_from_external_entity_hash' do
+      it { expect{ subject.object_name_from_external_entity_hash({}) }.to raise_error('Not implemented') }
     end
   end
 
