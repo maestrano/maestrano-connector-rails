@@ -48,9 +48,9 @@ class Maestrano::ConnecController < Maestrano::Rails::WebHookController
       Maestrano::Connector::Rails::Entity.entities_list.each do |entity_name_from_list|
         instance = "Entities::#{entity_name_from_list.singularize.titleize.split.join}".constantize.new
         if instance.methods.include?('connec_entities_names'.to_sym)
-          return {instance: instance, is_complex: true, name: entity_name_from_list} if instance.connec_entities_names.include?(entity_name.singularize)
+          return {instance: instance, is_complex: true, name: entity_name_from_list} if instance.connec_entities_names.include?(entity_name.singularize.downcase)
         elsif instance.methods.include?('connec_entity_name'.to_sym)
-          return {instance: instance, is_complex: false, name: entity_name_from_list} if instance.connec_entity_name == entity_name.singularize
+          return {instance: instance, is_complex: false, name: entity_name_from_list} if instance.connec_entity_name == entity_name.singularize.downcase
         end
       end
       nil
