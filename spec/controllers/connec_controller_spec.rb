@@ -32,7 +32,7 @@ describe Maestrano::ConnecController, type: :controller do
       end
 
       context "with an unknown entity" do
-        let(:notifications) { {people: [entity]} }
+        let(:notifications) { {'people' => [entity]} }
         before {
           allow(Maestrano::Connector::Rails::Entity).to receive(:entities_list).and_return(%w())
         }
@@ -44,7 +44,7 @@ describe Maestrano::ConnecController, type: :controller do
       end
 
       context "with a known complex entity" do
-        let(:notifications) { {lead: [entity]} }
+        let(:notifications) { {'leads' => [entity]} }
 
         before {
           allow(Maestrano::Connector::Rails::Entity).to receive(:entities_list).and_return(%w(contact_and_lead))
@@ -78,7 +78,7 @@ describe Maestrano::ConnecController, type: :controller do
       end
 
       context "with a known non complex entity" do
-        let(:notifications) { {people: [entity]} }
+        let(:notifications) { {'people' => [entity]} }
 
         before {
           allow(Maestrano::Connector::Rails::Entity).to receive(:entities_list).and_return(%w(person))
