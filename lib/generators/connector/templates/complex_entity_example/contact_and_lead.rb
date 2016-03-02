@@ -23,17 +23,18 @@
 #   #               external_entities_names[1]: [unmapped_connec_entitiy4]
 #   #             }
 #   #          }
-#   def connec_model_to_external_model!(connec_hash_of_entities)
+#   def connec_model_to_external_model(connec_hash_of_entities)
 #     people = connec_hash_of_entities['person']
-#     connec_hash_of_entities['person'] = { 'lead' => [], 'contact' => [] }
+#     modeled_connec_entities = {'person' => { 'lead' => [], 'contact' => [] }}
 
 #     people.each do |person|
 #       if person['is_lead']
-#         connec_hash_of_entities['person']['lead'] << person
+#         modeled_connec_entities['person']['lead'] << person
 #       else
-#         connec_hash_of_entities['person']['contact'] << person
+#         modeled_connec_entities['person']['contact'] << person
 #       end
 #     end
+#     return modeled_connec_entities
 #   end
 
 #   # input :  {
@@ -49,8 +50,7 @@
 #   #               connec_entity_names[0]: [unmapped_external_entity3, unmapped_external_entity4]
 #   #             }
 #   #           }
-#   def external_model_to_connec_model!(external_hash_of_entities)
-#     external_hash_of_entities['lead'] = { 'person' => external_hash_of_entities['lead'] }
-#     external_hash_of_entities['contact'] = { 'person' => external_hash_of_entities['contact'] }
+#   def external_model_to_connec_model(external_hash_of_entities)
+#     return {'lead' => {'person' => external_hash_of_entities['lead']}, 'contact' => {'person' => external_hash_of_entities['contact']}}
 #   end
 # end

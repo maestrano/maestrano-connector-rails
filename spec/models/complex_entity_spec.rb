@@ -10,11 +10,11 @@ describe Maestrano::Connector::Rails::ComplexEntity do
     describe 'external_entities_names' do
       it { expect{ subject.external_entities_names }.to raise_error('Not implemented') }
     end
-    describe 'connec_model_to_external_model!' do
-      it { expect{ subject.connec_model_to_external_model!({}) }.to raise_error('Not implemented') }
+    describe 'connec_model_to_external_model' do
+      it { expect{ subject.connec_model_to_external_model({}) }.to raise_error('Not implemented') }
     end
-    describe 'external_model_to_connec_model!' do
-      it { expect{ subject.external_model_to_connec_model!({}) }.to raise_error('Not implemented') }
+    describe 'external_model_to_connec_model' do
+      it { expect{ subject.external_model_to_connec_model({}) }.to raise_error('Not implemented') }
     end
   end
 
@@ -128,20 +128,20 @@ describe Maestrano::Connector::Rails::ComplexEntity do
       let(:opt) { {opt: true} }
       let(:organization) { create(:organization) }
 
-      it 'calls external_model_to_connec_model!' do
-        allow(subject).to receive(:connec_model_to_external_model!)
-        expect(subject).to receive(:external_model_to_connec_model!).with({a: {}})
+      it 'calls external_model_to_connec_model' do
+        allow(subject).to receive(:connec_model_to_external_model).and_return({})
+        expect(subject).to receive(:external_model_to_connec_model).with({a: {}}).and_return({})
         subject.consolidate_and_map_data({}, {a: {}}, organization, opt)
       end
 
       it 'calls connec_model_to_external_model' do
-        allow(subject).to receive(:external_model_to_connec_model!)
-        expect(subject).to receive(:connec_model_to_external_model!).with({a: {}})
+        allow(subject).to receive(:external_model_to_connec_model).and_return({})
+        expect(subject).to receive(:connec_model_to_external_model).with({a: {}}).and_return({})
         subject.consolidate_and_map_data({a: {}}, {}, organization, opt)
       end
 
       describe 'connec_entities treatment' do
-        #hash as it should be after connec_model_to_external_model!
+        #hash as it should be after connec_model_to_external_model
         let(:connec_hash) {
           {
             'sc_e1' => {'ext1' => [{'name' => 'John'}, {'name' => 'Jane'}]},
@@ -149,18 +149,18 @@ describe Maestrano::Connector::Rails::ComplexEntity do
           }
         }
         before{
-          allow(subject).to receive(:external_model_to_connec_model!)
-          allow(subject).to receive(:connec_model_to_external_model!)
+          allow(subject).to receive(:external_model_to_connec_model).and_return({})
+          allow(subject).to receive(:connec_model_to_external_model).and_return(connec_hash)
         }
 
         it 'calls map_to_external_with_idmap on each entity' do
           expect(subject).to receive(:map_to_external_with_idmap).exactly(4).times
-          subject.consolidate_and_map_data(connec_hash, {}, organization, opt)
+          subject.consolidate_and_map_data({}, {}, organization, opt)
         end
       end
 
       describe 'external_entities treatment' do
-        #hash as it should be after external_model_to_connec_model!
+        #hash as it should be after external_model_to_connec_model
         let(:id1) { '5678ttd3' }
         let(:id2) { '5678taa3' }
         let(:entity1) { {'id' => id1, 'name' => 'Robert'} }
@@ -173,9 +173,10 @@ describe Maestrano::Connector::Rails::ComplexEntity do
             'ScE2' => {'connec1' => [entity1], 'connec2' => [entity2]}
           }
         }
+        let(:connec_hash) { {} }
         before{
-          allow(subject).to receive(:external_model_to_connec_model!)
-          allow(subject).to receive(:connec_model_to_external_model!)
+          allow(subject).to receive(:external_model_to_connec_model).and_return(external_hash)
+          allow(subject).to receive(:connec_model_to_external_model).and_return(connec_hash)
           allow_any_instance_of(Entities::SubEntities::ScE1).to receive(:get_id_from_external_entity_hash).with(entity1).and_return(id1)
           allow_any_instance_of(Entities::SubEntities::ScE1).to receive(:get_last_update_date_from_external_entity_hash).and_return(1.minute.ago)
           allow_any_instance_of(Entities::SubEntities::ScE1).to receive(:map_to).with('connec1', entity1, organization).and_return(mapped_entity1)
@@ -195,19 +196,20 @@ describe Maestrano::Connector::Rails::ComplexEntity do
 
           it 'creates an idmap for each entity' do
             expect{
-              subject.consolidate_and_map_data({}, external_hash, organization, opt)
+              subject.consolidate_and_map_data({}, {}, organization, opt)
             }.to change{ Maestrano::Connector::Rails::IdMap.count }.by(3)
           end
 
           it 'returns the entity with their new idmaps' do
-            subject.consolidate_and_map_data({}, external_hash, organization, opt)
-            expect(external_hash).to eql(            {
+            mapped_entities = subject.consolidate_and_map_data({}, external_hash, organization, opt)
+            expect(mapped_entities).to eql(external_entities: {
               'sc_e1' => {'connec1' => [{entity: mapped_entity1, idmap: Maestrano::Connector::Rails::IdMap.first}]},
               'ScE2' => {
                 'connec1' => [{entity: mapped_entity1, idmap: Maestrano::Connector::Rails::IdMap.all[1]}],
                 'connec2' => [{entity: mapped_entity2, idmap: Maestrano::Connector::Rails::IdMap.last}],
               }
-            })
+            },
+            connec_entities: {})
           end
         end
 
@@ -217,14 +219,15 @@ describe Maestrano::Connector::Rails::ComplexEntity do
           let!(:idmap22) { create(:idmap, organization: organization, external_id: id2, external_entity: 'sce2', connec_entity: 'connec2', last_push_to_connec: 1.second.ago) }
 
           it 'discards the entities' do
-            subject.consolidate_and_map_data({}, external_hash, organization, opt)
-            expect(external_hash).to eql(            {
+            mapped_entities = subject.consolidate_and_map_data({}, external_hash, organization, opt)
+            expect(mapped_entities).to eql(external_entities: {
               'sc_e1' => {'connec1' => []},
               'ScE2' => {
                 'connec1' => [],
                 'connec2' => [],
               }
-            })
+            },
+            connec_entities: {})
           end
         end
 
@@ -261,9 +264,9 @@ describe Maestrano::Connector::Rails::ComplexEntity do
                 let(:opt) { {connec_preemption: true} }
 
                 it 'keeps the connec entities' do
-                  subject.consolidate_and_map_data(connec_hash, external_hash, organization, opt)
-                  expect(connec_hash).to eq({'connec1' => {'sc_e1' => [{entity: {'name' => 'Jacob'}, idmap: idmap1}]}, 'connec2' => {'sc_e1' => [], 'ScE2' => []}})
-                  expect(external_hash).to eql({
+                  mapped_entities = subject.consolidate_and_map_data(connec_hash, external_hash, organization, opt)
+                  expect(mapped_entities[:connec_entities]).to eq({'connec1' => {'sc_e1' => [{entity: {'name' => 'Jacob'}, idmap: idmap1}]}, 'connec2' => {'sc_e1' => [], 'ScE2' => []}})
+                  expect(mapped_entities[:external_entities]).to eql({
                     'sc_e1' => {'connec1' => []},
                     'ScE2' => {
                       'connec1' => [{entity: mapped_entity1, idmap: idmap21}],
@@ -272,13 +275,14 @@ describe Maestrano::Connector::Rails::ComplexEntity do
                   })
                 end
               end
+
               context 'set to false' do
                 let(:opt) { {connec_preemption: false} }
 
                 it 'keeps the external entities' do
-                  subject.consolidate_and_map_data(connec_hash, external_hash, organization, opt)
-                  expect(connec_hash).to eq({'connec1' => {'sc_e1' => []}, 'connec2' => {'sc_e1' => [], 'ScE2' => []}})
-                  expect(external_hash).to eql({
+                  mapped_entities = subject.consolidate_and_map_data(connec_hash, external_hash, organization, opt)
+                  expect(mapped_entities[:connec_entities]).to eq({'connec1' => {'sc_e1' => []}, 'connec2' => {'sc_e1' => [], 'ScE2' => []}})
+                  expect(mapped_entities[:external_entities]).to eql({
                     'sc_e1' => {'connec1' => [{entity: mapped_entity1, idmap: idmap1}]},
                     'ScE2' => {
                       'connec1' => [{entity: mapped_entity1, idmap: idmap21}],
@@ -292,9 +296,9 @@ describe Maestrano::Connector::Rails::ComplexEntity do
             context 'without option' do
               context 'with a more recently updated external entity' do
                 it 'keeps the external entity' do
-                  subject.consolidate_and_map_data(connec_hash, external_hash, organization, opt)
-                  expect(connec_hash).to eq({'connec1' => {'sc_e1' => []}, 'connec2' => {'sc_e1' => [], 'ScE2' => []}})
-                  expect(external_hash).to eql({
+                  mapped_entities = subject.consolidate_and_map_data(connec_hash, external_hash, organization, opt)
+                  expect(mapped_entities[:connec_entities]).to eq({'connec1' => {'sc_e1' => []}, 'connec2' => {'sc_e1' => [], 'ScE2' => []}})
+                  expect(mapped_entities[:external_entities]).to eql({
                     'sc_e1' => {'connec1' => [{entity: mapped_entity1, idmap: idmap1}]},
                     'ScE2' => {
                       'connec1' => [{entity: mapped_entity1, idmap: idmap21}],
@@ -308,9 +312,9 @@ describe Maestrano::Connector::Rails::ComplexEntity do
                 let(:connec_hash) { {'connec1' => {'sc_e1' => [{'id' => connec_id1, 'first_name' => 'Jacob', 'updated_at' => 1.second.ago}]}, 'connec2' => {'sc_e1' => [], 'ScE2' => []}} }
 
                 it 'keeps the connec entities' do
-                  subject.consolidate_and_map_data(connec_hash, external_hash, organization, opt)
-                  expect(connec_hash).to eq({'connec1' => {'sc_e1' => [{entity: {'name' => 'Jacob'}, idmap: idmap1}]}, 'connec2' => {'sc_e1' => [], 'ScE2' => []}})
-                  expect(external_hash).to eql({
+                  mapped_entities = subject.consolidate_and_map_data(connec_hash, external_hash, organization, opt)
+                  expect(mapped_entities[:connec_entities]).to eq({'connec1' => {'sc_e1' => [{entity: {'name' => 'Jacob'}, idmap: idmap1}]}, 'connec2' => {'sc_e1' => [], 'ScE2' => []}})
+                  expect(mapped_entities[:external_entities]).to eql({
                     'sc_e1' => {'connec1' => []},
                     'ScE2' => {
                       'connec1' => [{entity: mapped_entity1, idmap: idmap21}],

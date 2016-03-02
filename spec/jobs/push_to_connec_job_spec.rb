@@ -14,7 +14,7 @@ describe Maestrano::Connector::Rails::PushToConnecJob do
     allow_any_instance_of(Entities::Entity1).to receive(:external_entity_name).and_return('ext_entity1')
     class Entities::Entity2 < Maestrano::Connector::Rails::ComplexEntity
     end
-    allow_any_instance_of(Entities::Entity2).to receive(:consolidate_and_map_data)
+    allow_any_instance_of(Entities::Entity2).to receive(:consolidate_and_map_data).and_return({})
     allow_any_instance_of(Entities::Entity2).to receive(:push_entities_to_connec)
     allow_any_instance_of(Entities::Entity2).to receive(:connec_entities_names).and_return(%w())
     allow_any_instance_of(Entities::Entity2).to receive(:external_entities_names).and_return(%w(sub ll))
@@ -81,7 +81,7 @@ describe Maestrano::Connector::Rails::PushToConnecJob do
         before { organization.update(synchronized_entities: {:"#{entity_name1}" => true, :"#{entity_name2}" => false})}
 
         it 'calls consolidate_and_map_data on the non complex entity with the right arguments' do
-          expect_any_instance_of(Entities::Entity1).to receive(:consolidate_and_map_data).with([], [entity11, entity12], organization, {})
+          expect_any_instance_of(Entities::Entity1).to receive(:consolidate_and_map_data).with([], [entity11, entity12], organization, {}).and_return({})
           expect_any_instance_of(Entities::Entity1).to receive(:push_entities_to_connec)
           subject
         end

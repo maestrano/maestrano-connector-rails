@@ -49,7 +49,6 @@ describe Maestrano::Connector::Rails::SynchronizationJob do
     end
   end
 
-  # def sync_entity(entity, organization, connec_client, external_client, last_synchronization, opts)
   describe 'sync_entity' do
     before {
       class Entities::Person < Maestrano::Connector::Rails::Entity
@@ -61,7 +60,7 @@ describe Maestrano::Connector::Rails::SynchronizationJob do
     it 'calls the five methods' do
       expect_any_instance_of(Entities::Person).to receive(:get_connec_entities)
       expect_any_instance_of(Entities::Person).to receive(:get_external_entities)
-      expect_any_instance_of(Entities::Person).to receive(:consolidate_and_map_data)
+      expect_any_instance_of(Entities::Person).to receive(:consolidate_and_map_data).and_return({})
       expect_any_instance_of(Entities::Person).to receive(:push_entities_to_external)
       expect_any_instance_of(Entities::Person).to receive(:push_entities_to_connec)
       subject.sync_entity('person', organization, nil, nil, nil, {})

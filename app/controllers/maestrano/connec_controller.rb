@@ -16,14 +16,12 @@ class Maestrano::ConnecController < Maestrano::Rails::WebHookController
 
                 # Build expected input for consolidate_and_map_data
                 if entity_instance_hash[:is_complex]
-                  entity = Hash[ *entity_instance.connec_entities_names.collect{|name| name == entity_name.singularize ? [name, [entity]] : [ name, []]}.flatten(1) ]
-                  entity_instance.consolidate_and_map_data(entity, Hash[ *entity_instance.external_entities_names.collect{|name| [ name, []]}.flatten(1) ], organization, {})
+                  mapped_entity = entity_instance.consolidate_and_map_data(Hash[ *entity_instance.connec_entities_names.collect{|name| name == entity_name.singularize ? [name, [entity]] : [ name, []]}.flatten(1) ], Hash[ *entity_instance.external_entities_names.collect{|name| [ name, []]}.flatten(1) ], organization, {})
                 else
-                  entity = [entity]
-                  entity_instance.consolidate_and_map_data(entity, [], organization, {})
+                  mapped_entity = entity_instance.consolidate_and_map_data([entity], [], organization, {})
                 end
 
-                entity_instance.push_entities_to_external(external_client, entity, organization)
+                entity_instance.push_entities_to_external(external_client, mapped_entity[:connec_entities], organization)
               end
 
             else
