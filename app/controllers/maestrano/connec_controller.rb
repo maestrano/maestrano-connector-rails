@@ -16,7 +16,7 @@ class Maestrano::ConnecController < Maestrano::Rails::WebHookController
 
                 # Build expected input for consolidate_and_map_data
                 if entity_instance_hash[:is_complex]
-                  mapped_entity = entity_instance.consolidate_and_map_data(Hash[ *entity_instance.connec_entities_names.collect{|name| name == entity_name.singularize ? [name, [entity]] : [ name, []]}.flatten(1) ], Hash[ *entity_instance.external_entities_names.collect{|name| [ name, []]}.flatten(1) ], organization, {})
+                  mapped_entity = entity_instance.consolidate_and_map_data(Hash[ *entity_instance.connec_entities_names.collect{|name| name.downcase.pluralize == entity_name ? [name, [entity]] : [ name, []]}.flatten(1) ], Hash[ *entity_instance.external_entities_names.collect{|name| [ name, []]}.flatten(1) ], organization, {})
                 else
                   mapped_entity = entity_instance.consolidate_and_map_data([entity], [], organization, {})
                 end
@@ -48,7 +48,7 @@ class Maestrano::ConnecController < Maestrano::Rails::WebHookController
         if instance.methods.include?('connec_entities_names'.to_sym)
           return {instance: instance, is_complex: true, name: entity_name_from_list} if instance.connec_entities_names.map{|n| n.pluralize.downcase}.include?(entity_name)
         elsif instance.methods.include?('connec_entity_name'.to_sym)
-          return {instance: instance, is_complex: false, name: entity_name_from_list} if instance.connec_entity_name.pluralize.downcase == entity_name
+          return {instance: instance, is_complex: false, name: entity_name_from_list} if instance.normalized_connec_entity_name == entity_name
         end
       end
       nil
