@@ -83,6 +83,9 @@ describe Maestrano::ConnecController, type: :controller do
         before {
           allow(Maestrano::Connector::Rails::Entity).to receive(:entities_list).and_return(%w(person))
           class Entities::Person < Maestrano::Connector::Rails::Entity
+            def connec_entity_name
+              'person'
+            end
           end
         }
 
