@@ -6,7 +6,7 @@ module Maestrano::Connector::Rails
     def perform(organization, entities_hash)
       return unless organization.sync_enabled && organization.oauth_uid
 
-      connec_client = Maestrano::Connec::Client.new(organization.uid)
+      connec_client = Maestrano::Connec::Client[organization.tenant].new(organization.uid)
 
       entities_hash.each do |external_entity_name, entities|
         if entity_instance_hash = find_entity_instance(external_entity_name)

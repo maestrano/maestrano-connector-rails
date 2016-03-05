@@ -22,7 +22,7 @@ module Maestrano::Connector::Rails
 
       begin
         last_synchronization = Synchronization.where(organization_id: organization.id, status: 'SUCCESS', partial: false).order(updated_at: :desc).first
-        connec_client = Maestrano::Connec::Client.new(organization.uid)
+        connec_client = Maestrano::Connec::Client[organization.tenant].new(organization.uid)
         external_client = External.get_client(organization)
 
         if opts[:only_entities]
