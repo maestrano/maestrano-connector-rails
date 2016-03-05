@@ -43,59 +43,91 @@ describe Maestrano::Connector::Rails::Entity do
     describe 'connec_methods' do
       let(:organization) { create(:organization) }
       let(:client) { Maestrano::Connec::Client.new(organization.uid) }
-      let(:connec_name) { 'person' }
+      let(:connec_name) { 'Person' }
       let(:external_name) { 'external_name' }
       let(:sync) { create(:synchronization) }
       before {
         allow(subject).to receive(:connec_entity_name).and_return(connec_name)
       }
 
+      describe 'normalized_connec_entity_name' do
+        context 'for a singleton resource' do
+          before {
+            allow(subject).to receive(:singleton?).and_return(true)
+          }
+
+          it { expect(subject.normalized_connec_entity_name).to eql('person') }
+        end
+
+        context 'for a non singleton resource' do
+          before {
+            allow(subject).to receive(:singleton?).and_return(false)
+          }
+
+          it { expect(subject.normalized_connec_entity_name).to eql('people') }
+        end
+      end
+
       describe 'get_connec_entities' do
 
         describe 'with response' do
-          before {
-            allow(client).to receive(:get).and_return(ActionDispatch::Response.new(200, {}, {people: []}.to_json, {}))
-          }
-
-          context 'when opts[:full_sync] is true' do
-            it 'performs a full get' do
-              expect(client).to receive(:get).with("/#{connec_name.downcase.pluralize}")
-              subject.get_connec_entities(client, nil, organization, {full_sync: true})
-            end
-          end
-
-          context 'when there is no last sync' do
-            it 'performs a full get' do
-              expect(client).to receive(:get).with("/#{connec_name.downcase.pluralize}")
-              subject.get_connec_entities(client, nil, organization)
-            end
-          end
-
-          context 'when there is a last sync' do
-            it 'performs a time limited get' do
-              uri_param = URI.encode("$filter=updated_at gt '#{sync.updated_at.iso8601}'")
-              expect(client).to receive(:get).with("/#{connec_name.downcase.pluralize}?#{uri_param}")
-              subject.get_connec_entities(client, sync, organization)
-            end
-          end
-
-          context 'with pagination' do
+          context 'for a singleton resource' do
             before {
-              allow(client).to receive(:get).and_return(ActionDispatch::Response.new(200, {}, {people: [], pagination: {next: "https://api-connec.maestrano.com/api/v2/cld-dkg601/people?%24skip=10&%24top=10"}}.to_json, {}), ActionDispatch::Response.new(200, {}, {people: []}.to_json, {}))
+              allow(client).to receive(:get).and_return(ActionDispatch::Response.new(200, {}, {person: []}.to_json, {}))
+              allow(subject).to receive(:singleton?).and_return(true)
             }
 
-            it 'calls get multiple times' do
-              expect(client).to receive(:get).twice
+            it 'calls get with a singularize url' do
+              expect(client).to receive(:get).with("/#{connec_name.downcase}")
               subject.get_connec_entities(client, nil, organization)
             end
           end
 
-          context 'with an actual response' do
-            let(:people) { [{first_name: 'John'}, {last_name: 'Durand'}, {job_title: 'Engineer'}] }
+          context 'for a non singleton resource' do
+            before {
+              allow(client).to receive(:get).and_return(ActionDispatch::Response.new(200, {}, {people: []}.to_json, {}))
+            }
 
-            it 'returns an array of entities' do
-              allow(client).to receive(:get).and_return(ActionDispatch::Response.new(200, {}, {people: people}.to_json, {}))
-              expect(subject.get_connec_entities(client, nil, organization)).to eql(JSON.parse(people.to_json))
+            context 'when opts[:full_sync] is true' do
+              it 'performs a full get' do
+                expect(client).to receive(:get).with("/#{connec_name.downcase.pluralize}")
+                subject.get_connec_entities(client, nil, organization, {full_sync: true})
+              end
+            end
+
+            context 'when there is no last sync' do
+              it 'performs a full get' do
+                expect(client).to receive(:get).with("/#{connec_name.downcase.pluralize}")
+                subject.get_connec_entities(client, nil, organization)
+              end
+            end
+
+            context 'when there is a last sync' do
+              it 'performs a time limited get' do
+                uri_param = URI.encode("$filter=updated_at gt '#{sync.updated_at.iso8601}'")
+                expect(client).to receive(:get).with("/#{connec_name.downcase.pluralize}?#{uri_param}")
+                subject.get_connec_entities(client, sync, organization)
+              end
+            end
+
+            context 'with pagination' do
+              before {
+                allow(client).to receive(:get).and_return(ActionDispatch::Response.new(200, {}, {people: [], pagination: {next: "https://api-connec.maestrano.com/api/v2/cld-dkg601/people?%24skip=10&%24top=10"}}.to_json, {}), ActionDispatch::Response.new(200, {}, {people: []}.to_json, {}))
+              }
+
+              it 'calls get multiple times' do
+                expect(client).to receive(:get).twice
+                subject.get_connec_entities(client, nil, organization)
+              end
+            end
+
+            context 'with an actual response' do
+              let(:people) { [{first_name: 'John'}, {last_name: 'Durand'}, {job_title: 'Engineer'}] }
+
+              it 'returns an array of entities' do
+                allow(client).to receive(:get).and_return(ActionDispatch::Response.new(200, {}, {people: people}.to_json, {}))
+                expect(subject.get_connec_entities(client, nil, organization)).to eql(JSON.parse(people.to_json))
+              end
             end
           end
         end
@@ -141,7 +173,7 @@ describe Maestrano::Connector::Rails::Entity do
           expect(idmap1.last_push_to_connec).to_not eql(old_push_date)
           idmap2.reload
           expect(idmap2.connec_id).to eql(id)
-          expect(idmap2.connec_entity).to eql(connec_name)
+          expect(idmap2.connec_entity).to eql(connec_name.downcase)
           expect(idmap2.last_push_to_connec).to_not be_nil
         end
       end
@@ -155,7 +187,7 @@ describe Maestrano::Connector::Rails::Entity do
           }
 
           it 'sends a post to connec' do
-            expect(client).to receive(:post).with("/#{connec_name.pluralize}", {"#{connec_name.pluralize}".to_sym => entity})
+            expect(client).to receive(:post).with("/#{connec_name.downcase.pluralize}", {"#{connec_name.downcase.pluralize}".to_sym => entity})
             subject.create_connec_entity(client, entity, connec_name, organization)
           end
 
@@ -183,7 +215,7 @@ describe Maestrano::Connector::Rails::Entity do
           }
 
           it 'sends a put to connec' do
-            expect(client).to receive(:put).with("/#{connec_name.pluralize}/#{id}", {"#{connec_name.pluralize}".to_sym => entity})
+            expect(client).to receive(:put).with("/#{connec_name.downcase.pluralize}/#{id}", {"#{connec_name.downcase.pluralize}".to_sym => entity})
             subject.update_connec_entity(client, entity, id, connec_name, organization)
           end
         end
@@ -206,7 +238,7 @@ describe Maestrano::Connector::Rails::Entity do
         }
 
         context 'when entity has an idmap' do
-          let!(:idmap) { create(:idmap, organization: organization, connec_entity: connec_name, connec_id: id, last_push_to_external: 3.hour.ago)}
+          let!(:idmap) { create(:idmap, organization: organization, connec_entity: connec_name.downcase, connec_id: id, last_push_to_external: 3.hour.ago)}
 
           context 'when updated_at field is most recent than idmap last_push_to_external' do
             let(:entity) { {'id' => id, 'name' => 'John', 'updated_at' => 2.hour.ago } }
@@ -459,6 +491,12 @@ describe Maestrano::Connector::Rails::Entity do
 
 
     # Entity specific methods
+    describe 'singleton?' do
+      it 'is false by default' do
+        expect(subject.singleton?).to be false
+      end
+    end
+
     describe 'connec_entity_name' do
       it { expect{ subject.connec_entity_name }.to raise_error('Not implemented') }
     end

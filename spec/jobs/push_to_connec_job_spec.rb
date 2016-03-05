@@ -17,7 +17,7 @@ describe Maestrano::Connector::Rails::PushToConnecJob do
     allow_any_instance_of(Entities::Entity2).to receive(:consolidate_and_map_data).and_return({})
     allow_any_instance_of(Entities::Entity2).to receive(:push_entities_to_connec)
     allow_any_instance_of(Entities::Entity2).to receive(:connec_entities_names).and_return(%w())
-    allow_any_instance_of(Entities::Entity2).to receive(:external_entities_names).and_return(%w(sub ll))
+    allow_any_instance_of(Entities::Entity2).to receive(:external_entities_names).and_return(%w(Subs ll))
     module Entities::SubEntities end;
     class Entities::SubEntities::Sub < Maestrano::Connector::Rails::SubEntityBase
     end
@@ -27,7 +27,7 @@ describe Maestrano::Connector::Rails::PushToConnecJob do
   let(:entity11) { {first_name: 'John'} }
   let(:entity12) { {first_name: 'Jane'} }
   let(:entity21) { {job: 'Pizza guy'} }
-  let(:hash) { {'ext_entity1' => [entity11, entity12], 'sub' => [entity21]} }
+  let(:hash) { {'ext_entity1' => [entity11, entity12], 'Subs' => [entity21]} }
   subject { Maestrano::Connector::Rails::PushToConnecJob.perform_now(organization, hash) }
 
   describe 'with organization sync enabled set to false' do
@@ -66,7 +66,7 @@ describe Maestrano::Connector::Rails::PushToConnecJob do
         before { organization.update(synchronized_entities: {:"#{entity_name1}" => false, :"#{entity_name2}" => true})}
 
         it 'calls consolidate and map data on the complex entity with the right arguments' do
-          expect_any_instance_of(Entities::Entity2).to receive(:consolidate_and_map_data).with({}, {"sub"=>[entity21], "ll"=>[]}, organization, {})
+          expect_any_instance_of(Entities::Entity2).to receive(:consolidate_and_map_data).with({}, {"Subs"=>[entity21], "ll"=>[]}, organization, {})
           expect_any_instance_of(Entities::Entity2).to receive(:push_entities_to_connec)
           subject
         end

@@ -28,6 +28,14 @@ module Maestrano::Connector::Rails::Concerns::Entity
   # ----------------------------------------------
   #                 Connec! methods
   # ----------------------------------------------
+  def normalized_connec_entity_name
+    if self.singleton?
+      self.connec_entity_name.downcase
+    else
+      self.connec_entity_name.downcase.pluralize
+    end
+  end
+
   def get_connec_entities(client, last_synchronization, organization, opts={})
     Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Fetching Connec! #{self.connec_entity_name}")
 
@@ -36,18 +44,18 @@ module Maestrano::Connector::Rails::Concerns::Entity
     # Fetch first page
     if last_synchronization.blank? || opts[:full_sync]
       Maestrano::Connector::Rails::ConnectorLogger.log('debug', organization, "entity=#{self.connec_entity_name}, fetching all data")
-      response = client.get("/#{self.connec_entity_name.downcase.pluralize}")
+      response = client.get("/#{self.normalized_connec_entity_name}")
     else
       Maestrano::Connector::Rails::ConnectorLogger.log('debug', organization, "entity=#{self.connec_entity_name}, fetching data since #{last_synchronization.updated_at.iso8601}")
       query_param = URI.encode("$filter=updated_at gt '#{last_synchronization.updated_at.iso8601}'")
-      response = client.get("/#{self.connec_entity_name.downcase.pluralize}?#{query_param}")
+      response = client.get("/#{self.normalized_connec_entity_name}?#{query_param}")
     end
     raise "No data received from Connec! when trying to fetch #{self.connec_entity_name.pluralize}" unless response
 
     response_hash = JSON.parse(response.body)
     Maestrano::Connector::Rails::ConnectorLogger.log('debug', organization, "received first page entity=#{self.connec_entity_name}, response=#{response.body}")
-    if response_hash["#{self.connec_entity_name.downcase.pluralize}"]
-      entities << response_hash["#{self.connec_entity_name.downcase.pluralize}"]
+    if response_hash["#{self.normalized_connec_entity_name}"]
+      entities << response_hash["#{self.normalized_connec_entity_name}"]
     else
       raise "Received unrecognized Connec! data when trying to fetch #{self.connec_entity_name.pluralize}"
     end
@@ -55,15 +63,15 @@ module Maestrano::Connector::Rails::Concerns::Entity
     # Fetch subsequent pages
     while response_hash['pagination'] && response_hash['pagination']['next']
       # ugly way to convert https://api-connec/api/v2/group_id/organizations?next_page_params to /organizations?next_page_params
-      next_page = response_hash['pagination']['next'].gsub(/^(.*)\/#{self.connec_entity_name.downcase.pluralize}/, self.connec_entity_name.downcase.pluralize)
+      next_page = response_hash['pagination']['next'].gsub(/^(.*)\/#{self.normalized_connec_entity_name}/, self.normalized_connec_entity_name)
       response = client.get(next_page)
 
       raise "No data received from Connec! when trying to fetch subsequent page of #{self.connec_entity_name.pluralize}" unless response
       Maestrano::Connector::Rails::ConnectorLogger.log('debug', organization, "received next page entity=#{self.connec_entity_name}, response=#{response.body}")
 
       response_hash = JSON.parse(response.body)
-      if response_hash["#{self.connec_entity_name.downcase.pluralize}"]
-        entities << response_hash["#{self.connec_entity_name.downcase.pluralize}"]
+      if response_hash["#{self.normalized_connec_entity_name}"]
+        entities << response_hash["#{self.normalized_connec_entity_name}"]
       else
         raise "Received unrecognized Connec! data when trying to fetch subsequent page of #{self.connec_entity_name.pluralize}"
       end
@@ -99,16 +107,16 @@ module Maestrano::Connector::Rails::Concerns::Entity
 
   def create_connec_entity(connec_client, mapped_external_entity, connec_entity_name, organization)
     Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Sending create #{connec_entity_name}: #{mapped_external_entity} to Connec!")
-    response = connec_client.post("/#{connec_entity_name.downcase.pluralize}", { "#{connec_entity_name.downcase.pluralize}".to_sym => mapped_external_entity })
+    response = connec_client.post("/#{normalized_connec_entity_name}", { "#{normalized_connec_entity_name}".to_sym => mapped_external_entity })
     raise "No response received from Connec! when trying to create a #{self.connec_entity_name}" unless response
-    JSON.parse(response.body)["#{connec_entity_name.downcase.pluralize}"]
+    JSON.parse(response.body)["#{normalized_connec_entity_name}"]
   end
 
   def update_connec_entity(connec_client, mapped_external_entity, connec_id, connec_entity_name, organization)
     Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Sending update #{connec_entity_name}: #{mapped_external_entity} to Connec!")
-    response = connec_client.put("/#{connec_entity_name.downcase.pluralize}/#{connec_id}", { "#{connec_entity_name.downcase.pluralize}".to_sym => mapped_external_entity })
+    response = connec_client.put("/#{normalized_connec_entity_name}/#{connec_id}", { "#{normalized_connec_entity_name}".to_sym => mapped_external_entity })
     raise "No response received from Connec! when trying to update a #{self.connec_entity_name}" unless response
-    JSON.parse(response.body)["#{connec_entity_name.downcase.pluralize}"]
+    JSON.parse(response.body)["#{normalized_connec_entity_name}"]
   end
 
   def map_to_external_with_idmap(entity, organization)
@@ -238,6 +246,10 @@ module Maestrano::Connector::Rails::Concerns::Entity
   #             Entity specific methods
   # Those methods need to be define in each entity
   # ----------------------------------------------
+  # Is this resource a singleton (in Connec!)?
+  def singleton?
+    false
+  end
 
   # Entity name in Connec!
   def connec_entity_name

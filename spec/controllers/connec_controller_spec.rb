@@ -50,7 +50,7 @@ describe Maestrano::ConnecController, type: :controller do
           allow(Maestrano::Connector::Rails::Entity).to receive(:entities_list).and_return(%w(contact_and_lead))
           class Entities::ContactAndLead < Maestrano::Connector::Rails::ComplexEntity
             def connec_entities_names
-              %w(lead)
+              %w(Lead)
             end
           end
           module Entities::SubEntities end;
@@ -70,7 +70,7 @@ describe Maestrano::ConnecController, type: :controller do
           let!(:organization) { create(:organization, uid: group_id, oauth_uid: 'lala', sync_enabled: true, synchronized_entities: {contact_and_lead: true}) }
 
           it 'process the data and push them' do
-            expect_any_instance_of(Entities::ContactAndLead).to receive(:consolidate_and_map_data).with({"lead"=>[entity]}, {}, organization, {}).and_return({})
+            expect_any_instance_of(Entities::ContactAndLead).to receive(:consolidate_and_map_data).with({"Lead"=>[entity]}, {}, organization, {}).and_return({})
             expect_any_instance_of(Entities::ContactAndLead).to receive(:push_entities_to_external)
             subject
           end
@@ -84,7 +84,7 @@ describe Maestrano::ConnecController, type: :controller do
           allow(Maestrano::Connector::Rails::Entity).to receive(:entities_list).and_return(%w(person))
           class Entities::Person < Maestrano::Connector::Rails::Entity
             def connec_entity_name
-              'person'
+              'People'
             end
           end
         }

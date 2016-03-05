@@ -14,7 +14,7 @@ module Maestrano::Connector::Rails
           next unless organization.synchronized_entities[entity_instance_hash[:name].to_sym]
 
           if entity_instance_hash[:is_complex]
-            mapped_entities = entity_instance.consolidate_and_map_data(Hash[ *entity_instance.connec_entities_names.collect{|name| [ name, []]}.flatten(1) ], Hash[ *entity_instance.external_entities_names.collect{|name| name == external_entity_name.singularize ? [name, entities] : [ name, []]}.flatten(1) ], organization, {})
+            mapped_entities = entity_instance.consolidate_and_map_data(Hash[ *entity_instance.connec_entities_names.collect{|name| [ name, []]}.flatten(1) ], Hash[ *entity_instance.external_entities_names.collect{|name| name == external_entity_name ? [name, entities] : [ name, []]}.flatten(1) ], organization, {})
           else
             mapped_entities = entity_instance.consolidate_and_map_data([], entities, organization, {})
           end
