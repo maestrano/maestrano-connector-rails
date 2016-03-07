@@ -107,8 +107,7 @@ module Maestrano::Connector::Rails
               ConnectorLogger.log('info', organization, "Discard #{@@external_name} #{external_entity_name} : #{entity}")
               next nil
             end
-
-            equivalent_connec_entities = connec_entities[connec_entity_name][external_entity_name] || []
+            equivalent_connec_entities = modeled_connec_entities[connec_entity_name][external_entity_name] || []
             # Check for conflict with entities from connec!
             if idmap.connec_id && connec_entity = equivalent_connec_entities.detect{|connec_entity| connec_entity['id'] == idmap.connec_id}
               # We keep the most recently updated entity
