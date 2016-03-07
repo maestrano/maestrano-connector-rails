@@ -236,28 +236,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
   # * Maps not discarded entities and associates them with their idmap, or create one if there isn't any
   # * Return a hash {connec_entities: [], external_entities: []}
   def consolidate_and_map_data(connec_entities, external_entities, organization, opts={})
-    if singleton?
-      return {connec_entities: [], external_entities: []} if external_entities.empty? && connec_entities.empty?
-
-      idmap = find_or_create_idmap({organization_id: organization.id})
-
-      if external_entities.empty?
-        keep_external = false
-      elsif connec_entities.empty?
-        keep_external = true
-      elsif !opts[:connec_preemption].nil?
-        keep_external = !opts[:connec_preemption]
-      else
-        keep_external = is_external_more_recent?(connec_entities.first, external_entities.first)
-      end
-      if keep_external
-        idmap.update(external_id: get_id_from_external_entity_hash(external_entities.first))
-        return {connec_entities: [], external_entities: [{entity: map_to_connec(external_entities.first, organization), idmap: idmap}]}
-      else
-        idmap.update(connec_id: connec_entities.first['id'])
-        return {connec_entities: [{entity: map_to_external(connec_entities.first, organization), idmap: idmap}], external_entities: []}
-      end
-    end
+    return consolidate_and_map_singleton(connec_entities, external_entities, organization, opts) if singleton?
 
     mapped_external_entities = external_entities.map{|entity|
       idmap = find_idmap({external_id: get_id_from_external_entity_hash(entity), organization_id: organization.id})
@@ -270,32 +249,10 @@ module Maestrano::Connector::Rails::Concerns::Entity
       next nil unless idmap.to_connec
 
       # Entity has not been modified since its last push to connec!
-      if idmap.last_push_to_connec && idmap.last_push_to_connec > get_last_update_date_from_external_entity_hash(entity)
-        Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Discard #{@@external_name} #{external_entity_name} : #{entity}")
-        next nil
-      end
+      next nil if self.class.not_modified_since_last_push_to_connec(idmap, entity, self, organization)
 
       # Check for conflict with entities from connec!
-      if idmap.connec_id && connec_entity = connec_entities.detect{|connec_entity| connec_entity['id'] == idmap.connec_id}
-        # We keep the most recently updated entity
-        if !opts[:connec_preemption].nil?
-          keep_external = !opts[:connec_preemption]
-        else
-          keep_external = is_external_more_recent?(connec_entity, entity)
-        end
-
-        if keep_external
-          Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Conflict between #{@@external_name} #{external_entity_name} #{entity} and Connec! #{connec_entity_name} #{connec_entity}. Entity from #{@@external_name} kept")
-          connec_entities.delete(connec_entity)
-          {entity: map_to_connec(entity, organization), idmap: idmap}
-        else
-          Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Conflict between #{@@external_name} #{external_entity_name} #{entity} and Connec! #{connec_entity_name} #{connec_entity}. Entity from Connec! kept")
-          nil
-        end
-
-      else
-        {entity: map_to_connec(entity, organization), idmap: idmap}
-      end
+      self.class.solve_conflict(entity, self, connec_entities, connec_entity_name, idmap, organization, opts)
     }
     mapped_external_entities.compact!
 
@@ -307,6 +264,28 @@ module Maestrano::Connector::Rails::Concerns::Entity
     return {connec_entities: mapped_connec_entities, external_entities: mapped_external_entities}
   end
 
+  def consolidate_and_map_singleton(connec_entities, external_entities, organization, opts={})
+    return {connec_entities: [], external_entities: []} if external_entities.empty? && connec_entities.empty?
+
+    idmap = find_or_create_idmap({organization_id: organization.id})
+
+    if external_entities.empty?
+      keep_external = false
+    elsif connec_entities.empty?
+      keep_external = true
+    elsif !opts[:connec_preemption].nil?
+      keep_external = !opts[:connec_preemption]
+    else
+      keep_external = self.class.is_external_more_recent?(connec_entities.first, external_entities.first, self)
+    end
+    if keep_external
+      idmap.update(external_id: get_id_from_external_entity_hash(external_entities.first))
+      return {connec_entities: [], external_entities: [{entity: map_to_connec(external_entities.first, organization), idmap: idmap}]}
+    else
+      idmap.update(connec_id: connec_entities.first['id'])
+      return {connec_entities: [{entity: map_to_external(connec_entities.first, organization), idmap: idmap}], external_entities: []}
+    end
+  end
 
   # ----------------------------------------------
   #             Entity specific methods
@@ -343,8 +322,45 @@ module Maestrano::Connector::Rails::Concerns::Entity
   end
 
 
-  private
-    def is_external_more_recent?(connec_entity, external_entity)
-      connec_entity['updated_at'] < get_last_update_date_from_external_entity_hash(external_entity)
+  # ----------------------------------------------
+  #             Internal helper methods
+  # ----------------------------------------------
+  module ClassMethods
+    def not_modified_since_last_push_to_connec(idmap, entity, entity_instance, organization)
+      result = idmap.last_push_to_connec && idmap.last_push_to_connec > entity_instance.get_last_update_date_from_external_entity_hash(entity)
+      Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Discard #{entity_instance.external_entity_name} : #{entity}") unless result
+      result
     end
+
+    def is_external_more_recent?(connec_entity, external_entity, entity_instance)
+      connec_entity['updated_at'] < entity_instance.get_last_update_date_from_external_entity_hash(external_entity)
+    end
+
+    def solve_conflict(external_entity, entity_instance, connec_entities, connec_entity_name, idmap, organization, opts)
+      if idmap.connec_id && connec_entity = connec_entities.detect{|connec_entity| connec_entity['id'] == idmap.connec_id}
+        # We keep the most recently updated entity
+        if !opts[:connec_preemption].nil?
+          keep_external = !opts[:connec_preemption]
+        else
+          keep_external = is_external_more_recent?(connec_entity, external_entity, entity_instance)
+        end
+
+        if keep_external
+          Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Conflict between #{entity_instance.external_entity_name} #{external_entity} and Connec! #{connec_entity_name} #{connec_entity}. Entity from external kept")
+          connec_entities.delete(connec_entity)
+          entity_instance.map_external_entity_with_idmap(external_entity, connec_entity_name, idmap, organization)
+        else
+          Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Conflict between #{entity_instance.external_entity_name} #{external_entity} and Connec! #{connec_entity_name} #{connec_entity}. Entity from Connec! kept")
+          nil
+        end
+
+      else
+        entity_instance.map_external_entity_with_idmap(external_entity, connec_entity_name, idmap, organization)
+      end
+    end
+  end
+
+  def map_external_entity_with_idmap(external_entity, connec_entity_name, idmap, organization)
+    {entity: map_to_connec(external_entity, organization), idmap: idmap}
+  end
 end

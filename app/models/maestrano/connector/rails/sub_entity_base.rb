@@ -64,5 +64,9 @@ module Maestrano::Connector::Rails
         Maestrano::Connector::Rails::IdMap.create(h)
       end
     end
+
+    def map_external_entity_with_idmap(external_entity, connec_entity_name, idmap, organization)
+      {entity: map_to(connec_entity_name, external_entity, organization), idmap: idmap}
+    end
   end
 end
