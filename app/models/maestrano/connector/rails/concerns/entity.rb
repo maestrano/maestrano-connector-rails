@@ -17,12 +17,12 @@ module Maestrano::Connector::Rails::Concerns::Entity
   # ----------------------------------------------
   # Map a Connec! entity to the external format
   def map_to_external(entity, organization)
-    self.mapper_class.normalize(entity)
+    mapper_class.normalize(entity)
   end
 
   # Map an external entity to Connec! format
   def map_to_connec(entity, organization)
-    self.mapper_class.denormalize(entity)
+    mapper_class.denormalize(entity)
   end
 
   # ----------------------------------------------
@@ -30,35 +30,36 @@ module Maestrano::Connector::Rails::Concerns::Entity
   # ----------------------------------------------
   def names_hash
     {
-      connec_entity: self.connec_entity_name.downcase,
-      external_entity: self.external_entity_name.downcase
+      connec_entity: connec_entity_name.downcase,
+      external_entity: external_entity_name.downcase
     }
   end
 
   def find_or_create_idmap(organization_and_id)
-    Maestrano::Connector::Rails::IdMap.find_or_create_by(self.names_hash.merge(organization_and_id))
+    Maestrano::Connector::Rails::IdMap.find_or_create_by(names_hash.merge(organization_and_id))
   end
 
   # organization_and_id can be either:
   # * {connec_id: 'id', organization_id: 'id'}
   # * {external_id: 'id', organization_id: 'id'}
+  # Needs to include either connec_entity or external_entity for complex entities
   def find_idmap(organization_and_id)
-    Maestrano::Connector::Rails::IdMap.find_by(self.names_hash.merge(organization_and_id))
+    Maestrano::Connector::Rails::IdMap.find_by(names_hash.merge(organization_and_id))
   end
 
   def create_idmap_from_external_entity(entity, organization)
-    h = self.names_hash.merge({
-      external_id: self.get_id_from_external_entity_hash(entity),
-      name: self.object_name_from_external_entity_hash(entity),
+    h = names_hash.merge({
+      external_id: get_id_from_external_entity_hash(entity),
+      name: object_name_from_external_entity_hash(entity),
       organization_id: organization.id
     })
     Maestrano::Connector::Rails::IdMap.create(h)
   end
 
   def create_idmap_from_connec_entity(entity, organization)
-    h = self.names_hash.merge({
+    h = names_hash.merge({
       connec_id: entity['id'],
-      name: self.object_name_from_connec_entity_hash(entity),
+      name: object_name_from_connec_entity_hash(entity),
       organization_id: organization.id
     })
     Maestrano::Connector::Rails::IdMap.create(h)
@@ -67,74 +68,74 @@ module Maestrano::Connector::Rails::Concerns::Entity
   #                 Connec! methods
   # ----------------------------------------------
   def normalized_connec_entity_name
-    if self.singleton?
-      self.connec_entity_name.downcase
+    if singleton?
+      connec_entity_name.downcase
     else
-      self.connec_entity_name.downcase.pluralize
+      connec_entity_name.downcase.pluralize
     end
   end
 
   def get_connec_entities(client, last_synchronization, organization, opts={})
-    Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Fetching Connec! #{self.connec_entity_name}")
+    Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Fetching Connec! #{connec_entity_name}")
 
     entities = []
 
     # Fetch first page
     if last_synchronization.blank? || opts[:full_sync]
-      Maestrano::Connector::Rails::ConnectorLogger.log('debug', organization, "entity=#{self.connec_entity_name}, fetching all data")
-      response = client.get("/#{self.normalized_connec_entity_name}")
+      Maestrano::Connector::Rails::ConnectorLogger.log('debug', organization, "entity=#{connec_entity_name}, fetching all data")
+      response = client.get("/#{normalized_connec_entity_name}")
     else
-      Maestrano::Connector::Rails::ConnectorLogger.log('debug', organization, "entity=#{self.connec_entity_name}, fetching data since #{last_synchronization.updated_at.iso8601}")
+      Maestrano::Connector::Rails::ConnectorLogger.log('debug', organization, "entity=#{connec_entity_name}, fetching data since #{last_synchronization.updated_at.iso8601}")
       query_param = URI.encode("$filter=updated_at gt '#{last_synchronization.updated_at.iso8601}'")
-      response = client.get("/#{self.normalized_connec_entity_name}?#{query_param}")
+      response = client.get("/#{normalized_connec_entity_name}?#{query_param}")
     end
-    raise "No data received from Connec! when trying to fetch #{self.connec_entity_name.pluralize}" unless response
+    raise "No data received from Connec! when trying to fetch #{connec_entity_name.pluralize}" unless response
 
     response_hash = JSON.parse(response.body)
-    Maestrano::Connector::Rails::ConnectorLogger.log('debug', organization, "received first page entity=#{self.connec_entity_name}, response=#{response.body}")
-    if response_hash["#{self.normalized_connec_entity_name}"]
-      entities << response_hash["#{self.normalized_connec_entity_name}"]
+    Maestrano::Connector::Rails::ConnectorLogger.log('debug', organization, "received first page entity=#{connec_entity_name}, response=#{response.body}")
+    if response_hash["#{normalized_connec_entity_name}"]
+      entities << response_hash["#{normalized_connec_entity_name}"]
     else
-      raise "Received unrecognized Connec! data when trying to fetch #{self.connec_entity_name.pluralize}"
+      raise "Received unrecognized Connec! data when trying to fetch #{connec_entity_name.pluralize}"
     end
 
     # Fetch subsequent pages
     while response_hash['pagination'] && response_hash['pagination']['next']
       # ugly way to convert https://api-connec/api/v2/group_id/organizations?next_page_params to /organizations?next_page_params
-      next_page = response_hash['pagination']['next'].gsub(/^(.*)\/#{self.normalized_connec_entity_name}/, self.normalized_connec_entity_name)
+      next_page = response_hash['pagination']['next'].gsub(/^(.*)\/#{normalized_connec_entity_name}/, normalized_connec_entity_name)
       response = client.get(next_page)
 
-      raise "No data received from Connec! when trying to fetch subsequent page of #{self.connec_entity_name.pluralize}" unless response
-      Maestrano::Connector::Rails::ConnectorLogger.log('debug', organization, "received next page entity=#{self.connec_entity_name}, response=#{response.body}")
+      raise "No data received from Connec! when trying to fetch subsequent page of #{connec_entity_name.pluralize}" unless response
+      Maestrano::Connector::Rails::ConnectorLogger.log('debug', organization, "received next page entity=#{connec_entity_name}, response=#{response.body}")
 
       response_hash = JSON.parse(response.body)
-      if response_hash["#{self.normalized_connec_entity_name}"]
-        entities << response_hash["#{self.normalized_connec_entity_name}"]
+      if response_hash["#{normalized_connec_entity_name}"]
+        entities << response_hash["#{normalized_connec_entity_name}"]
       else
-        raise "Received unrecognized Connec! data when trying to fetch subsequent page of #{self.connec_entity_name.pluralize}"
+        raise "Received unrecognized Connec! data when trying to fetch subsequent page of #{connec_entity_name.pluralize}"
       end
     end
 
     entities = entities.flatten
-    Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Received data: Source=Connec!, Entity=#{self.connec_entity_name}, Data=#{entities}")
+    Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Received data: Source=Connec!, Entity=#{connec_entity_name}, Data=#{entities}")
     entities
   end
 
   def push_entities_to_connec(connec_client, mapped_external_entities_with_idmaps, organization)
-    self.push_entities_to_connec_to(connec_client, mapped_external_entities_with_idmaps, self.connec_entity_name, organization)
+    push_entities_to_connec_to(connec_client, mapped_external_entities_with_idmaps, connec_entity_name, organization)
   end
 
   def push_entities_to_connec_to(connec_client, mapped_external_entities_with_idmaps, connec_entity_name, organization)
-    Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Sending #{@@external_name} #{self.external_entity_name.pluralize} to Connec! #{connec_entity_name.pluralize}")
+    Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Sending #{@@external_name} #{external_entity_name.pluralize} to Connec! #{connec_entity_name.pluralize}")
     mapped_external_entities_with_idmaps.each do |mapped_external_entity_with_idmap|
       external_entity = mapped_external_entity_with_idmap[:entity]
       idmap = mapped_external_entity_with_idmap[:idmap]
 
       if idmap.connec_id.blank?
-        connec_entity = self.create_connec_entity(connec_client, external_entity, connec_entity_name, organization)
+        connec_entity = create_connec_entity(connec_client, external_entity, connec_entity_name, organization)
         idmap.update_attributes(connec_id: connec_entity['id'], connec_entity: connec_entity_name.downcase, last_push_to_connec: Time.now, message: nil)
       else
-        connec_entity = self.update_connec_entity(connec_client, external_entity, idmap.connec_id, connec_entity_name, organization)
+        connec_entity = update_connec_entity(connec_client, external_entity, idmap.connec_id, connec_entity_name, organization)
         idmap.update_attributes(last_push_to_connec: Time.now, message: nil)
       end
 
@@ -146,25 +147,25 @@ module Maestrano::Connector::Rails::Concerns::Entity
   def create_connec_entity(connec_client, mapped_external_entity, connec_entity_name, organization)
     Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Sending create #{connec_entity_name}: #{mapped_external_entity} to Connec!")
     response = connec_client.post("/#{normalized_connec_entity_name}", { "#{normalized_connec_entity_name}".to_sym => mapped_external_entity })
-    raise "No response received from Connec! when trying to create a #{self.connec_entity_name}" unless response
+    raise "No response received from Connec! when trying to create a #{connec_entity_name}" unless response
     JSON.parse(response.body)["#{normalized_connec_entity_name}"]
   end
 
   def update_connec_entity(connec_client, mapped_external_entity, connec_id, connec_entity_name, organization)
     Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Sending update #{connec_entity_name}: #{mapped_external_entity} to Connec!")
     response = connec_client.put("/#{normalized_connec_entity_name}/#{connec_id}", { "#{normalized_connec_entity_name}".to_sym => mapped_external_entity })
-    raise "No response received from Connec! when trying to update a #{self.connec_entity_name}" unless response
+    raise "No response received from Connec! when trying to update a #{connec_entity_name}" unless response
     JSON.parse(response.body)["#{normalized_connec_entity_name}"]
   end
 
   def map_to_external_with_idmap(entity, organization)
-    idmap = self.find_idmap({connec_id: entity['id'], organization_id: organization.id})
+    idmap = find_idmap({connec_id: entity['id'], organization_id: organization.id})
 
     if idmap && ((!idmap.to_external) || (idmap.last_push_to_external && idmap.last_push_to_external > entity['updated_at']))
-      Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Discard Connec! #{self.connec_entity_name} : #{entity}")
+      Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Discard Connec! #{connec_entity_name} : #{entity}")
       nil
     else
-      {entity: self.map_to_external(entity, organization), idmap: idmap || self.create_idmap_from_connec_entity(entity, organization)}
+      {entity: map_to_external(entity, organization), idmap: idmap || create_idmap_from_connec_entity(entity, organization)}
     end
   end
 
@@ -172,18 +173,18 @@ module Maestrano::Connector::Rails::Concerns::Entity
   #                 External methods
   # ----------------------------------------------
   def get_external_entities(client, last_synchronization, organization, opts={})
-    Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Fetching #{@@external_name} #{self.external_entity_name.pluralize}")
+    Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Fetching #{@@external_name} #{external_entity_name.pluralize}")
     raise "Not implemented"
   end
 
   def push_entities_to_external(external_client, mapped_connec_entities_with_idmaps, organization)
-    push_entities_to_external_to(external_client, mapped_connec_entities_with_idmaps, self.external_entity_name, organization)
+    push_entities_to_external_to(external_client, mapped_connec_entities_with_idmaps, external_entity_name, organization)
   end
 
   def push_entities_to_external_to(external_client, mapped_connec_entities_with_idmaps, external_entity_name, organization)
-    Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Sending Connec! #{self.connec_entity_name.pluralize} to #{@@external_name} #{external_entity_name.pluralize}")
+    Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Sending Connec! #{connec_entity_name.pluralize} to #{@@external_name} #{external_entity_name.pluralize}")
     mapped_connec_entities_with_idmaps.each do |mapped_connec_entity_with_idmap|
-      self.push_entity_to_external(external_client, mapped_connec_entity_with_idmap, external_entity_name, organization)
+      push_entity_to_external(external_client, mapped_connec_entity_with_idmap, external_entity_name, organization)
     end
   end
 
@@ -193,10 +194,10 @@ module Maestrano::Connector::Rails::Concerns::Entity
 
     begin
       if idmap.external_id.blank?
-        external_id = self.create_external_entity(external_client, connec_entity, external_entity_name, organization)
+        external_id = create_external_entity(external_client, connec_entity, external_entity_name, organization)
         idmap.update_attributes(external_id: external_id, external_entity: external_entity_name.downcase, last_push_to_external: Time.now, message: nil)
       else
-        self.update_external_entity(external_client, connec_entity, idmap.external_id, external_entity_name, organization)
+        update_external_entity(external_client, connec_entity, idmap.external_id, external_entity_name, organization)
         idmap.update_attributes(last_push_to_external: Time.now, message: nil)
       end
     rescue => e
@@ -234,7 +235,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
     if singleton?
       return {connec_entities: [], external_entities: []} if external_entities.empty? && connec_entities.empty?
 
-      idmap = self.find_or_create_idmap({organization_id: organization.id})
+      idmap = find_or_create_idmap({organization_id: organization.id})
 
       if external_entities.empty?
         keep_external = false
@@ -255,18 +256,18 @@ module Maestrano::Connector::Rails::Concerns::Entity
     end
 
     mapped_external_entities = external_entities.map{|entity|
-      idmap = self.find_idmap({external_id: get_id_from_external_entity_hash(entity), organization_id: organization.id})
+      idmap = find_idmap({external_id: get_id_from_external_entity_hash(entity), organization_id: organization.id})
       # No idmap: creating one, nothing else to do
       unless idmap
-        next {entity: self.map_to_connec(entity, organization), idmap: self.create_idmap_from_external_entity(entity, organization)}
+        next {entity: map_to_connec(entity, organization), idmap: create_idmap_from_external_entity(entity, organization)}
       end
 
       # Not pushing entity to Connec!
       next nil unless idmap.to_connec
 
       # Entity has not been modified since its last push to connec!
-      if idmap.last_push_to_connec && idmap.last_push_to_connec > self.get_last_update_date_from_external_entity_hash(entity)
-        Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Discard #{@@external_name} #{self.external_entity_name} : #{entity}")
+      if idmap.last_push_to_connec && idmap.last_push_to_connec > get_last_update_date_from_external_entity_hash(entity)
+        Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Discard #{@@external_name} #{external_entity_name} : #{entity}")
         next nil
       end
 
@@ -280,22 +281,22 @@ module Maestrano::Connector::Rails::Concerns::Entity
         end
 
         if keep_external
-          Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Conflict between #{@@external_name} #{self.external_entity_name} #{entity} and Connec! #{self.connec_entity_name} #{connec_entity}. Entity from #{@@external_name} kept")
+          Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Conflict between #{@@external_name} #{external_entity_name} #{entity} and Connec! #{connec_entity_name} #{connec_entity}. Entity from #{@@external_name} kept")
           connec_entities.delete(connec_entity)
-          {entity: self.map_to_connec(entity, organization), idmap: idmap}
+          {entity: map_to_connec(entity, organization), idmap: idmap}
         else
-          Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Conflict between #{@@external_name} #{self.external_entity_name} #{entity} and Connec! #{self.connec_entity_name} #{connec_entity}. Entity from Connec! kept")
+          Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Conflict between #{@@external_name} #{external_entity_name} #{entity} and Connec! #{connec_entity_name} #{connec_entity}. Entity from Connec! kept")
           nil
         end
 
       else
-        {entity: self.map_to_connec(entity, organization), idmap: idmap}
+        {entity: map_to_connec(entity, organization), idmap: idmap}
       end
     }
     mapped_external_entities.compact!
 
     mapped_connec_entities = connec_entities.map{|entity|
-      self.map_to_external_with_idmap(entity, organization)
+      map_to_external_with_idmap(entity, organization)
     }
     mapped_connec_entities.compact!
 
@@ -340,6 +341,6 @@ module Maestrano::Connector::Rails::Concerns::Entity
 
   private
     def is_external_more_recent?(connec_entity, external_entity)
-      connec_entity['updated_at'] < self.get_last_update_date_from_external_entity_hash(external_entity)
+      connec_entity['updated_at'] < get_last_update_date_from_external_entity_hash(external_entity)
     end
 end

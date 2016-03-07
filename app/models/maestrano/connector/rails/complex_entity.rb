@@ -53,13 +53,13 @@ module Maestrano::Connector::Rails
     #          General methods
     # -------------------------------------------------------------
     def map_to_external_with_idmap(entity, organization, connec_entity_name, external_entity_name, sub_entity_instance)
-      idmap = IdMap.find_by(connec_id: entity['id'], connec_entity: connec_entity_name.downcase, external_entity: external_entity_name.downcase, organization_id: organization.id)
+      idmap = sub_entity_instance.find_idmap({connec_id: entity['id'], external_entity: external_entity_name, organization_id: organization.id})
 
       if idmap && idmap.last_push_to_external && idmap.last_push_to_external > entity['updated_at']
         ConnectorLogger.log('info', organization, "Discard Connec! #{connec_entity_name} : #{entity}")
         nil
       else
-        {entity: sub_entity_instance.map_to(external_entity_name, entity, organization), idmap: idmap || IdMap.create(connec_id: entity['id'], connec_entity: connec_entity_name.downcase, external_entity: external_entity_name.downcase, organization_id: organization.id, name: sub_entity_instance.object_name_from_connec_entity_hash(entity))}
+        {entity: sub_entity_instance.map_to(external_entity_name, entity, organization), idmap: idmap || sub_entity_instance.create_idmap_from_connec_entity(entity, external_entity_name, organization)}
       end
     end
 
@@ -95,11 +95,11 @@ module Maestrano::Connector::Rails
           sub_entity_instance = "Entities::SubEntities::#{external_entity_name.titleize.split.join}".constantize.new
 
           entities.map!{|entity|
-            idmap = IdMap.find_by(external_id: sub_entity_instance.get_id_from_external_entity_hash(entity), external_entity: external_entity_name.downcase, connec_entity: connec_entity_name.downcase, organization_id: organization.id)
+            idmap = sub_entity_instance.find_idmap(external_id: sub_entity_instance.get_id_from_external_entity_hash(entity), connec_entity: connec_entity_name, organization_id: organization.id)
 
             # No idmap: creating one, nothing else to do
             unless idmap
-              next {entity: sub_entity_instance.map_to(connec_entity_name, entity, organization), idmap: IdMap.create(external_id: sub_entity_instance.get_id_from_external_entity_hash(entity), external_entity: external_entity_name.downcase, connec_entity: connec_entity_name.downcase, organization_id: organization.id, name: sub_entity_instance.object_name_from_external_entity_hash(entity))}
+              next {entity: sub_entity_instance.map_to(connec_entity_name, entity, organization), idmap: sub_entity_instance.create_idmap_from_external_entity(entity, connec_entity_name, organization)}
             end
 
             # Entity has not been modified since its last push to connec!
