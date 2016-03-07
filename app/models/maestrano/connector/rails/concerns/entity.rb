@@ -26,6 +26,44 @@ module Maestrano::Connector::Rails::Concerns::Entity
   end
 
   # ----------------------------------------------
+  #                 IdMap methods
+  # ----------------------------------------------
+  def names_hash
+    {
+      connec_entity: self.connec_entity_name.downcase,
+      external_entity: self.external_entity_name.downcase
+    }
+  end
+
+  def find_or_create_idmap(organization_and_id)
+    Maestrano::Connector::Rails::IdMap.find_or_create_by(self.names_hash.merge(organization_and_id))
+  end
+
+  # organization_and_id can be either:
+  # * {connec_id: 'id', organization_id: 'id'}
+  # * {external_id: 'id', organization_id: 'id'}
+  def find_idmap(organization_and_id)
+    Maestrano::Connector::Rails::IdMap.find_by(self.names_hash.merge(organization_and_id))
+  end
+
+  def create_idmap_from_external_entity(entity, organization)
+    h = self.names_hash.merge({
+      external_id: self.get_id_from_external_entity_hash(entity),
+      name: self.object_name_from_external_entity_hash(entity),
+      organization_id: organization.id
+    })
+    Maestrano::Connector::Rails::IdMap.create(h)
+  end
+
+  def create_idmap_from_connec_entity(entity, organization)
+    h = self.names_hash.merge({
+      connec_id: entity['id'],
+      name: self.object_name_from_connec_entity_hash(entity),
+      organization_id: organization.id
+    })
+    Maestrano::Connector::Rails::IdMap.create(h)
+  end
+  # ----------------------------------------------
   #                 Connec! methods
   # ----------------------------------------------
   def normalized_connec_entity_name
@@ -120,13 +158,13 @@ module Maestrano::Connector::Rails::Concerns::Entity
   end
 
   def map_to_external_with_idmap(entity, organization)
-    idmap = Maestrano::Connector::Rails::IdMap.find_by(connec_id: entity['id'], connec_entity: self.connec_entity_name.downcase, organization_id: organization.id)
+    idmap = self.find_idmap({connec_id: entity['id'], organization_id: organization.id})
 
     if idmap && ((!idmap.to_external) || (idmap.last_push_to_external && idmap.last_push_to_external > entity['updated_at']))
       Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Discard Connec! #{self.connec_entity_name} : #{entity}")
       nil
     else
-      {entity: self.map_to_external(entity, organization), idmap: idmap || Maestrano::Connector::Rails::IdMap.create(connec_id: entity['id'], connec_entity: self.connec_entity_name.downcase, organization_id: organization.id, name: object_name_from_connec_entity_hash(entity))}
+      {entity: self.map_to_external(entity, organization), idmap: idmap || self.create_idmap_from_connec_entity(entity, organization)}
     end
   end
 
@@ -193,11 +231,34 @@ module Maestrano::Connector::Rails::Concerns::Entity
   # * Maps not discarded entities and associates them with their idmap, or create one if there isn't any
   # * Return a hash {connec_entities: [], external_entities: []}
   def consolidate_and_map_data(connec_entities, external_entities, organization, opts={})
+    if singleton?
+      return {connec_entities: [], external_entities: []} if external_entities.empty? && connec_entities.empty?
+
+      idmap = self.find_or_create_idmap({organization_id: organization.id})
+
+      if external_entities.empty?
+        keep_external = false
+      elsif connec_entities.empty?
+        keep_external = true
+      elsif !opts[:connec_preemption].nil?
+        keep_external = !opts[:connec_preemption]
+      else
+        keep_external = is_external_more_recent?(connec_entities.first, external_entities.first)
+      end
+      if keep_external
+        idmap.update(external_id: get_id_from_external_entity_hash(external_entities.first))
+        return {connec_entities: [], external_entities: [{entity: map_to_connec(external_entities.first, organization), idmap: idmap}]}
+      else
+        idmap.update(connec_id: connec_entities.first['id'])
+        return {connec_entities: [{entity: map_to_external(connec_entities.first, organization), idmap: idmap}], external_entities: []}
+      end
+    end
+
     mapped_external_entities = external_entities.map{|entity|
-      idmap = Maestrano::Connector::Rails::IdMap.find_by(external_id: self.get_id_from_external_entity_hash(entity), external_entity: self.external_entity_name.downcase, organization_id: organization.id)
+      idmap = self.find_idmap({external_id: get_id_from_external_entity_hash(entity), organization_id: organization.id})
       # No idmap: creating one, nothing else to do
       unless idmap
-        next {entity: self.map_to_connec(entity, organization), idmap: Maestrano::Connector::Rails::IdMap.create(external_id: self.get_id_from_external_entity_hash(entity), external_entity: self.external_entity_name.downcase, organization_id: organization.id, name: self.object_name_from_external_entity_hash(entity))}
+        next {entity: self.map_to_connec(entity, organization), idmap: self.create_idmap_from_external_entity(entity, organization)}
       end
 
       # Not pushing entity to Connec!
@@ -215,7 +276,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
         if !opts[:connec_preemption].nil?
           keep_external = !opts[:connec_preemption]
         else
-          keep_external = connec_entity['updated_at'] < self.get_last_update_date_from_external_entity_hash(entity)
+          keep_external = is_external_more_recent?(connec_entity, entity)
         end
 
         if keep_external
@@ -275,4 +336,10 @@ module Maestrano::Connector::Rails::Concerns::Entity
   def object_name_from_external_entity_hash(entity)
     raise "Not implemented"
   end
+
+
+  private
+    def is_external_more_recent?(connec_entity, external_entity)
+      connec_entity['updated_at'] < self.get_last_update_date_from_external_entity_hash(external_entity)
+    end
 end
