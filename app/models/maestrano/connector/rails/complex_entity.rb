@@ -52,11 +52,11 @@ module Maestrano::Connector::Rails
     # -------------------------------------------------------------
     #          General methods
     # -------------------------------------------------------------
-    def map_to_external_with_idmap(entity, organization, connec_entity_name, external_entity_name, sub_entity_instance)
+    def map_to_external_with_idmap(entity, organization, external_entity_name, sub_entity_instance)
       idmap = sub_entity_instance.find_idmap({connec_id: entity['id'], external_entity: external_entity_name, organization_id: organization.id})
 
       if idmap && idmap.last_push_to_external && idmap.last_push_to_external > entity['updated_at']
-        ConnectorLogger.log('info', organization, "Discard Connec! #{connec_entity_name} : #{entity}")
+        ConnectorLogger.log('info', organization, "Discard Connec! #{sub_entity_instance.entity_name} : #{entity}")
         nil
       else
         {entity: sub_entity_instance.map_to(external_entity_name, entity, organization), idmap: idmap || sub_entity_instance.create_idmap_from_connec_entity(entity, external_entity_name, organization)}
@@ -137,7 +137,7 @@ module Maestrano::Connector::Rails
         entities_in_external_model.each do |external_entity_name, entities|
           sub_entity_instance = "Entities::SubEntities::#{connec_entity_name.titleize.split.join}".constantize.new
           entities.map!{|entity|
-            self.map_to_external_with_idmap(entity, organization, connec_entity_name, external_entity_name, sub_entity_instance)
+            self.map_to_external_with_idmap(entity, organization, external_entity_name, sub_entity_instance)
           }.compact!
         end
       end

@@ -40,19 +40,19 @@ describe Maestrano::Connector::Rails::ComplexEntity do
       context 'when entity has no idmap' do
         it 'creates one' do
           expect {
-            subject.map_to_external_with_idmap(entity, organization, connec_name, external_name, sub_instance)
+            subject.map_to_external_with_idmap(entity, organization, external_name, sub_instance)
           }.to change{ Maestrano::Connector::Rails::IdMap.count }.by(1)
         end
       end
       it 'returns the mapped entity with its idmap' do
-        expect(subject.map_to_external_with_idmap(entity, organization, connec_name, external_name, sub_instance)).to eql({entity: mapped_entity, idmap: Maestrano::Connector::Rails::IdMap.last})
+        expect(subject.map_to_external_with_idmap(entity, organization, external_name, sub_instance)).to eql({entity: mapped_entity, idmap: Maestrano::Connector::Rails::IdMap.last})
       end
 
       context 'when entity has an idmap without last_push_to_external' do
         let!(:idmap) { create(:idmap, organization: organization, connec_id: id, connec_entity: connec_name, last_push_to_external: nil, external_entity: external_name) }
 
         it 'returns the mapped entity with its idmap' do
-          expect(subject.map_to_external_with_idmap(entity, organization, connec_name, external_name, sub_instance)).to eql({entity: mapped_entity, idmap: idmap})
+          expect(subject.map_to_external_with_idmap(entity, organization, external_name, sub_instance)).to eql({entity: mapped_entity, idmap: idmap})
         end
       end
 
@@ -60,7 +60,7 @@ describe Maestrano::Connector::Rails::ComplexEntity do
         let!(:idmap) { create(:idmap, organization: organization, connec_id: id, connec_entity: connec_name, last_push_to_external: 1.year.ago, external_entity: external_name) }
 
         it 'returns the mapped entity with its idmap' do
-          expect(subject.map_to_external_with_idmap(entity, organization, connec_name, external_name, sub_instance)).to eql({entity: mapped_entity, idmap: idmap})
+          expect(subject.map_to_external_with_idmap(entity, organization, external_name, sub_instance)).to eql({entity: mapped_entity, idmap: idmap})
         end
       end
 
@@ -68,7 +68,7 @@ describe Maestrano::Connector::Rails::ComplexEntity do
         let!(:idmap) { create(:idmap, organization: organization, connec_id: id, connec_entity: connec_name, last_push_to_external: 1.second.ago, external_entity: external_name) }
 
         it 'discards the entity' do
-          expect(subject.map_to_external_with_idmap(entity, organization, connec_name, external_name, sub_instance)).to be_nil
+          expect(subject.map_to_external_with_idmap(entity, organization, external_name, sub_instance)).to be_nil
         end
       end
     end
