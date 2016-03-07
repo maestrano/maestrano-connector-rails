@@ -131,31 +131,35 @@ module Maestrano::Connector::Rails::Concerns::Entity
       external_entity = mapped_external_entity_with_idmap[:entity]
       idmap = mapped_external_entity_with_idmap[:idmap]
 
-      if idmap.connec_id.blank?
-        connec_entity = create_connec_entity(connec_client, external_entity, connec_entity_name, organization)
-        idmap.update_attributes(connec_id: connec_entity['id'], connec_entity: connec_entity_name.downcase, last_push_to_connec: Time.now, message: nil)
-      else
-        connec_entity = update_connec_entity(connec_client, external_entity, idmap.connec_id, connec_entity_name, organization)
-        idmap.update_attributes(last_push_to_connec: Time.now, message: nil)
+      begin
+        if idmap.connec_id.blank?
+          connec_entity = create_connec_entity(connec_client, external_entity, connec_entity_name, organization)
+          idmap.update_attributes(connec_id: connec_entity['id'], connec_entity: connec_entity_name.downcase, last_push_to_connec: Time.now, message: nil)
+        else
+          connec_entity = update_connec_entity(connec_client, external_entity, idmap.connec_id, connec_entity_name, organization)
+          idmap.update_attributes(last_push_to_connec: Time.now, message: nil)
+        end
+      rescue => e
+        # Store Connec! error if any
+        idmap.update_attributes(message: e.message)
       end
-
-      # Store Connec! error if any
-      idmap.update_attributes(message: connec_entity['errors'].first['title']) unless connec_entity.blank? || connec_entity['errors'].blank?
     end
   end
 
   def create_connec_entity(connec_client, mapped_external_entity, connec_entity_name, organization)
     Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Sending create #{connec_entity_name}: #{mapped_external_entity} to Connec!")
     response = connec_client.post("/#{normalized_connec_entity_name}", { "#{normalized_connec_entity_name}".to_sym => mapped_external_entity })
-    raise "No response received from Connec! when trying to create a #{connec_entity_name}" unless response
-    JSON.parse(response.body)["#{normalized_connec_entity_name}"]
+    response = JSON.parse(response.body)
+    raise "Connec!: #{response['errors']['title']}" if response['errors'] && response['errors']['title']
+    response["#{normalized_connec_entity_name}"]
   end
 
   def update_connec_entity(connec_client, mapped_external_entity, connec_id, connec_entity_name, organization)
     Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Sending update #{connec_entity_name}: #{mapped_external_entity} to Connec!")
     response = connec_client.put("/#{normalized_connec_entity_name}/#{connec_id}", { "#{normalized_connec_entity_name}".to_sym => mapped_external_entity })
-    raise "No response received from Connec! when trying to update a #{connec_entity_name}" unless response
-    JSON.parse(response.body)["#{normalized_connec_entity_name}"]
+    response = JSON.parse(response.body)
+    raise "Connec!: #{response['errors']['title']}" if response['errors'] && response['errors']['title']
+    response["#{normalized_connec_entity_name}"]
   end
 
   def map_to_external_with_idmap(entity, organization)

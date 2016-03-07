@@ -218,26 +218,17 @@ describe Maestrano::Connector::Rails::Entity do
       describe 'create_connec_entity' do
         let(:entity) { {name: 'John'} }
 
-        describe 'with a response' do
-          before {
-            allow(client).to receive(:post).and_return(ActionDispatch::Response.new(200, {}, {people: entity}.to_json, {}))
-          }
+        before {
+          allow(client).to receive(:post).and_return(ActionDispatch::Response.new(200, {}, {people: entity}.to_json, {}))
+        }
 
-          it 'sends a post to connec' do
-            expect(client).to receive(:post).with("/#{connec_name.downcase.pluralize}", {"#{connec_name.downcase.pluralize}".to_sym => entity})
-            subject.create_connec_entity(client, entity, connec_name, organization)
-          end
-
-          it 'returns the created entity' do
-            expect(subject.create_connec_entity(client, entity, connec_name, organization)).to eql(JSON.parse(entity.to_json))
-          end
+        it 'sends a post to connec' do
+          expect(client).to receive(:post).with("/#{connec_name.downcase.pluralize}", {"#{connec_name.downcase.pluralize}".to_sym => entity})
+          subject.create_connec_entity(client, entity, connec_name, organization)
         end
 
-        describe 'without response' do
-          before {
-            allow(client).to receive(:post).and_return(nil)
-          }
-          it { expect{ subject.create_connec_entity(client, entity, connec_name, organization) }.to raise_error("No response received from Connec! when trying to create a #{connec_name}") }
+        it 'returns the created entity' do
+          expect(subject.create_connec_entity(client, entity, connec_name, organization)).to eql(JSON.parse(entity.to_json))
         end
       end
 
@@ -245,23 +236,13 @@ describe Maestrano::Connector::Rails::Entity do
         let(:organization) { create(:organization) }
         let(:entity) { {name: 'John'} }
         let(:id) { '88ye-777ab' }
+        before {
+          allow(client).to receive(:put).and_return(ActionDispatch::Response.new(200, {}, {}.to_json, {}))
+        }
 
-        describe 'with a response' do
-          before {
-            allow(client).to receive(:put).and_return(ActionDispatch::Response.new(200, {}, {}.to_json, {}))
-          }
-
-          it 'sends a put to connec' do
-            expect(client).to receive(:put).with("/#{connec_name.downcase.pluralize}/#{id}", {"#{connec_name.downcase.pluralize}".to_sym => entity})
-            subject.update_connec_entity(client, entity, id, connec_name, organization)
-          end
-        end
-
-        describe 'without response' do
-          before {
-            allow(client).to receive(:put).and_return(nil)
-          }
-          it { expect{ subject.update_connec_entity(client, entity, id, connec_name, organization) }.to raise_error("No response received from Connec! when trying to update a #{connec_name}") }
+        it 'sends a put to connec' do
+          expect(client).to receive(:put).with("/#{connec_name.downcase.pluralize}/#{id}", {"#{connec_name.downcase.pluralize}".to_sym => entity})
+          subject.update_connec_entity(client, entity, id, connec_name, organization)
         end
       end
 
