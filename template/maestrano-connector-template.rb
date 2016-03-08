@@ -3,7 +3,7 @@ def current_directory
       if __FILE__ =~ %r{\Ahttps?://}
         tempdir = Dir.mktmpdir("maestrano-connector-rails-")
         at_exit { FileUtils.remove_entry(tempdir) }
-        git :clone => "--quiet https://github.com/berardpi/maestrano-connector-rails/tree/include-frontend #{tempdir}"
+        git :clone => "--quiet https://github.com/maestrano/maestrano-connector-rails/ #{tempdir}"
 
         "#{tempdir}/template"
       else
