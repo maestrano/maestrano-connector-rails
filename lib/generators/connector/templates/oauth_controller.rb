@@ -5,10 +5,7 @@ class OauthController < ApplicationController
   # should be set according to your needs
 
   def request_omniauth
-    org_uid = params[:org_uid]
-    organization = Maestrano::Connector::Rails::Organization.find_by_uid(org_uid)
-
-    if organization && is_admin?(current_user, organization)
+    if is_admin
       # TODO
       # Perform oauth request here. The oauth process should be able to
       # remember the organization, either by a param in the request or using
@@ -20,7 +17,7 @@ class OauthController < ApplicationController
 
   def create_omniauth
     org_uid = '' # TODO
-    organization = Maestrano::Connector::Rails::Organization.find_by_uid(org_uid)
+    organization = Maestrano::Connector::Rails::Organization.find_by_uid_and_tenant(org_uid, current_user.tenant)
 
     if organization && is_admin?(current_user, organization)
       # TODO
@@ -31,7 +28,7 @@ class OauthController < ApplicationController
   end
 
   def destroy_omniauth
-    organization = Maestrano::Connector::Rails::Organization.find(params[:organization_id])
+    organization = Maestrano::Connector::Rails::Organization.find_by_id(params[:organization_id])
 
     if organization && is_admin?(current_user, organization)
       organization.oauth_uid = nil

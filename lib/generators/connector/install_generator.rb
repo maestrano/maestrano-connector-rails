@@ -21,25 +21,6 @@ module Connector
         end
       end
 
-      def include_routes
-        sentinel = 'Rails.application.routes.draw do'
-        code_lines = [
-          "mount Maestrano::Connector::Rails::Engine, at: '/'\n",
-          "root 'home#index'",
-          "get 'home/index' => 'home#index'",
-          "get 'admin/index' => 'admin#index'",
-          "put 'admin/update' => 'admin#update'",
-          "post 'admin/synchronize' => 'admin#synchronize'",
-          "put 'admin/toggle_sync' => 'admin#toggle_sync'"
-        ]
-
-        in_root do
-          gsub_file 'config/routes.rb', /(#{Regexp.escape(sentinel)})/mi do |match|
-            "#{match}\n  #{code_lines.join("\n  ")}\n"
-          end
-        end
-      end
-
       def copy_entity
         copy_file 'entity.rb', 'app/models/maestrano/connector/rails/entity.rb'
       end
@@ -52,14 +33,29 @@ module Connector
         copy_file 'example_entity.rb', 'app/models/entities/example_entitiy.rb'
       end
 
-      def copy_home
+      def copy_controllers_and_views
         copy_file 'home_controller.rb', 'app/controllers/home_controller.rb'
-        copy_file 'home_index.html.erb', 'app/views/home/index.html.erb'
+        copy_file 'home_controller_spec.rb', 'spec/controllers/home_controller_spec.rb'
+        copy_file 'home_index.haml', 'app/views/home/index.html.haml'
+
+        copy_file 'synchronizations_controller.rb', 'app/controllers/synchronizations_controller.rb'
+        copy_file 'synchronizations_controller_spec.rb', 'spec/controllers/synchronizations_controller_spec.rb'
+        copy_file 'synchronizations_index.haml', 'app/views/synchronizations/index.html.haml'
+
+        copy_file 'shared_entities_controller.rb', 'app/controllers/shared_entities_controller.rb'
+        copy_file 'shared_entities_controller_spec.rb', 'spec/controllers/shared_entities_controller_spec.rb'
+        copy_file 'shared_entities_index.haml', 'app/views/shared_entities/index.html.haml'
+
+        copy_file 'layouts.haml', 'app/views/layouts/application.html.haml'
       end
 
-      def copy_admin_view
-        copy_file 'admin_controller.rb', 'app/controllers/admin_controller.rb'
-        copy_file 'admin_index.html.erb', 'app/views/admin/index.html.erb'
+      def copy_stylesheets
+        copy_file 'stylesheets/application.sass', 'app/assets/stylesheets/application.sass'
+        copy_file 'stylesheets/banners.sass', 'app/assets/stylesheets/banners.sass'
+        copy_file 'stylesheets/home.sass', 'app/assets/stylesheets/home.sass'
+        copy_file 'stylesheets/layout.sass', 'app/assets/stylesheets/layout.sass'
+        copy_file 'stylesheets/spacers.sass', 'app/assets/stylesheets/spacers.sass'
+        copy_file 'stylesheets/variables.sass', 'app/assets/stylesheets/variables.sass'
       end
 
       def copy_oauth_controller
