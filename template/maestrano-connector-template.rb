@@ -41,6 +41,10 @@ else
   gem 'sqlite3'
 end
 
+gem 'haml-rails'
+gem 'bootstrap-sass'
+gem 'autoprefixer-rails'
+
 gem 'rails', '4.2.4'
 gem 'turbolinks'
 gem 'jquery-rails'
