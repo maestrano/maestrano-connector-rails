@@ -38,6 +38,43 @@ describe Maestrano::Connector::Rails::Entity do
       end
     end
 
+    # IdMap methods
+    describe 'idmaps mehtods' do
+      before {
+        allow(subject).to receive(:connec_entity_name).and_return('Ab')
+        allow(subject).to receive(:external_entity_name).and_return('Ab')
+      }
+      let(:n_hash) { {connec_entity: 'ab', external_entity: 'ab'} }
+
+      it { expect(subject.names_hash).to eql(n_hash) }
+      it {
+        expect(Maestrano::Connector::Rails::IdMap).to receive(:find_or_create_by).with(n_hash.merge(id: 'lala'))
+        subject.find_or_create_idmap({id: 'lala'})
+      }
+      it {
+        expect(Maestrano::Connector::Rails::IdMap).to receive(:find_by).with(n_hash.merge(id: 'lala'))
+        subject.find_idmap({id: 'lala'})
+      }
+      describe 'creates' do
+        let(:organization) { create(:organization) }
+        let(:connec_entity) { {'id' => 'lala'} }
+        before {
+          allow(subject).to receive(:object_name_from_external_entity_hash).and_return('name_e')
+          allow(subject).to receive(:object_name_from_connec_entity_hash).and_return('name_c')
+          allow(subject).to receive(:get_id_from_external_entity_hash).and_return('id')
+        }
+
+        it {
+          expect(Maestrano::Connector::Rails::IdMap).to receive(:create).with(n_hash.merge(connec_id: 'lala', name: 'name_c', organization_id: organization.id))
+          subject.create_idmap_from_connec_entity(connec_entity, organization)
+        }
+        it {
+          expect(Maestrano::Connector::Rails::IdMap).to receive(:create).with(n_hash.merge(external_id: 'id', name: 'name_e', organization_id: organization.id))
+          subject.create_idmap_from_external_entity({}, organization)
+        }
+      end
+
+    end
 
     # Connec! methods
     describe 'connec_methods' do
@@ -181,26 +218,17 @@ describe Maestrano::Connector::Rails::Entity do
       describe 'create_connec_entity' do
         let(:entity) { {name: 'John'} }
 
-        describe 'with a response' do
-          before {
-            allow(client).to receive(:post).and_return(ActionDispatch::Response.new(200, {}, {people: entity}.to_json, {}))
-          }
+        before {
+          allow(client).to receive(:post).and_return(ActionDispatch::Response.new(200, {}, {people: entity}.to_json, {}))
+        }
 
-          it 'sends a post to connec' do
-            expect(client).to receive(:post).with("/#{connec_name.downcase.pluralize}", {"#{connec_name.downcase.pluralize}".to_sym => entity})
-            subject.create_connec_entity(client, entity, connec_name, organization)
-          end
-
-          it 'returns the created entity' do
-            expect(subject.create_connec_entity(client, entity, connec_name, organization)).to eql(JSON.parse(entity.to_json))
-          end
+        it 'sends a post to connec' do
+          expect(client).to receive(:post).with("/#{connec_name.downcase.pluralize}", {"#{connec_name.downcase.pluralize}".to_sym => entity})
+          subject.create_connec_entity(client, entity, connec_name, organization)
         end
 
-        describe 'without response' do
-          before {
-            allow(client).to receive(:post).and_return(nil)
-          }
-          it { expect{ subject.create_connec_entity(client, entity, connec_name, organization) }.to raise_error("No response received from Connec! when trying to create a #{connec_name}") }
+        it 'returns the created entity' do
+          expect(subject.create_connec_entity(client, entity, connec_name, organization)).to eql(JSON.parse(entity.to_json))
         end
       end
 
@@ -208,23 +236,13 @@ describe Maestrano::Connector::Rails::Entity do
         let(:organization) { create(:organization) }
         let(:entity) { {name: 'John'} }
         let(:id) { '88ye-777ab' }
+        before {
+          allow(client).to receive(:put).and_return(ActionDispatch::Response.new(200, {}, {}.to_json, {}))
+        }
 
-        describe 'with a response' do
-          before {
-            allow(client).to receive(:put).and_return(ActionDispatch::Response.new(200, {}, {}.to_json, {}))
-          }
-
-          it 'sends a put to connec' do
-            expect(client).to receive(:put).with("/#{connec_name.downcase.pluralize}/#{id}", {"#{connec_name.downcase.pluralize}".to_sym => entity})
-            subject.update_connec_entity(client, entity, id, connec_name, organization)
-          end
-        end
-
-        describe 'without response' do
-          before {
-            allow(client).to receive(:put).and_return(nil)
-          }
-          it { expect{ subject.update_connec_entity(client, entity, id, connec_name, organization) }.to raise_error("No response received from Connec! when trying to update a #{connec_name}") }
+        it 'sends a put to connec' do
+          expect(client).to receive(:put).with("/#{connec_name.downcase.pluralize}/#{id}", {"#{connec_name.downcase.pluralize}".to_sym => entity})
+          subject.update_connec_entity(client, entity, id, connec_name, organization)
         end
       end
 
@@ -234,11 +252,14 @@ describe Maestrano::Connector::Rails::Entity do
         let(:mapped_entity) { {'first_name' => 'John'} }
         before {
           allow(subject).to receive(:connec_entity_name).and_return(connec_name)
+          allow(subject).to receive(:external_entity_name).and_return(external_name)
           allow(subject).to receive(:map_to_external).and_return(mapped_entity)
+          allow(subject).to receive(:object_name_from_connec_entity_hash).and_return('name')
+          allow(subject).to receive(:object_name_from_external_entity_hash).and_return('name')
         }
 
         context 'when entity has an idmap' do
-          let!(:idmap) { create(:idmap, organization: organization, connec_entity: connec_name.downcase, connec_id: id, last_push_to_external: 3.hour.ago)}
+          let!(:idmap) { create(:idmap, organization: organization, external_entity: external_name.downcase, connec_entity: connec_name.downcase, connec_id: id, last_push_to_external: 3.hour.ago)}
 
           context 'when updated_at field is most recent than idmap last_push_to_external' do
             let(:entity) { {'id' => id, 'name' => 'John', 'updated_at' => 2.hour.ago } }
@@ -380,131 +401,191 @@ describe Maestrano::Connector::Rails::Entity do
     # General methods
     describe 'consolidate_and_map_data' do
       let(:organization) { create(:organization) }
+      let(:external_name) { 'External_name' }
+      let(:connec_name) { 'Connec_name' }
+      let(:id) { '56882' }
+      let(:date) { 2.hour.ago }
+      before {
+        allow(subject).to receive(:get_id_from_external_entity_hash).and_return(id)
+        allow(subject).to receive(:get_last_update_date_from_external_entity_hash).and_return(date)
+        allow(subject).to receive(:external_entity_name).and_return(external_name)
+        allow(subject).to receive(:connec_entity_name).and_return(connec_name)
+      }
 
-      describe 'connec_entities treatment' do
-        let(:entity1) { {name: 'John'} }
-        let(:entity2) { {name: 'Jane'} }
-
-        it 'calls map_to_external_with_idmap for each entity' do
-          expect(subject).to receive(:map_to_external_with_idmap).with(entity1, organization)
-          expect(subject).to receive(:map_to_external_with_idmap).with(entity2, organization)
-          subject.consolidate_and_map_data([entity1, entity2], [], organization)
-        end
-      end
-
-      describe 'external_entities treatment' do
-        let(:external_name) { 'external_name' }
-        let(:connec_name) { 'connec_name' }
-        let(:id) { '56882' }
-        let(:date) { 2.hour.ago }
-        let(:entity) { {id: id, name: 'John', modifiedDate: date} }
-        let(:mapped_entity) { {first_name: 'John'} }
-        let(:entities) { [entity] }
-
-        before{
-          allow(subject).to receive(:get_id_from_external_entity_hash).and_return(id)
-          allow(subject).to receive(:get_last_update_date_from_external_entity_hash).and_return(date)
-          allow(subject).to receive(:external_entity_name).and_return(external_name)
-          allow(subject).to receive(:connec_entity_name).and_return(connec_name)
-          allow(subject).to receive(:map_to_connec).and_return(mapped_entity)
+      context 'for a singleton method' do
+        before {
+          allow(subject).to receive(:singleton?).and_return(true)
+          allow(subject).to receive(:map_to_connec).and_return({map: 'connec'})
+          allow(subject).to receive(:map_to_external).and_return({map: 'external'})
         }
 
-        context 'when entity has no idmap' do
-          let(:human_name) { 'alien' }
+        it { expect(subject.consolidate_and_map_data([], [], organization)).to eql({connec_entities: [], external_entities: []}) }
+
+        context 'with no idmap' do
+          it 'creates one for connec' do
+            subject.consolidate_and_map_data([{'id' => 'lala'}], [], organization)
+            idmap = Maestrano::Connector::Rails::IdMap.last
+            expect(idmap.connec_entity).to eql(connec_name.downcase)
+            expect(idmap.external_entity).to eql(external_name.downcase)
+            expect(idmap.connec_id).to eql('lala')
+          end
+
+          it 'creates one for external' do
+            subject.consolidate_and_map_data([], [{}], organization)
+            idmap = Maestrano::Connector::Rails::IdMap.last
+            expect(idmap.connec_entity).to eql(connec_name.downcase)
+            expect(idmap.external_entity).to eql(external_name.downcase)
+            expect(idmap.external_id).to eql(id)
+          end
+        end
+
+        context 'with an idmap' do
+          let!(:idmap) { create(:idmap, connec_entity: connec_name.downcase, external_entity: external_name.downcase, organization: organization) }
+
+          it { expect{ subject.consolidate_and_map_data([{}], [], organization) }.to_not change{ Maestrano::Connector::Rails::IdMap } }
+        end
+
+        context 'with conflict' do
+          let!(:idmap) { create(:idmap, connec_entity: connec_name.downcase, external_entity: external_name.downcase, organization: organization, external_id: id, connec_id: 'lala') }
+          let(:updated) { 3.hour.ago }
+          let(:connec_entity) { {'id' => 'lala', 'updated_at' => updated} }
+
+          context 'with options' do
+            it { expect(subject.consolidate_and_map_data([connec_entity], [{}], organization, connec_preemption: true)).to eql({connec_entities: [{entity: {map: 'external'}, idmap: idmap}], external_entities: []}) }
+            it { expect(subject.consolidate_and_map_data([connec_entity], [{}], organization, connec_preemption: false)).to eql({connec_entities: [], external_entities: [{entity: {map: 'connec'}, idmap: idmap}]}) }
+          end
+
+          context 'without options' do
+            context 'with a more recent external one' do
+              it { expect(subject.consolidate_and_map_data([connec_entity], [{}], organization)).to eql({connec_entities: [], external_entities: [{entity: {map: 'connec'}, idmap: idmap}]}) }
+            end
+            context 'with a more recent connec one' do
+              let(:updated) { 2.minute.ago }
+              it { expect(subject.consolidate_and_map_data([connec_entity], [{}], organization)).to eql({connec_entities: [{entity: {map: 'external'}, idmap: idmap}], external_entities: []}) }
+            end
+          end
+        end
+      end
+
+      context 'for a non singleton method' do
+
+        describe 'connec_entities treatment' do
+          let(:entity1) { {name: 'John'} }
+          let(:entity2) { {name: 'Jane'} }
+
+          it 'calls map_to_external_with_idmap for each entity' do
+            expect(subject).to receive(:map_to_external_with_idmap).with(entity1, organization)
+            expect(subject).to receive(:map_to_external_with_idmap).with(entity2, organization)
+            subject.consolidate_and_map_data([entity1, entity2], [], organization)
+          end
+        end
+
+        describe 'external_entities treatment' do
+          let(:entity) { {id: id, name: 'John', modifiedDate: date} }
+          let(:mapped_entity) { {first_name: 'John'} }
+          let(:entities) { [entity] }
+
           before {
-            allow(subject).to receive(:object_name_from_external_entity_hash).and_return(human_name)
+            allow(subject).to receive(:map_to_connec).and_return(mapped_entity)
           }
 
-          it 'creates an idmap and returns the mapped entity with its new idmap' do
-            mapped_entities = subject.consolidate_and_map_data([], entities, organization)
-            expect(mapped_entities).to eql({connec_entities: [], external_entities: [{entity: mapped_entity, idmap: Maestrano::Connector::Rails::IdMap.last}]})
-          end
-
-          it 'save the name in the idmap' do
-            subject.consolidate_and_map_data([], entities, organization)
-            expect(Maestrano::Connector::Rails::IdMap.last.name).to eql(human_name)
-          end
-        end
-
-        context 'when entity has an idmap with to_connec set to false' do
-          let!(:idmap) { create(:idmap, external_entity: external_name, external_id: id, organization: organization, to_connec: false) }
-          it 'discards the entity' do
-            mapped_entities = subject.consolidate_and_map_data([], entities, organization)
-            expect(mapped_entities).to eql({connec_entities: [], external_entities: []})
-          end
-        end
-
-        context 'when entity has an idmap with a last_push_to_connec more recent than date' do
-          let!(:idmap) { create(:idmap, external_entity: external_name, external_id: id, organization: organization, last_push_to_connec: 2.minute.ago) }
-
-          it 'discards the entity' do
-            mapped_entities = subject.consolidate_and_map_data([], entities, organization)
-            expect(mapped_entities).to eql({connec_entities: [], external_entities: []})
-          end
-        end
-
-        context 'when entity has an idmap with a last_push_to_connec older than date' do
-
-          context 'with no conflict' do
-            let!(:idmap) { create(:idmap, external_entity: external_name, external_id: id, organization: organization, last_push_to_connec: 2.day.ago) }
-
-            it 'returns the mapped entity with its idmap' do
-              mapped_entities = subject.consolidate_and_map_data([], entities, organization)
-              expect(mapped_entities).to eql({connec_entities: [], external_entities: [{entity: mapped_entity, idmap: idmap}]})
-            end
-          end
-
-          context 'with conflict' do
-            let(:connec_id) { '34uuu-778aa' }
-            let!(:idmap) { create(:idmap, connec_id: connec_id, external_entity: external_name, external_id: id, organization: organization, last_push_to_connec: 2.day.ago) }
+          context 'when entity has no idmap' do
+            let(:human_name) { 'alien' }
             before {
-              allow(subject).to receive(:map_to_external_with_idmap)
+              allow(subject).to receive(:object_name_from_external_entity_hash).and_return(human_name)
             }
 
-            context 'with connec_preemption opt' do
-
-              context 'set to true' do
-                let(:connec_entity) { {'id' => connec_id, 'first_name' => 'Richard', 'updated_at' => 1.day.ago} }
-                it 'discards the entity' do
-                  mapped_entities = subject.consolidate_and_map_data([connec_entity], entities, organization, {connec_preemption: true})
-                  expect(mapped_entities).to eql({connec_entities: [], external_entities: []})
-                end
-              end
-
-              context 'set to false' do
-                let(:connec_entity) { {'id' => connec_id, 'first_name' => 'Richard', 'updated_at' => 1.second.ago} }
-                it 'returns the mapped entity with its idmap' do
-                  mapped_entities = subject.consolidate_and_map_data([connec_entity], entities, organization, {connec_preemption: false})
-                  expect(mapped_entities).to eql({connec_entities: [], external_entities: [{entity: mapped_entity, idmap: idmap}]})
-                end
-              end
+            it 'creates an idmap and returns the mapped entity with its new idmap' do
+              mapped_entities = subject.consolidate_and_map_data([], entities, organization)
+              expect(mapped_entities).to eql({connec_entities: [], external_entities: [{entity: mapped_entity, idmap: Maestrano::Connector::Rails::IdMap.last}]})
             end
 
-            context 'without opt' do
-              context 'with a more recent connec entity' do
-                let(:connec_entity) { {'id' => connec_id, 'first_name' => 'Richard', 'updated_at' => 1.second.ago} }
-
-                it 'discards the entity' do
-                  mapped_entities = subject.consolidate_and_map_data([connec_entity], entities, organization, {connec_preemption: true})
-                  expect(mapped_entities).to eql({connec_entities: [], external_entities: []})
-                end
-              end
-
-              context 'with a more recent external_entity' do
-                let(:connec_entity) { {'id' => connec_id, 'first_name' => 'Richard', 'updated_at' => 1.year.ago} }
-
-                it 'returns the mapped entity with its idmap' do
-                  mapped_entities = subject.consolidate_and_map_data([connec_entity], entities, organization, {connec_preemption: false})
-                  expect(mapped_entities).to eql({connec_entities: [], external_entities: [{entity: mapped_entity, idmap: idmap}]})
-                end
-              end
+            it 'save the name in the idmap' do
+              subject.consolidate_and_map_data([], entities, organization)
+              expect(Maestrano::Connector::Rails::IdMap.last.name).to eql(human_name)
             end
-
           end
+
+          context 'when entity has an idmap with to_connec set to false' do
+            let!(:idmap) { create(:idmap, external_entity: external_name.downcase, connec_entity: connec_name.downcase, external_id: id, organization: organization, to_connec: false) }
+            it 'discards the entity' do
+              mapped_entities = subject.consolidate_and_map_data([], entities, organization)
+              expect(mapped_entities).to eql({connec_entities: [], external_entities: []})
+            end
+          end
+
+          context 'when entity has an idmap with a last_push_to_connec more recent than date' do
+            let!(:idmap) { create(:idmap, connec_entity: connec_name.downcase, external_entity: external_name.downcase, external_id: id, organization: organization, last_push_to_connec: 2.minute.ago) }
+
+            it 'discards the entity' do
+              mapped_entities = subject.consolidate_and_map_data([], entities, organization)
+              expect(mapped_entities).to eql({connec_entities: [], external_entities: []})
+            end
+          end
+
+          context 'when entity has an idmap with a last_push_to_connec older than date' do
+
+            context 'with no conflict' do
+              let!(:idmap) { create(:idmap, connec_entity: connec_name.downcase, external_entity: external_name.downcase, external_id: id, organization: organization, last_push_to_connec: 2.day.ago) }
+
+              it 'returns the mapped entity with its idmap' do
+                mapped_entities = subject.consolidate_and_map_data([], entities, organization)
+                expect(mapped_entities).to eql({connec_entities: [], external_entities: [{entity: mapped_entity, idmap: idmap}]})
+              end
+            end
+
+            context 'with conflict' do
+              let(:connec_id) { '34uuu-778aa' }
+              let!(:idmap) { create(:idmap, connec_id: connec_id, connec_entity: connec_name.downcase, external_entity: external_name.downcase, external_id: id, organization: organization, last_push_to_connec: 2.day.ago) }
+              before {
+                allow(subject).to receive(:map_to_external_with_idmap)
+              }
+
+              context 'with connec_preemption opt' do
+
+                context 'set to true' do
+                  let(:connec_entity) { {'id' => connec_id, 'first_name' => 'Richard', 'updated_at' => 1.day.ago} }
+                  it 'discards the entity' do
+                    mapped_entities = subject.consolidate_and_map_data([connec_entity], entities, organization, {connec_preemption: true})
+                    expect(mapped_entities).to eql({connec_entities: [], external_entities: []})
+                  end
+                end
+
+                context 'set to false' do
+                  let(:connec_entity) { {'id' => connec_id, 'first_name' => 'Richard', 'updated_at' => 1.second.ago} }
+                  it 'returns the mapped entity with its idmap' do
+                    mapped_entities = subject.consolidate_and_map_data([connec_entity], entities, organization, {connec_preemption: false})
+                    expect(mapped_entities).to eql({connec_entities: [], external_entities: [{entity: mapped_entity, idmap: idmap}]})
+                  end
+                end
+              end
+
+              context 'without opt' do
+                context 'with a more recent connec entity' do
+                  let(:connec_entity) { {'id' => connec_id, 'first_name' => 'Richard', 'updated_at' => 1.second.ago} }
+
+                  it 'discards the entity' do
+                    mapped_entities = subject.consolidate_and_map_data([connec_entity], entities, organization, {connec_preemption: true})
+                    expect(mapped_entities).to eql({connec_entities: [], external_entities: []})
+                  end
+                end
+
+                context 'with a more recent external_entity' do
+                  let(:connec_entity) { {'id' => connec_id, 'first_name' => 'Richard', 'updated_at' => 1.year.ago} }
+
+                  it 'returns the mapped entity with its idmap' do
+                    mapped_entities = subject.consolidate_and_map_data([connec_entity], entities, organization, {connec_preemption: false})
+                    expect(mapped_entities).to eql({connec_entities: [], external_entities: [{entity: mapped_entity, idmap: idmap}]})
+                  end
+                end
+              end
+
+            end
+          end
+
         end
 
       end
-
     end
 
 
