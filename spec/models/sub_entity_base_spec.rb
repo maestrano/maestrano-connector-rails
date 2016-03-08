@@ -28,7 +28,10 @@ describe Maestrano::Connector::Rails::SubEntityBase do
     end
 
     context 'when entity is not external' do
-      it { expect{ subject.external_entity_name }.to raise_error('Not implemented') }
+      before {
+        allow_any_instance_of(Maestrano::Connector::Rails::SubEntityBase).to receive(:external?).and_return(false)
+      }
+      it { expect{ subject.external_entity_name }.to raise_error('Forbidden call: cannot call external_entity_name for a connec entity') }
     end
   end
 
@@ -45,7 +48,10 @@ describe Maestrano::Connector::Rails::SubEntityBase do
     end
 
     context 'when entity is external' do
-      it { expect{ subject.connec_entity_name }.to raise_error('Not implemented') }
+      before {
+        allow_any_instance_of(Maestrano::Connector::Rails::SubEntityBase).to receive(:external?).and_return(true)
+      }
+      it { expect{ subject.connec_entity_name }.to raise_error('Forbidden call: cannot call connec_entity_name for an external entity') }
     end
   end
 
@@ -83,7 +89,7 @@ describe Maestrano::Connector::Rails::SubEntityBase do
     end
     context 'when not external' do
       let(:bool) { false }
-      it { expect{ subject.create_idmap_from_external_entity({}, '', organization) }.to raise_error('Forbidden call') }
+      it { expect{ subject.create_idmap_from_external_entity({}, '', organization) }.to raise_error('Forbidden call: cannot call create_idmap_from_external_entity for a connec entity') }
     end
   end
 
@@ -97,7 +103,7 @@ describe Maestrano::Connector::Rails::SubEntityBase do
     }
 
     context 'when external' do
-      it { expect{ subject.create_idmap_from_connec_entity({}, '', organization) }.to raise_error('Forbidden call') }
+      it { expect{ subject.create_idmap_from_connec_entity({}, '', organization) }.to raise_error('Forbidden call: cannot call create_idmap_from_connec_entity for an external entity') }
     end
     context 'when not external' do
       let(:bool) { false }
