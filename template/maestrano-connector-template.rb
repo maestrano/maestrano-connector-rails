@@ -30,7 +30,7 @@ run 'touch Gemfile'
 add_source 'https://rubygems.org'
 
 if yes?("Use JRuby? [y/n]")
-  run 'echo "ruby \'2.2.2\', :engine => \'jruby\', :engine_version => \'9.0.4.0\'" | cat - Gemfile > temp && mv temp Gemfile'
+  run 'echo "ruby \'2.2.3\', :engine => \'jruby\', :engine_version => \'9.0.5.0\'" | cat - Gemfile > temp && mv temp Gemfile'
   gem_group :production do
     gem 'activerecord-jdbcpostgresql-adapter'
   end
