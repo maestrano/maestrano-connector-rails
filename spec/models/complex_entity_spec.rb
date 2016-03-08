@@ -364,7 +364,8 @@ describe Maestrano::Connector::Rails::ComplexEntity do
     end
 
     describe 'push_entities_to_connec' do
-      let(:mapped_entity_with_idmap) { {entity: {}, idmap: nil} }
+      let(:idmap) { nil }
+      let(:mapped_entity_with_idmap) { {entity: {}, idmap: idmap} }
       let(:external_hash) {
         {
           'sc_e1' => {'connec1' => [mapped_entity_with_idmap]},
@@ -376,6 +377,24 @@ describe Maestrano::Connector::Rails::ComplexEntity do
         expect_any_instance_of(Entities::SubEntities::ScE1).to receive(:push_entities_to_connec_to).once.with(nil, [mapped_entity_with_idmap], 'connec1', nil)
         expect_any_instance_of(Entities::SubEntities::ScE2).to receive(:push_entities_to_connec_to).twice
         subject.push_entities_to_connec(nil, external_hash, nil)
+      end
+
+      describe 'full call' do
+        let(:organization) { create(:organization) }
+        let!(:client) { Maestrano::Connec::Client.new(organization.uid) }
+        let(:idmap) { create(:idmap, organization: organization) }
+        before {
+          [Entities::SubEntities::ScE1, Entities::SubEntities::ScE2].each do |klass|
+            allow_any_instance_of(klass).to receive(:external?).and_return(true)
+            allow_any_instance_of(klass).to receive(:entity_name).and_return('n')
+          end
+          allow(client).to receive(:put).and_return(ActionDispatch::Response.new(200, {}, {people: {}}.to_json, {}))
+        }
+        it 'is successful' do
+          subject.push_entities_to_connec(client, external_hash, organization)
+          idmap.reload
+          expect(idmap.message).to be nil
+        end
       end
     end
 

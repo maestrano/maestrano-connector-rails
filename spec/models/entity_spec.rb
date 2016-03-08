@@ -200,8 +200,8 @@ describe Maestrano::Connector::Rails::Entity do
           allow(subject).to receive(:create_connec_entity).and_return({'id' => id})
           allow(subject).to receive(:external_entity_name).and_return(external_name)
 
-          expect(subject).to receive(:create_connec_entity).with(client, entity2, connec_name, organization)
-          expect(subject).to receive(:update_connec_entity).with(client, entity1, idmap1.connec_id, connec_name, organization)
+          expect(subject).to receive(:create_connec_entity).with(client, entity2, connec_name.downcase.pluralize, organization)
+          expect(subject).to receive(:update_connec_entity).with(client, entity1, idmap1.connec_id, connec_name.downcase.pluralize, organization)
           old_push_date = idmap1.last_push_to_connec
 
           subject.push_entities_to_connec_to(client, entities_with_idmaps, connec_name, organization)
@@ -224,11 +224,11 @@ describe Maestrano::Connector::Rails::Entity do
 
         it 'sends a post to connec' do
           expect(client).to receive(:post).with("/#{connec_name.downcase.pluralize}", {"#{connec_name.downcase.pluralize}".to_sym => entity})
-          subject.create_connec_entity(client, entity, connec_name, organization)
+          subject.create_connec_entity(client, entity, connec_name.downcase.pluralize, organization)
         end
 
         it 'returns the created entity' do
-          expect(subject.create_connec_entity(client, entity, connec_name, organization)).to eql(JSON.parse(entity.to_json))
+          expect(subject.create_connec_entity(client, entity, connec_name.downcase.pluralize, organization)).to eql(JSON.parse(entity.to_json))
         end
       end
 
@@ -242,7 +242,7 @@ describe Maestrano::Connector::Rails::Entity do
 
         it 'sends a put to connec' do
           expect(client).to receive(:put).with("/#{connec_name.downcase.pluralize}/#{id}", {"#{connec_name.downcase.pluralize}".to_sym => entity})
-          subject.update_connec_entity(client, entity, id, connec_name, organization)
+          subject.update_connec_entity(client, entity, id, connec_name.downcase.pluralize, organization)
         end
       end
 

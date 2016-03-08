@@ -17,13 +17,13 @@ module Maestrano::Connector::Rails
       if external?
         entity_name
       else
-        raise "Forbidden call"
+        raise "Forbidden call: cannot call external_entity_name for a connec entity"
       end
     end
 
     def connec_entity_name
       if external?
-        raise "Forbidden call"
+        raise "Forbidden call: cannot call connec_entity_name for an external entity"
       else
         entity_name
       end
@@ -47,13 +47,13 @@ module Maestrano::Connector::Rails
         })
         Maestrano::Connector::Rails::IdMap.create(h)
       else
-        raise 'Forbidden call'
+        raise 'Forbidden call: cannot call create_idmap_from_external_entity for a connec entity'
       end
     end
 
     def create_idmap_from_connec_entity(entity, external_entity_name, organization)
       if external?
-        raise 'Forbidden call'
+        raise 'Forbidden call: cannot call create_idmap_from_connec_entity for an external entity'
       else
         h = names_hash.merge({
           connec_id: entity['id'],
