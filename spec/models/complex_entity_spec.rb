@@ -71,6 +71,14 @@ describe Maestrano::Connector::Rails::ComplexEntity do
           expect(subject.map_to_external_with_idmap(entity, organization, external_name, sub_instance)).to be_nil
         end
       end
+
+      context 'when entity has an idmap with to_external set to false' do
+        let!(:idmap) { create(:idmap, organization: organization, connec_id: id, connec_entity: connec_name, to_external: false, external_entity: external_name) }
+
+        it 'discards the entity' do
+          expect(subject.map_to_external_with_idmap(entity, organization, external_name, sub_instance)).to be_nil
+        end
+      end
     end
 
   end
@@ -213,6 +221,24 @@ describe Maestrano::Connector::Rails::ComplexEntity do
               'ScE2' => {
                 'connec1' => [{entity: mapped_entity1, idmap: Maestrano::Connector::Rails::IdMap.all[1]}],
                 'connec2' => [{entity: mapped_entity2, idmap: Maestrano::Connector::Rails::IdMap.last}],
+              }
+            },
+            connec_entities: {})
+          end
+        end
+
+        context 'when entities have idmaps with to_connec set to false' do
+          let!(:idmap1) { create(:idmap, organization: organization, external_id: id1, external_entity: 'sc_e1', connec_entity: 'connec1', to_connec: false) }
+          let!(:idmap21) { create(:idmap, organization: organization, external_id: id1, external_entity: 'sce2', connec_entity: 'connec1', to_connec: false) }
+          let!(:idmap22) { create(:idmap, organization: organization, external_id: id2, external_entity: 'sce2', connec_entity: 'connec2', to_connec: false) }
+
+          it 'discards the entities' do
+            mapped_entities = subject.consolidate_and_map_data({}, external_hash, organization, opt)
+            expect(mapped_entities).to eql(external_entities: {
+              'sc_e1' => {'connec1' => []},
+              'ScE2' => {
+                'connec1' => [],
+                'connec2' => [],
               }
             },
             connec_entities: {})
