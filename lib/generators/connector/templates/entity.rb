@@ -21,13 +21,13 @@ class Maestrano::Connector::Rails::Entity
     # Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Received data: Source=#{@@external_name}, Entity=#{self.external_entity_name}, Response=#{entities}")
   end
 
-  def create_entity_to_external(client, mapped_connec_entity, external_entity_name, organization)
+  def create_external_entity(client, mapped_connec_entity, external_entity_name, organization)
     Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Sending create #{external_entity_name}: #{mapped_connec_entity} to #{@@external_name}")
     # TODO
     # This method creates the entity in the external app and returns the external id
   end
 
-  def update_entity_to_external(client, mapped_connec_entity, external_id, external_entity_name)
+  def update_external_entity(client, mapped_connec_entity, external_id, external_entity_name, organization)
     Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Sending update #{external_entity_name} (id=#{external_id}): #{mapped_connec_entity} to #{@@external_name}")
     # TODO
     # This method updates the entity with the given id in the external app
