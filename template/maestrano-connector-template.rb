@@ -51,6 +51,7 @@ gem 'jquery-rails'
 gem 'puma'
 gem 'figaro'
 gem 'tzinfo-data', platforms: [:mingw, :mswin, :jruby]
+gem 'uglifier', '>= 1.3.0'
 
 gem 'maestrano-connector-rails'
 
