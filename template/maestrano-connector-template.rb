@@ -30,7 +30,7 @@ run 'touch Gemfile'
 add_source 'https://rubygems.org'
 
 if yes?("Use JRuby? [y/n]")
-  run 'echo "ruby \'2.2.2\', :engine => \'jruby\', :engine_version => \'9.0.4.0\'" | cat - Gemfile > temp && mv temp Gemfile'
+  run 'echo "ruby \'2.2.3\', :engine => \'jruby\', :engine_version => \'9.0.5.0\'" | cat - Gemfile > temp && mv temp Gemfile'
   gem_group :production do
     gem 'activerecord-jdbcpostgresql-adapter'
   end
@@ -41,12 +41,17 @@ else
   gem 'sqlite3'
 end
 
+gem 'haml-rails'
+gem 'bootstrap-sass'
+gem 'autoprefixer-rails'
+
 gem 'rails', '4.2.4'
 gem 'turbolinks'
 gem 'jquery-rails'
 gem 'puma'
 gem 'figaro'
 gem 'tzinfo-data', platforms: [:mingw, :mswin, :jruby]
+gem 'uglifier', '>= 1.3.0'
 
 gem 'maestrano-connector-rails'
 

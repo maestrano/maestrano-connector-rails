@@ -11,7 +11,7 @@ describe SharedEntitiesController, :type => :controller do
       let(:idmap) { create(:idmap, organization: organization) }
       before {
         allow_any_instance_of(Maestrano::Connector::Rails::SessionHelper).to receive(:current_organization).and_return(organization)
-        allow_any_instance_of(ApplicationHelper).to receive(:is_admin).and_return(true)
+        allow_any_instance_of(Maestrano::Connector::Rails::SessionHelper).to receive(:is_admin).and_return(true)
       }
 
       it 'assigns the idmaps' do

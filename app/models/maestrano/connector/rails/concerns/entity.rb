@@ -332,7 +332,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
   module ClassMethods
     def not_modified_since_last_push_to_connec(idmap, entity, entity_instance, organization)
       result = idmap.last_push_to_connec && idmap.last_push_to_connec > entity_instance.get_last_update_date_from_external_entity_hash(entity)
-      Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Discard #{entity_instance.external_entity_name} : #{entity}") unless result
+      Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Discard #{entity_instance.external_entity_name} : #{entity}") if result
       result
     end
 
