@@ -4,6 +4,9 @@ source "http://rubygems.org"
 gem 'maestrano-rails'
 gem 'hash_mapper'
 gem 'sidekiq'
+gem 'haml-rails'
+gem 'bootstrap-sass'
+gem 'autoprefixer-rails'
 
 # Add dependencies to develop your gem here.
 group :development do

@@ -86,7 +86,7 @@ module Maestrano::Connector::Rails
       entities
     end
 
-    def consolidate_and_map_data(connec_entities, external_entities, organization, opts)
+    def consolidate_and_map_data(connec_entities, external_entities, organization, opts={})
       modeled_external_entities = external_model_to_connec_model(external_entities)
       modeled_connec_entities = connec_model_to_external_model(connec_entities)
 

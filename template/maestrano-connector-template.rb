@@ -3,7 +3,7 @@ def current_directory
       if __FILE__ =~ %r{\Ahttps?://}
         tempdir = Dir.mktmpdir("maestrano-connector-rails-")
         at_exit { FileUtils.remove_entry(tempdir) }
-        git :clone => "--quiet https://github.com/berardpi/maestrano-connector-rails.git #{tempdir}"
+        git :clone => "--quiet https://github.com/maestrano/maestrano-connector-rails/ #{tempdir}"
 
         "#{tempdir}/template"
       else
@@ -30,7 +30,7 @@ run 'touch Gemfile'
 add_source 'https://rubygems.org'
 
 if yes?("Use JRuby? [y/n]")
-  run 'echo "ruby \'2.2.2\', :engine => \'jruby\', :engine_version => \'9.0.4.0\'" | cat - Gemfile > temp && mv temp Gemfile'
+  run 'echo "ruby \'2.2.3\', :engine => \'jruby\', :engine_version => \'9.0.5.0\'" | cat - Gemfile > temp && mv temp Gemfile'
   gem_group :production do
     gem 'activerecord-jdbcpostgresql-adapter'
   end
@@ -41,15 +41,19 @@ else
   gem 'sqlite3'
 end
 
+gem 'haml-rails'
+gem 'bootstrap-sass'
+gem 'autoprefixer-rails'
+
 gem 'rails', '4.2.4'
 gem 'turbolinks'
 gem 'jquery-rails'
 gem 'puma'
 gem 'figaro'
 gem 'tzinfo-data', platforms: [:mingw, :mswin, :jruby]
+gem 'uglifier', '>= 1.3.0'
 
 gem 'maestrano-connector-rails'
-gem 'delayed_job_active_record'
 
 
 gem_group :test do
@@ -70,8 +74,11 @@ copy_file 'gitignore', '.gitignore'
 after_bundle do
   remove_dir 'app/mailers'
   remove_dir 'test'
+  remove_file 'app/views/layouts/application.html.erb'
+  remove_file 'app/assets/stylesheets/application.css'
   copy_file 'spec_helper.rb', 'spec/spec_helper.rb'
   copy_file 'factories.rb', 'spec/factories.rb'
+  copy_file 'routes.rb', 'config/routes.rb'
 
   application do <<-RUBY
     config.generators do |g|
@@ -85,7 +92,6 @@ after_bundle do
   run 'rails g connector:install'
   run 'bundle exec figaro install'
   run 'rake railties:install:migrations'
-  run 'rails g delayed_job:active_record'
   run 'rake db:migrate'
 
   # Init repo and commit
