@@ -184,6 +184,7 @@ describe Maestrano::Connector::Rails::ComplexEntity do
           }
         }
         let(:connec_hash) { {} }
+        let(:human_name) { 'Jabba' }
         before{
           allow(subject).to receive(:external_model_to_connec_model).and_return(external_hash)
           allow(subject).to receive(:connec_model_to_external_model).and_return(connec_hash)
@@ -199,14 +200,11 @@ describe Maestrano::Connector::Rails::ComplexEntity do
           allow_any_instance_of(Entities::SubEntities::ScE2).to receive(:get_last_update_date_from_external_entity_hash).and_return(1.minute.ago)
           allow_any_instance_of(Entities::SubEntities::ScE2).to receive(:map_to).with('connec1', entity1, organization).and_return(mapped_entity1)
           allow_any_instance_of(Entities::SubEntities::ScE2).to receive(:map_to).with('connec2', entity2, organization).and_return(mapped_entity2)
+          allow_any_instance_of(Entities::SubEntities::ScE1).to receive(:object_name_from_external_entity_hash).and_return(human_name)
+          allow_any_instance_of(Entities::SubEntities::ScE2).to receive(:object_name_from_external_entity_hash).and_return(human_name)
         }
 
         context 'when entities have no idmaps' do
-          let(:human_name) { 'Jabba' }
-          before {
-            allow_any_instance_of(Entities::SubEntities::ScE1).to receive(:object_name_from_external_entity_hash).and_return(human_name)
-            allow_any_instance_of(Entities::SubEntities::ScE2).to receive(:object_name_from_external_entity_hash).and_return(human_name)
-          }
 
           it 'creates an idmap for each entity' do
             expect{
@@ -272,6 +270,7 @@ describe Maestrano::Connector::Rails::ComplexEntity do
             allow_any_instance_of(Entities::SubEntities::Connec1).to receive(:map_to).and_return({'name' => 'Jacob'})
             allow_any_instance_of(Entities::SubEntities::Connec1).to receive(:external?).and_return(false)
             allow_any_instance_of(Entities::SubEntities::Connec1).to receive(:entity_name).and_return('connec1')
+            allow_any_instance_of(Entities::SubEntities::Connec1).to receive(:object_name_from_connec_entity_hash).and_return('human name')
           }
           let(:connec_id1) { '67ttf-5rr4d' }
           let!(:idmap1) { create(:idmap, organization: organization, external_id: id1, external_entity: 'sc_e1', connec_entity: 'connec1', last_push_to_connec: 1.year.ago, connec_id: connec_id1) }
