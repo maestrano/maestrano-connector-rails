@@ -417,6 +417,8 @@ describe Maestrano::Connector::Rails::Entity do
           allow(subject).to receive(:singleton?).and_return(true)
           allow(subject).to receive(:map_to_connec).and_return({map: 'connec'})
           allow(subject).to receive(:map_to_external).and_return({map: 'external'})
+          allow(subject).to receive(:object_name_from_connec_entity_hash).and_return('connec human name')
+          allow(subject).to receive(:object_name_from_external_entity_hash).and_return('external human name')
         }
 
         it { expect(subject.consolidate_and_map_data([], [], organization)).to eql({connec_entities: [], external_entities: []}) }
@@ -484,16 +486,14 @@ describe Maestrano::Connector::Rails::Entity do
           let(:entity) { {id: id, name: 'John', modifiedDate: date} }
           let(:mapped_entity) { {first_name: 'John'} }
           let(:entities) { [entity] }
+          let(:human_name) { 'alien' }
 
           before {
             allow(subject).to receive(:map_to_connec).and_return(mapped_entity)
+            allow(subject).to receive(:object_name_from_external_entity_hash).and_return(human_name)
           }
 
           context 'when entity has no idmap' do
-            let(:human_name) { 'alien' }
-            before {
-              allow(subject).to receive(:object_name_from_external_entity_hash).and_return(human_name)
-            }
 
             it 'creates an idmap and returns the mapped entity with its new idmap' do
               mapped_entities = subject.consolidate_and_map_data([], entities, organization)

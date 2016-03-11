@@ -55,11 +55,16 @@ module Maestrano::Connector::Rails::Concerns::ComplexEntity
   def map_to_external_with_idmap(entity, organization, external_entity_name, sub_entity_instance)
     idmap = sub_entity_instance.find_idmap({connec_id: entity['id'], external_entity: external_entity_name, organization_id: organization.id})
 
-    if idmap && ((!idmap.to_external) || idmap.last_push_to_external && idmap.last_push_to_external > entity['updated_at'])
-      Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Discard Connec! #{sub_entity_instance.entity_name} : #{entity}")
-      nil
+    if idmap
+      idmap.update(name: sub_entity_instance.object_name_from_connec_entity_hash(entity))
+      if (!idmap.to_external) || idmap.last_push_to_external && idmap.last_push_to_external > entity['updated_at']
+        Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Discard Connec! #{sub_entity_instance.entity_name} : #{entity}")
+        nil
+      else
+        {entity: sub_entity_instance.map_to(external_entity_name, entity, organization), idmap: idmap}
+      end
     else
-      {entity: sub_entity_instance.map_to(external_entity_name, entity, organization), idmap: idmap || sub_entity_instance.create_idmap_from_connec_entity(entity, external_entity_name, organization)}
+      {entity: sub_entity_instance.map_to(external_entity_name, entity, organization), idmap: sub_entity_instance.create_idmap_from_connec_entity(entity, external_entity_name, organization)}
     end
   end
 
@@ -98,7 +103,9 @@ module Maestrano::Connector::Rails::Concerns::ComplexEntity
           idmap = sub_entity_instance.find_idmap(external_id: sub_entity_instance.get_id_from_external_entity_hash(entity), connec_entity: connec_entity_name, organization_id: organization.id)
 
           # No idmap: creating one, nothing else to do
-          unless idmap
+          if idmap
+            idmap.update(name: sub_entity_instance.object_name_from_external_entity_hash(entity))
+          else
             next {entity: sub_entity_instance.map_to(connec_entity_name, entity, organization), idmap: sub_entity_instance.create_idmap_from_external_entity(entity, connec_entity_name, organization)}
           end
 

@@ -169,11 +169,16 @@ module Maestrano::Connector::Rails::Concerns::Entity
   def map_to_external_with_idmap(entity, organization)
     idmap = find_idmap({connec_id: entity['id'], organization_id: organization.id})
 
-    if idmap && ((!idmap.to_external) || (idmap.last_push_to_external && idmap.last_push_to_external > entity['updated_at']))
-      Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Discard Connec! #{connec_entity_name} : #{entity}")
-      nil
+    if idmap
+      idmap.update(name: object_name_from_connec_entity_hash(entity))
+      if (!idmap.to_external) || (idmap.last_push_to_external && idmap.last_push_to_external > entity['updated_at'])
+        Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Discard Connec! #{connec_entity_name} : #{entity}")
+        nil
+      else
+        {entity: map_to_external(entity, organization), idmap: idmap}
+      end
     else
-      {entity: map_to_external(entity, organization), idmap: idmap || create_idmap_from_connec_entity(entity, organization)}
+      {entity: map_to_external(entity, organization), idmap: create_idmap_from_connec_entity(entity, organization)}
     end
   end
 
@@ -245,7 +250,9 @@ module Maestrano::Connector::Rails::Concerns::Entity
     mapped_external_entities = external_entities.map{|entity|
       idmap = find_idmap({external_id: get_id_from_external_entity_hash(entity), organization_id: organization.id})
       # No idmap: creating one, nothing else to do
-      unless idmap
+      if idmap
+        idmap.update(name: object_name_from_external_entity_hash(entity))
+      else
         next {entity: map_to_connec(entity, organization), idmap: create_idmap_from_external_entity(entity, organization)}
       end
 
@@ -283,10 +290,10 @@ module Maestrano::Connector::Rails::Concerns::Entity
       keep_external = self.class.is_external_more_recent?(connec_entities.first, external_entities.first, self)
     end
     if keep_external
-      idmap.update(external_id: get_id_from_external_entity_hash(external_entities.first))
+      idmap.update(external_id: get_id_from_external_entity_hash(external_entities.first), name: object_name_from_external_entity_hash(external_entities.first))
       return {connec_entities: [], external_entities: [{entity: map_to_connec(external_entities.first, organization), idmap: idmap}]}
     else
-      idmap.update(connec_id: connec_entities.first['id'])
+      idmap.update(connec_id: connec_entities.first['id'], name: object_name_from_connec_entity_hash(connec_entities.first))
       return {connec_entities: [{entity: map_to_external(connec_entities.first, organization), idmap: idmap}], external_entities: []}
     end
   end
