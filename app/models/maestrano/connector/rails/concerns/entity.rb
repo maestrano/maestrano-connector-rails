@@ -341,6 +341,17 @@ module Maestrano::Connector::Rails::Concerns::Entity
   end
 
   # ----------------------------------------------
+  #             After and before sync
+  # ----------------------------------------------
+  def before_sync(connec_client, external_client, organization)
+    # Does nothing by default
+  end
+
+  def after_sync(connec_client, external_client, organization)
+    # Does nothing by default
+  end
+
+  # ----------------------------------------------
   #             Internal helper methods
   # ----------------------------------------------
   module ClassMethods

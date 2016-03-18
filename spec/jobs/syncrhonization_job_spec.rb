@@ -57,12 +57,14 @@ describe Maestrano::Connector::Rails::SynchronizationJob do
 
     subject { Maestrano::Connector::Rails::SynchronizationJob.new }
 
-    it 'calls the five methods' do
+    it 'calls the seven methods' do
+      expect_any_instance_of(Entities::Person).to receive(:before_sync)
       expect_any_instance_of(Entities::Person).to receive(:get_connec_entities)
       expect_any_instance_of(Entities::Person).to receive(:get_external_entities)
       expect_any_instance_of(Entities::Person).to receive(:consolidate_and_map_data).and_return({})
       expect_any_instance_of(Entities::Person).to receive(:push_entities_to_external)
       expect_any_instance_of(Entities::Person).to receive(:push_entities_to_connec)
+      expect_any_instance_of(Entities::Person).to receive(:after_sync)
       subject.sync_entity('person', organization, nil, nil, nil, {})
     end
   end
