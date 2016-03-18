@@ -2,11 +2,11 @@
 # This file is provided as an example and should be removed
 # See README for explanation
 # class Enities::SubEntities::Person < Maestrano::Connector::Rails::SubEntityBase
-#   def external?
+#   def self.external?
 #     false
 #   end
 
-#   def entity_name
+#   def self.entity_name
 #     'person'
 #   end
 
@@ -21,11 +21,11 @@
 #     end
 #   end
 
-#   def object_name_from_connec_entity_hash(entity)
+#   def self.object_name_from_connec_entity_hash(entity)
 #     "#{entity['first_name']} #{entity['last_name']}"
 #   end
 
-#   def object_name_from_external_entity_hash(entity)
+#   def self.object_name_from_external_entity_hash(entity)
 #     "#{entity['FirstName']} #{entity['LastName']}"
 #   end
 # end
