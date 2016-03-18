@@ -138,13 +138,14 @@ module Maestrano::Connector::Rails::Concerns::Entity
       begin
         if idmap.connec_id.blank?
           connec_entity = create_connec_entity(connec_client, external_entity, normalize_connec_entity_name(connec_entity_name), organization)
-          idmap.update_attributes(connec_id: connec_entity['id'], connec_entity: connec_entity_name.downcase, last_push_to_connec: Time.now, message: nil)
+          idmap.update_attributes(connec_id: connec_entity['id'], last_push_to_connec: Time.now, message: nil)
         else
           connec_entity = update_connec_entity(connec_client, external_entity, idmap.connec_id, normalize_connec_entity_name(connec_entity_name), organization)
           idmap.update_attributes(last_push_to_connec: Time.now, message: nil)
         end
       rescue => e
         # Store Connec! error if any
+        Maestrano::Connector::Rails::ConnectorLogger.log('error', "Error while pushing to Connec!: #{e}")
         idmap.update_attributes(message: e.message)
       end
     end
@@ -208,13 +209,14 @@ module Maestrano::Connector::Rails::Concerns::Entity
     begin
       if idmap.external_id.blank?
         external_id = create_external_entity(external_client, connec_entity, external_entity_name, organization)
-        idmap.update_attributes(external_id: external_id, external_entity: external_entity_name.downcase, last_push_to_external: Time.now, message: nil)
+        idmap.update_attributes(external_id: external_id, last_push_to_external: Time.now, message: nil)
       else
         update_external_entity(external_client, connec_entity, idmap.external_id, external_entity_name, organization)
         idmap.update_attributes(last_push_to_external: Time.now, message: nil)
       end
     rescue => e
       # Store External error
+      Maestrano::Connector::Rails::ConnectorLogger.log('error', "Error while pushing to #{@@external_name}: #{e}")
       idmap.update_attributes(message: e.message)
     end
   end

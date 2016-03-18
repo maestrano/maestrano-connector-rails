@@ -210,7 +210,6 @@ describe Maestrano::Connector::Rails::Entity do
           expect(idmap1.last_push_to_connec).to_not eql(old_push_date)
           idmap2.reload
           expect(idmap2.connec_id).to eql(id)
-          expect(idmap2.connec_entity).to eql(connec_name.downcase)
           expect(idmap2.last_push_to_connec).to_not be_nil
         end
       end
@@ -370,7 +369,6 @@ describe Maestrano::Connector::Rails::Entity do
             subject.push_entity_to_external(nil, entity_with_idmap2, external_name, organization)
             idmap2.reload
             expect(idmap2.external_id).to eql('999111')
-            expect(idmap2.external_entity).to eql(external_name)
             expect(idmap2.last_push_to_external).to_not be_nil
           end
         end
