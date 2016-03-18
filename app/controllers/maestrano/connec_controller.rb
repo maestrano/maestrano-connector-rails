@@ -16,7 +16,7 @@ class Maestrano::ConnecController < Maestrano::Rails::WebHookController
 
                 # Build expected input for consolidate_and_map_data
                 if entity_instance_hash[:is_complex]
-                  mapped_entity = entity_instance.consolidate_and_map_data(Hash[ *entity_instance.connec_entities_names.collect{|name| name.downcase.pluralize == entity_name ? [name, [entity]] : [ name, []]}.flatten(1) ], Hash[ *entity_instance.external_entities_names.collect{|name| [ name, []]}.flatten(1) ], organization, {})
+                  mapped_entity = entity_instance.consolidate_and_map_data(Hash[ *entity_instance.class.connec_entities_names.collect{|name| name.parameterize('_').pluralize == entity_name ? [name, [entity]] : [ name, []]}.flatten(1) ], Hash[ *entity_instance.class.external_entities_names.collect{|name| [ name, []]}.flatten(1) ], organization, {})
                 else
                   mapped_entity = entity_instance.consolidate_and_map_data([entity], [], organization, {})
                 end
@@ -44,11 +44,11 @@ class Maestrano::ConnecController < Maestrano::Rails::WebHookController
   private
     def find_entity_instance(entity_name)
       Maestrano::Connector::Rails::Entity.entities_list.each do |entity_name_from_list|
-        instance = "Entities::#{entity_name_from_list.singularize.titleize.split.join}".constantize.new
-        if instance.methods.include?('connec_entities_names'.to_sym)
-          return {instance: instance, is_complex: true, name: entity_name_from_list} if instance.connec_entities_names.map{|n| n.pluralize.downcase}.include?(entity_name)
-        elsif instance.methods.include?('connec_entity_name'.to_sym)
-          return {instance: instance, is_complex: false, name: entity_name_from_list} if instance.normalized_connec_entity_name == entity_name
+        clazz = "Entities::#{entity_name_from_list.singularize.titleize.split.join}".constantize
+        if clazz.methods.include?('connec_entities_names'.to_sym)
+          return {instance: clazz.new, is_complex: true, name: entity_name_from_list} if clazz.connec_entities_names.map{|n| n.parameterize('_').pluralize}.include?(entity_name)
+        elsif clazz.methods.include?('connec_entity_name'.to_sym)
+          return {instance: clazz.new, is_complex: false, name: entity_name_from_list} if clazz.normalized_connec_entity_name == entity_name
         end
       end
       nil

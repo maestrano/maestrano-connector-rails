@@ -33,13 +33,13 @@ class Maestrano::Connector::Rails::Entity
     # This method updates the entity with the given id in the external app
   end
 
-  def get_id_from_external_entity_hash(entity)
+  def self.id_from_external_entity_hash(entity)
     # TODO
     # This method return the id from an external_entity_hash
     # e.g entity['id']
   end
 
-  def get_last_update_date_from_external_entity_hash(entity)
+  def self.last_update_date_from_external_entity_hash(entity)
     # TODO
     # This method return the last update date from an external_entity_hash
     # e.g entity['last_update']

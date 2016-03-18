@@ -11,18 +11,18 @@ describe Maestrano::Connector::Rails::PushToConnecJob do
       end
     end
     allow_any_instance_of(Entities::Entity1).to receive(:push_entities_to_connec)
-    allow_any_instance_of(Entities::Entity1).to receive(:external_entity_name).and_return('ext_entity1')
+    allow(Entities::Entity1).to receive(:external_entity_name).and_return('ext_entity1')
     class Entities::Entity2 < Maestrano::Connector::Rails::ComplexEntity
     end
     allow_any_instance_of(Entities::Entity2).to receive(:consolidate_and_map_data).and_return({})
     allow_any_instance_of(Entities::Entity2).to receive(:push_entities_to_connec)
-    allow_any_instance_of(Entities::Entity2).to receive(:connec_entities_names).and_return(%w())
-    allow_any_instance_of(Entities::Entity2).to receive(:external_entities_names).and_return(%w(Subs ll))
+    allow(Entities::Entity2).to receive(:connec_entities_names).and_return(%w())
+    allow(Entities::Entity2).to receive(:external_entities_names).and_return(%w(Subs ll))
     module Entities::SubEntities end;
     class Entities::SubEntities::Sub < Maestrano::Connector::Rails::SubEntityBase
     end
     allow(Maestrano::Connector::Rails::Entity).to receive(:entities_list).and_return([entity_name1, entity_name2])
-    allow_any_instance_of(Maestrano::Connector::Rails::Entity).to receive(:get_id_from_external_entity_hash).and_return('11')
+    allow(Maestrano::Connector::Rails::Entity).to receive(:id_from_external_entity_hash).and_return('11')
   }
   let(:entity11) { {first_name: 'John'} }
   let(:entity12) { {first_name: 'Jane'} }

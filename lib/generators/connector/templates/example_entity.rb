@@ -4,23 +4,23 @@
 # with its associated mapper
 
 # class Entities::ExampleEntity < Maestrano::Connector::Rails::Entity
-#   def connec_entity_name
+#   def self.connec_entity_name
 #     'ExampleEntity'
 #   end
 
-#   def external_entity_name
+#   def self.external_entity_name
 #     'Contact'
 #   end
 
-#   def mapper_class
+#   def self.mapper_class
 #     ExampleEntityMapper
 #   end
 
-#   def object_name_from_connec_entity_hash(entity)
+#   def self.object_name_from_connec_entity_hash(entity)
 #     "#{entity['first_name']} #{entity['last_name']}"
 #   end
 
-#   def object_name_from_external_entity_hash(entity)
+#   def self.object_name_from_external_entity_hash(entity)
 #     "#{entity['FirstName']} #{entity['LastName']}"
 #   end
 
