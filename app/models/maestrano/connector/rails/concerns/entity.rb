@@ -341,11 +341,11 @@ module Maestrano::Connector::Rails::Concerns::Entity
   # ----------------------------------------------
   #             After and before sync
   # ----------------------------------------------
-  def before_sync(connec_client, external_client, organization)
+  def before_sync(connec_client, external_client, last_synchronization, organization, opts)
     # Does nothing by default
   end
 
-  def after_sync(connec_client, external_client, organization)
+  def after_sync(connec_client, external_client, last_synchronization, organization, opts)
     # Does nothing by default
   end
 
