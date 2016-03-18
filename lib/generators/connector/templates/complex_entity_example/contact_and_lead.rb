@@ -2,13 +2,13 @@
 # This file is provided as an example and should be removed
 # See README for explanation
 # class Entities::ContactAndLead < Maestrano::Connector::Rails::ComplexEntity
-#   def connec_entities_names
+#   def self.connec_entities_names
 #     %w(person)
 #   end
 
-#   def external_entities_names
+#   def self.external_entities_names
 #     %w(contact lead)
-#   end
+#   endCont
 
 #   # input :  {
 #   #             connec_entity_names[0]: [unmapped_connec_entitiy1, unmapped_connec_entitiy2],

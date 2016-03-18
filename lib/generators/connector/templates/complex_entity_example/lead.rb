@@ -3,11 +3,11 @@
 # See README for explanation
 # class Entities::SubEntities::Lead < Maestrano::Connector::Rails::SubEntityBase
 
-#   def external?
+#   def self.external?
 #     true
 #   end
 
-#   def entity_name
+#   def self.entity_name
 #     'lead'
 #   end
 
@@ -20,11 +20,11 @@
 #     end
 #   end
 
-#   def object_name_from_connec_entity_hash(entity)
+#   def self.object_name_from_connec_entity_hash(entity)
 #     "#{entity['first_name']} #{entity['last_name']}"
 #   end
 
-#   def object_name_from_external_entity_hash(entity)
+#   def self.object_name_from_external_entity_hash(entity)
 #     "#{entity['FirstName']} #{entity['LastName']}"
 #   end
 # end

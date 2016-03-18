@@ -8,35 +8,6 @@ describe Maestrano::Connector::Rails::Entity do
     describe 'entities_list' do
       it { expect(subject.entities_list).to eql(%w(entity1 entity2))}
     end
-  end
-
-  describe 'instance methods' do
-    subject { Maestrano::Connector::Rails::Entity.new }
-
-    describe 'Mapper methods' do
-      before(:each) {
-        class AMapper
-          extend HashMapper
-          def self.set_organization(organization_id)
-          end
-        end
-        allow(subject).to receive(:mapper_class).and_return(AMapper)
-      }
-
-      describe 'map_to_external' do
-        it 'calls the setter normalize' do
-          expect(AMapper).to receive(:normalize).with({})
-          subject.map_to_external({}, nil)
-        end
-      end
-
-      describe 'map_to_connec' do
-        it 'calls the setter denormalize' do
-          expect(AMapper).to receive(:denormalize).with({})
-          subject.map_to_connec({}, nil)
-        end
-      end
-    end
 
     # IdMap methods
     describe 'idmaps mehtods' do
@@ -61,7 +32,7 @@ describe Maestrano::Connector::Rails::Entity do
         before {
           allow(subject).to receive(:object_name_from_external_entity_hash).and_return('name_e')
           allow(subject).to receive(:object_name_from_connec_entity_hash).and_return('name_c')
-          allow(subject).to receive(:get_id_from_external_entity_hash).and_return('id')
+          allow(subject).to receive(:id_from_external_entity_hash).and_return('id')
         }
 
         it {
@@ -73,7 +44,105 @@ describe Maestrano::Connector::Rails::Entity do
           subject.create_idmap_from_external_entity({}, organization)
         }
       end
+    end
 
+    describe 'normalized_connec_entity_name' do
+      before {
+        allow(subject).to receive(:connec_entity_name).and_return(connec_name)
+      }
+      context 'for a singleton resource' do
+        before {
+          allow(subject).to receive(:singleton?).and_return(true)
+        }
+
+        context 'for a simple name' do
+          let(:connec_name) { 'Person' }
+          it { expect(subject.normalized_connec_entity_name).to eql('person') }
+        end
+
+        context 'for a complex name' do
+          let(:connec_name) { 'Credit Note' }
+          it { expect(subject.normalized_connec_entity_name).to eql('credit_note') }
+        end
+      end
+
+      context 'for a non singleton resource' do
+        before {
+          allow(subject).to receive(:singleton?).and_return(false)
+        }
+
+        context 'for a simple name' do
+          let(:connec_name) { 'Person' }
+          it { expect(subject.normalized_connec_entity_name).to eql('people') }
+        end
+
+        context 'for a complex name' do
+          let(:connec_name) { 'Credit Note' }
+          it { expect(subject.normalized_connec_entity_name).to eql('credit_notes') }
+        end
+      end
+    end
+
+    describe 'id_from_external_entity_hash' do
+      it { expect{ subject.id_from_external_entity_hash(nil) }.to raise_error('Not implemented') }
+    end
+
+    describe 'last_update_date_from_external_entity_hash' do
+      it { expect{ subject.last_update_date_from_external_entity_hash(nil) }.to raise_error('Not implemented') }
+    end
+
+    # Entity specific methods
+    describe 'singleton?' do
+      it 'is false by default' do
+        expect(subject.singleton?).to be false
+      end
+    end
+
+    describe 'connec_entity_name' do
+      it { expect{ subject.connec_entity_name }.to raise_error('Not implemented') }
+    end
+
+    describe 'external_entity_name' do
+      it { expect{ subject.external_entity_name }.to raise_error('Not implemented') }
+    end
+
+    describe 'mapper_class' do
+      it { expect{ subject.mapper_class }.to raise_error('Not implemented') }
+    end
+
+    describe 'object_name_from_connec_entity_hash' do
+      it { expect{ subject.object_name_from_connec_entity_hash({}) }.to raise_error('Not implemented') }
+    end
+
+    describe 'object_name_from_external_entity_hash' do
+      it { expect{ subject.object_name_from_external_entity_hash({}) }.to raise_error('Not implemented') }
+    end
+  end
+
+  describe 'instance methods' do
+    subject { Maestrano::Connector::Rails::Entity.new }
+
+    describe 'Mapper methods' do
+      before(:each) {
+        class AMapper
+          extend HashMapper
+        end
+        allow(subject.class).to receive(:mapper_class).and_return(AMapper)
+      }
+
+      describe 'map_to_external' do
+        it 'calls the mapper normalize' do
+          expect(AMapper).to receive(:normalize).with({})
+          subject.map_to_external({}, nil)
+        end
+      end
+
+      describe 'map_to_connec' do
+        it 'calls the mapper denormalize' do
+          expect(AMapper).to receive(:denormalize).with({})
+          subject.map_to_connec({}, nil)
+        end
+      end
     end
 
     # Connec! methods
@@ -84,26 +153,9 @@ describe Maestrano::Connector::Rails::Entity do
       let(:external_name) { 'external_name' }
       let(:sync) { create(:synchronization) }
       before {
-        allow(subject).to receive(:connec_entity_name).and_return(connec_name)
+        allow(subject.class).to receive(:connec_entity_name).and_return(connec_name)
+        allow(subject.class).to receive(:external_entity_name).and_return(external_name)
       }
-
-      describe 'normalized_connec_entity_name' do
-        context 'for a singleton resource' do
-          before {
-            allow(subject).to receive(:singleton?).and_return(true)
-          }
-
-          it { expect(subject.normalized_connec_entity_name).to eql('person') }
-        end
-
-        context 'for a non singleton resource' do
-          before {
-            allow(subject).to receive(:singleton?).and_return(false)
-          }
-
-          it { expect(subject.normalized_connec_entity_name).to eql('people') }
-        end
-      end
 
       describe 'get_connec_entities' do
 
@@ -111,7 +163,7 @@ describe Maestrano::Connector::Rails::Entity do
           context 'for a singleton resource' do
             before {
               allow(client).to receive(:get).and_return(ActionDispatch::Response.new(200, {}, {person: []}.to_json, {}))
-              allow(subject).to receive(:singleton?).and_return(true)
+              allow(subject.class).to receive(:singleton?).and_return(true)
             }
 
             it 'calls get with a singularize url' do
@@ -188,7 +240,7 @@ describe Maestrano::Connector::Rails::Entity do
       describe 'push_entities_to_connec_to' do
         let(:organization) { create(:organization) }
         let(:idmap1) { create(:idmap, organization: organization) }
-        let(:idmap2) { create(:idmap, organization: organization, connec_id: nil, connec_entity: nil, last_push_to_connec: nil) }
+        let(:idmap2) { create(:idmap, organization: organization, connec_id: nil, last_push_to_connec: nil) }
         let(:entity1) { {name: 'John'} }
         let(:entity2) { {name: 'Jane'} }
         let(:entity_with_idmap1) { {entity: entity1, idmap: idmap1} }
@@ -210,8 +262,13 @@ describe Maestrano::Connector::Rails::Entity do
           expect(idmap1.last_push_to_connec).to_not eql(old_push_date)
           idmap2.reload
           expect(idmap2.connec_id).to eql(id)
-          expect(idmap2.connec_entity).to eql(connec_name.downcase)
           expect(idmap2.last_push_to_connec).to_not be_nil
+        end
+
+        it 'stores an errr if any in the idmap' do
+          subject.push_entities_to_connec_to(client, entities_with_idmaps, '', organization)
+          idmap1.reload
+          expect(idmap1.message).to_not be nil
         end
       end
 
@@ -251,11 +308,11 @@ describe Maestrano::Connector::Rails::Entity do
         let(:id) { '765e-zer4' }
         let(:mapped_entity) { {'first_name' => 'John'} }
         before {
-          allow(subject).to receive(:connec_entity_name).and_return(connec_name)
-          allow(subject).to receive(:external_entity_name).and_return(external_name)
+          allow(subject.class).to receive(:connec_entity_name).and_return(connec_name)
+          allow(subject.class).to receive(:external_entity_name).and_return(external_name)
           allow(subject).to receive(:map_to_external).and_return(mapped_entity)
-          allow(subject).to receive(:object_name_from_connec_entity_hash).and_return('name')
-          allow(subject).to receive(:object_name_from_external_entity_hash).and_return('name')
+          allow(subject.class).to receive(:object_name_from_connec_entity_hash).and_return('name')
+          allow(subject.class).to receive(:object_name_from_external_entity_hash).and_return('name')
         }
 
         context 'when entity has an idmap' do
@@ -292,7 +349,7 @@ describe Maestrano::Connector::Rails::Entity do
         context 'when entity has no idmap' do
           let(:entity) { {'id' => id, 'name' => 'John', 'updated_at' => 5.hour.ago } }
           before {
-            allow(subject).to receive(:object_name_from_connec_entity_hash).and_return('human readable stuff')
+            allow(subject.class).to receive(:object_name_from_connec_entity_hash).and_return('human readable stuff')
           }
 
           it { expect{ subject.map_to_external_with_idmap(entity, organization) }.to change{Maestrano::Connector::Rails::IdMap.count}.by(1) }
@@ -329,7 +386,7 @@ describe Maestrano::Connector::Rails::Entity do
 
       describe 'push_entities_to_external' do
         it 'calls push_entities_to_external_to' do
-          allow(subject).to receive(:external_entity_name).and_return(external_name)
+          allow(subject.class).to receive(:external_entity_name).and_return(external_name)
           expect(subject).to receive(:push_entities_to_external_to).with(nil, entities_with_idmaps, external_name, organization)
           subject.push_entities_to_external(nil, entities_with_idmaps, organization)
         end
@@ -337,7 +394,7 @@ describe Maestrano::Connector::Rails::Entity do
 
       describe 'push_entities_to_external_to' do
         it 'calls push_entity_to_external for each entity' do
-          allow(subject).to receive(:connec_entity_name).and_return(connec_name)
+          allow(subject.class).to receive(:connec_entity_name).and_return(connec_name)
           expect(subject).to receive(:push_entity_to_external).twice
           subject.push_entities_to_external_to(nil, entities_with_idmaps, external_name, organization)
         end
@@ -370,7 +427,6 @@ describe Maestrano::Connector::Rails::Entity do
             subject.push_entity_to_external(nil, entity_with_idmap2, external_name, organization)
             idmap2.reload
             expect(idmap2.external_id).to eql('999111')
-            expect(idmap2.external_entity).to eql(external_name)
             expect(idmap2.last_push_to_external).to_not be_nil
           end
         end
@@ -387,14 +443,6 @@ describe Maestrano::Connector::Rails::Entity do
 
         it { expect{ subject.update_external_entity(nil, nil, nil, nil, organization) }.to raise_error('Not implemented') }
       end
-
-      describe 'get_id_from_external_entity_hash' do
-        it { expect{ subject.get_id_from_external_entity_hash(nil) }.to raise_error('Not implemented') }
-      end
-
-      describe 'get_last_update_date_from_external_entity_hash' do
-        it { expect{ subject.get_last_update_date_from_external_entity_hash(nil) }.to raise_error('Not implemented') }
-      end
     end
 
 
@@ -406,19 +454,19 @@ describe Maestrano::Connector::Rails::Entity do
       let(:id) { '56882' }
       let(:date) { 2.hour.ago }
       before {
-        allow(subject).to receive(:get_id_from_external_entity_hash).and_return(id)
-        allow(subject).to receive(:get_last_update_date_from_external_entity_hash).and_return(date)
-        allow(subject).to receive(:external_entity_name).and_return(external_name)
-        allow(subject).to receive(:connec_entity_name).and_return(connec_name)
+        allow(subject.class).to receive(:id_from_external_entity_hash).and_return(id)
+        allow(subject.class).to receive(:last_update_date_from_external_entity_hash).and_return(date)
+        allow(subject.class).to receive(:external_entity_name).and_return(external_name)
+        allow(subject.class).to receive(:connec_entity_name).and_return(connec_name)
       }
 
       context 'for a singleton method' do
         before {
-          allow(subject).to receive(:singleton?).and_return(true)
+          allow(subject.class).to receive(:singleton?).and_return(true)
           allow(subject).to receive(:map_to_connec).and_return({map: 'connec'})
           allow(subject).to receive(:map_to_external).and_return({map: 'external'})
-          allow(subject).to receive(:object_name_from_connec_entity_hash).and_return('connec human name')
-          allow(subject).to receive(:object_name_from_external_entity_hash).and_return('external human name')
+          allow(subject.class).to receive(:object_name_from_connec_entity_hash).and_return('connec human name')
+          allow(subject.class).to receive(:object_name_from_external_entity_hash).and_return('external human name')
         }
 
         it { expect(subject.consolidate_and_map_data([], [], organization)).to eql({connec_entities: [], external_entities: []}) }
@@ -490,7 +538,7 @@ describe Maestrano::Connector::Rails::Entity do
 
           before {
             allow(subject).to receive(:map_to_connec).and_return(mapped_entity)
-            allow(subject).to receive(:object_name_from_external_entity_hash).and_return(human_name)
+            allow(subject.class).to receive(:object_name_from_external_entity_hash).and_return(human_name)
           }
 
           context 'when entity has no idmap' do
@@ -586,34 +634,6 @@ describe Maestrano::Connector::Rails::Entity do
         end
 
       end
-    end
-
-
-    # Entity specific methods
-    describe 'singleton?' do
-      it 'is false by default' do
-        expect(subject.singleton?).to be false
-      end
-    end
-
-    describe 'connec_entity_name' do
-      it { expect{ subject.connec_entity_name }.to raise_error('Not implemented') }
-    end
-
-    describe 'external_entity_name' do
-      it { expect{ subject.external_entity_name }.to raise_error('Not implemented') }
-    end
-
-    describe 'mapper_class' do
-      it { expect{ subject.mapper_class }.to raise_error('Not implemented') }
-    end
-
-    describe 'object_name_from_connec_entity_hash' do
-      it { expect{ subject.object_name_from_connec_entity_hash({}) }.to raise_error('Not implemented') }
-    end
-
-    describe 'object_name_from_external_entity_hash' do
-      it { expect{ subject.object_name_from_external_entity_hash({}) }.to raise_error('Not implemented') }
     end
   end
 

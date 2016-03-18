@@ -49,11 +49,13 @@ module Maestrano::Connector::Rails
     def sync_entity(entity_name, organization, connec_client, external_client, last_synchronization, opts)
       entity_instance = "Entities::#{entity_name.titleize.split.join}".constantize.new
 
+      entity_instance.before_sync(connec_client, external_client, organization, opts)
       external_entities = entity_instance.get_external_entities(external_client, last_synchronization, organization, opts)
       connec_entities = entity_instance.get_connec_entities(connec_client, last_synchronization, organization, opts)
       mapped_entities = entity_instance.consolidate_and_map_data(connec_entities, external_entities, organization, opts)
       entity_instance.push_entities_to_external(external_client, mapped_entities[:connec_entities], organization)
       entity_instance.push_entities_to_connec(connec_client, mapped_entities[:external_entities], organization)
+      entity_instance.after_sync(connec_client, external_client, organization, opts)
     end
   end
 end

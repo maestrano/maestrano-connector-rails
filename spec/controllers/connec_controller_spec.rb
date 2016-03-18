@@ -49,7 +49,7 @@ describe Maestrano::ConnecController, type: :controller do
         before {
           allow(Maestrano::Connector::Rails::Entity).to receive(:entities_list).and_return(%w(contact_and_lead))
           class Entities::ContactAndLead < Maestrano::Connector::Rails::ComplexEntity
-            def connec_entities_names
+            def self.connec_entities_names
               %w(Lead)
             end
           end
@@ -65,7 +65,7 @@ describe Maestrano::ConnecController, type: :controller do
 
         context 'when syncing' do
           before {
-            allow_any_instance_of(Entities::ContactAndLead).to receive(:external_entities_names).and_return(%w())
+            allow(Entities::ContactAndLead).to receive(:external_entities_names).and_return(%w())
           }
           let!(:organization) { create(:organization, uid: group_id, oauth_uid: 'lala', sync_enabled: true, synchronized_entities: {contact_and_lead: true}) }
 
@@ -83,7 +83,7 @@ describe Maestrano::ConnecController, type: :controller do
         before {
           allow(Maestrano::Connector::Rails::Entity).to receive(:entities_list).and_return(%w(person))
           class Entities::Person < Maestrano::Connector::Rails::Entity
-            def connec_entity_name
+            def self.connec_entity_name
               'People'
             end
           end
