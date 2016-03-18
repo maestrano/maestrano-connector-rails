@@ -355,7 +355,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
   module ClassMethods
     def not_modified_since_last_push_to_connec?(idmap, entity, entity_instance, organization)
       result = idmap.last_push_to_connec && idmap.last_push_to_connec > entity_instance.class.last_update_date_from_external_entity_hash(entity)
-      Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Discard #{entity_instance.class.external_entity_name} : #{entity}") if result
+      Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Discard #{Maestrano::Connector::Rails::External::external_name} #{entity_instance.class.external_entity_name} : #{entity}") if result
       result
     end
 
@@ -373,11 +373,11 @@ module Maestrano::Connector::Rails::Concerns::Entity
         end
 
         if keep_external
-          Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Conflict between #{entity_instance.class.external_entity_name} #{external_entity} and Connec! #{connec_entity_name} #{connec_entity}. Entity from external kept")
+          Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Conflict between #{Maestrano::Connector::Rails::External::external_name} #{entity_instance.class.external_entity_name} #{external_entity} and Connec! #{connec_entity_name} #{connec_entity}. Entity from external kept")
           connec_entities.delete(connec_entity)
           entity_instance.map_external_entity_with_idmap(external_entity, connec_entity_name, idmap, organization)
         else
-          Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Conflict between #{entity_instance.class.external_entity_name} #{external_entity} and Connec! #{connec_entity_name} #{connec_entity}. Entity from Connec! kept")
+          Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Conflict between #{Maestrano::Connector::Rails::External::external_name} #{entity_instance.class.external_entity_name} #{external_entity} and Connec! #{connec_entity_name} #{connec_entity}. Entity from Connec! kept")
           nil
         end
 
