@@ -16,7 +16,7 @@
 #     when 'person'
 #       Entities::SubEntities::ContactMapper.denormalize(entity)
 #     else
-#       raise "Impossible mapping from #{self.entity_name} to #{name}"
+#       raise "Impossible mapping from #{self.class.entity_name} to #{name}"
 #     end
 #   end
 
