@@ -2,13 +2,15 @@ require 'spec_helper'
 
 describe Maestrano::Connector::Rails::ComplexEntity do
 
-  #Connec specific methods
-  describe 'connec specific methods' do
+  subject { Maestrano::Connector::Rails::ComplexEntity.new }
+
+  #Complex specific methods
+  describe 'complex specific methods' do
     describe 'connec_entities_names' do
-      it { expect{ subject.connec_entities_names }.to raise_error('Not implemented') }
+      it { expect{ subject.class.connec_entities_names }.to raise_error('Not implemented') }
     end
     describe 'external_entities_names' do
-      it { expect{ subject.external_entities_names }.to raise_error('Not implemented') }
+      it { expect{ subject.class.external_entities_names }.to raise_error('Not implemented') }
     end
     describe 'connec_model_to_external_model' do
       it { expect{ subject.connec_model_to_external_model({}) }.to raise_error('Not implemented') }
@@ -19,7 +21,6 @@ describe Maestrano::Connector::Rails::ComplexEntity do
   end
 
   describe 'general methods' do
-    subject { Maestrano::Connector::Rails::ComplexEntity.new }
 
     describe 'map_to_external_with_idmap' do
       let(:organization) { create(:organization) }
@@ -31,10 +32,10 @@ describe Maestrano::Connector::Rails::ComplexEntity do
       let(:sub_instance) { Maestrano::Connector::Rails::SubEntityBase.new }
       let(:human_name) { 'ET' }
       before {
-        allow(sub_instance).to receive(:external?).and_return(false)
-        allow(sub_instance).to receive(:entity_name).and_return(connec_name)
+        allow(sub_instance.class).to receive(:external?).and_return(false)
+        allow(sub_instance.class).to receive(:entity_name).and_return(connec_name)
         allow(sub_instance).to receive(:map_to).and_return(mapped_entity)
-        allow(sub_instance).to receive(:object_name_from_connec_entity_hash).and_return(human_name)
+        allow(sub_instance.class).to receive(:object_name_from_connec_entity_hash).and_return(human_name)
       }
 
       context 'when entity has no idmap' do
@@ -188,20 +189,20 @@ describe Maestrano::Connector::Rails::ComplexEntity do
         before{
           allow(subject).to receive(:external_model_to_connec_model).and_return(external_hash)
           allow(subject).to receive(:connec_model_to_external_model).and_return(connec_hash)
-          allow_any_instance_of(Entities::SubEntities::ScE1).to receive(:external?).and_return(true)
-          allow_any_instance_of(Entities::SubEntities::ScE1).to receive(:entity_name).and_return('sc_e1')
-          allow_any_instance_of(Entities::SubEntities::ScE1).to receive(:get_id_from_external_entity_hash).with(entity1).and_return(id1)
-          allow_any_instance_of(Entities::SubEntities::ScE1).to receive(:get_last_update_date_from_external_entity_hash).and_return(1.minute.ago)
+          allow(Entities::SubEntities::ScE1).to receive(:external?).and_return(true)
+          allow(Entities::SubEntities::ScE1).to receive(:entity_name).and_return('sc_e1')
+          allow(Entities::SubEntities::ScE1).to receive(:id_from_external_entity_hash).with(entity1).and_return(id1)
+          allow(Entities::SubEntities::ScE1).to receive(:last_update_date_from_external_entity_hash).and_return(1.minute.ago)
           allow_any_instance_of(Entities::SubEntities::ScE1).to receive(:map_to).with('connec1', entity1, organization).and_return(mapped_entity1)
-          allow_any_instance_of(Entities::SubEntities::ScE2).to receive(:external?).and_return(true)
-          allow_any_instance_of(Entities::SubEntities::ScE2).to receive(:entity_name).and_return('Sce2')
-          allow_any_instance_of(Entities::SubEntities::ScE2).to receive(:get_id_from_external_entity_hash).with(entity1).and_return(id1)
-          allow_any_instance_of(Entities::SubEntities::ScE2).to receive(:get_id_from_external_entity_hash).with(entity2).and_return(id2)
-          allow_any_instance_of(Entities::SubEntities::ScE2).to receive(:get_last_update_date_from_external_entity_hash).and_return(1.minute.ago)
+          allow(Entities::SubEntities::ScE2).to receive(:external?).and_return(true)
+          allow(Entities::SubEntities::ScE2).to receive(:entity_name).and_return('Sce2')
+          allow(Entities::SubEntities::ScE2).to receive(:id_from_external_entity_hash).with(entity1).and_return(id1)
+          allow(Entities::SubEntities::ScE2).to receive(:id_from_external_entity_hash).with(entity2).and_return(id2)
+          allow(Entities::SubEntities::ScE2).to receive(:last_update_date_from_external_entity_hash).and_return(1.minute.ago)
           allow_any_instance_of(Entities::SubEntities::ScE2).to receive(:map_to).with('connec1', entity1, organization).and_return(mapped_entity1)
           allow_any_instance_of(Entities::SubEntities::ScE2).to receive(:map_to).with('connec2', entity2, organization).and_return(mapped_entity2)
-          allow_any_instance_of(Entities::SubEntities::ScE1).to receive(:object_name_from_external_entity_hash).and_return(human_name)
-          allow_any_instance_of(Entities::SubEntities::ScE2).to receive(:object_name_from_external_entity_hash).and_return(human_name)
+          allow(Entities::SubEntities::ScE1).to receive(:object_name_from_external_entity_hash).and_return(human_name)
+          allow(Entities::SubEntities::ScE2).to receive(:object_name_from_external_entity_hash).and_return(human_name)
         }
 
         context 'when entities have no idmaps' do
@@ -268,9 +269,9 @@ describe Maestrano::Connector::Rails::ComplexEntity do
             class Entities::SubEntities::Connec2 < Maestrano::Connector::Rails::SubEntityBase
             end
             allow_any_instance_of(Entities::SubEntities::Connec1).to receive(:map_to).and_return({'name' => 'Jacob'})
-            allow_any_instance_of(Entities::SubEntities::Connec1).to receive(:external?).and_return(false)
-            allow_any_instance_of(Entities::SubEntities::Connec1).to receive(:entity_name).and_return('connec1')
-            allow_any_instance_of(Entities::SubEntities::Connec1).to receive(:object_name_from_connec_entity_hash).and_return('human name')
+            allow(Entities::SubEntities::Connec1).to receive(:external?).and_return(false)
+            allow(Entities::SubEntities::Connec1).to receive(:entity_name).and_return('connec1')
+            allow(Entities::SubEntities::Connec1).to receive(:object_name_from_connec_entity_hash).and_return('human name')
           }
           let(:connec_id1) { '67ttf-5rr4d' }
           let!(:idmap1) { create(:idmap, organization: organization, external_id: id1, external_entity: 'sc_e1', connec_entity: 'connec1', last_push_to_connec: 1.year.ago, connec_id: connec_id1) }
@@ -384,8 +385,8 @@ describe Maestrano::Connector::Rails::ComplexEntity do
         let(:idmap) { create(:idmap, organization: organization) }
         before {
           [Entities::SubEntities::ScE1, Entities::SubEntities::ScE2].each do |klass|
-            allow_any_instance_of(klass).to receive(:external?).and_return(true)
-            allow_any_instance_of(klass).to receive(:entity_name).and_return('n')
+            allow(klass).to receive(:external?).and_return(true)
+            allow(klass).to receive(:entity_name).and_return('n')
           end
           allow(client).to receive(:put).and_return(ActionDispatch::Response.new(200, {}, {people: {}}.to_json, {}))
         }
