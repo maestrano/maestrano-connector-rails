@@ -110,8 +110,6 @@ module Maestrano::Connector::Rails::Concerns::Entity
     end
   end
 
-  @@external_name = Maestrano::Connector::Rails::External.external_name
-
   # ----------------------------------------------
   #                 Mapper methods
   # ----------------------------------------------
@@ -179,7 +177,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
   end
 
   def push_entities_to_connec_to(connec_client, mapped_external_entities_with_idmaps, connec_entity_name, organization)
-    Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Sending #{@@external_name} #{self.class.external_entity_name.pluralize} to Connec! #{connec_entity_name.pluralize}")
+    Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Sending #{Maestrano::Connector::Rails::External.external_name} #{self.class.external_entity_name.pluralize} to Connec! #{connec_entity_name.pluralize}")
     mapped_external_entities_with_idmaps.each do |mapped_external_entity_with_idmap|
       external_entity = mapped_external_entity_with_idmap[:entity]
       idmap = mapped_external_entity_with_idmap[:idmap]
@@ -236,7 +234,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
   #                 External methods
   # ----------------------------------------------
   def get_external_entities(client, last_synchronization, organization, opts={})
-    Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Fetching #{@@external_name} #{self.class.external_entity_name.pluralize}")
+    Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Fetching #{Maestrano::Connector::Rails::External.external_name} #{self.class.external_entity_name.pluralize}")
     raise "Not implemented"
   end
 
@@ -245,7 +243,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
   end
 
   def push_entities_to_external_to(external_client, mapped_connec_entities_with_idmaps, external_entity_name, organization)
-    Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Sending Connec! #{self.class.connec_entity_name.pluralize} to #{@@external_name} #{external_entity_name.pluralize}")
+    Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Sending Connec! #{self.class.connec_entity_name.pluralize} to #{Maestrano::Connector::Rails::External.external_name} #{external_entity_name.pluralize}")
     mapped_connec_entities_with_idmaps.each do |mapped_connec_entity_with_idmap|
       push_entity_to_external(external_client, mapped_connec_entity_with_idmap, external_entity_name, organization)
     end
@@ -265,18 +263,18 @@ module Maestrano::Connector::Rails::Concerns::Entity
       end
     rescue => e
       # Store External error
-      Maestrano::Connector::Rails::ConnectorLogger.log('error', organization, "Error while pushing to #{@@external_name}: #{e}")
+      Maestrano::Connector::Rails::ConnectorLogger.log('error', organization, "Error while pushing to #{Maestrano::Connector::Rails::External.external_name}: #{e}")
       idmap.update_attributes(message: e.message)
     end
   end
 
   def create_external_entity(client, mapped_connec_entity, external_entity_name, organization)
-    Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Sending create #{external_entity_name}: #{mapped_connec_entity} to #{@@external_name}")
+    Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Sending create #{external_entity_name}: #{mapped_connec_entity} to #{Maestrano::Connector::Rails::External.external_name}")
     raise "Not implemented"
   end
 
   def update_external_entity(client, mapped_connec_entity, external_id, external_entity_name, organization)
-    Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Sending update #{external_entity_name} (id=#{external_id}): #{mapped_connec_entity} to #{@@external_name}")
+    Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Sending update #{external_entity_name} (id=#{external_id}): #{mapped_connec_entity} to #{Maestrano::Connector::Rails::External.external_name}")
     raise "Not implemented"
   end
   # ----------------------------------------------

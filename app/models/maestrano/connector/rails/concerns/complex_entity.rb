@@ -1,8 +1,6 @@
 module Maestrano::Connector::Rails::Concerns::ComplexEntity
   extend ActiveSupport::Concern
 
-  @@external_name = Maestrano::Connector::Rails::External.external_name
-
   # -------------------------------------------------------------
   #                   Complex specific methods
   # Those methods needs to be implemented in each complex entity
