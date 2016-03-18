@@ -24,14 +24,14 @@ describe Maestrano::Connector::Rails::Entity do
       }
 
       describe 'map_to_external' do
-        it 'calls the setter normalize' do
+        it 'calls the mapper normalize' do
           expect(AMapper).to receive(:normalize).with({})
           subject.map_to_external({}, nil)
         end
       end
 
       describe 'map_to_connec' do
-        it 'calls the setter denormalize' do
+        it 'calls the mapper denormalize' do
           expect(AMapper).to receive(:denormalize).with({})
           subject.map_to_connec({}, nil)
         end
@@ -94,6 +94,11 @@ describe Maestrano::Connector::Rails::Entity do
           }
 
           it { expect(subject.normalized_connec_entity_name).to eql('person') }
+
+          context 'for a complex name' do
+            let(:connec_name) { 'Credit Note' }
+            it { expect(subject.normalized_connec_entity_name).to eql('credit_note') }
+          end
         end
 
         context 'for a non singleton resource' do
@@ -102,6 +107,11 @@ describe Maestrano::Connector::Rails::Entity do
           }
 
           it { expect(subject.normalized_connec_entity_name).to eql('people') }
+
+          context 'for a complex name' do
+            let(:connec_name) { 'Credit Note' }
+            it { expect(subject.normalized_connec_entity_name).to eql('credit_notes') }
+          end
         end
       end
 

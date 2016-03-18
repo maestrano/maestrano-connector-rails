@@ -73,9 +73,9 @@ module Maestrano::Connector::Rails::Concerns::Entity
 
   def normalize_connec_entity_name(connec_entity_name)
     if singleton?
-      connec_entity_name.downcase
+      connec_entity_name.parameterize('_')
     else
-      connec_entity_name.downcase.pluralize
+      connec_entity_name.parameterize('_').pluralize
     end
   end
 
