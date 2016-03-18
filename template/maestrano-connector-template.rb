@@ -76,6 +76,7 @@ after_bundle do
   remove_dir 'test'
   remove_file 'app/views/layouts/application.html.erb'
   remove_file 'app/assets/stylesheets/application.css'
+  remove_file 'config/routes.rb'
   copy_file 'spec_helper.rb', 'spec/spec_helper.rb'
   copy_file 'factories.rb', 'spec/factories.rb'
   copy_file 'routes.rb', 'config/routes.rb'
@@ -89,10 +90,10 @@ after_bundle do
   RUBY
   end
 
-  run 'rails g connector:install'
+  run 'bundle exec rails g connector:install'
   run 'bundle exec figaro install'
-  run 'rake railties:install:migrations'
-  run 'rake db:migrate'
+  run 'bundle exec rake railties:install:migrations'
+  run 'bundle exec rake db:migrate'
 
   # Init repo and commit
   git :init
