@@ -115,7 +115,7 @@ module Maestrano::Connector::Rails::Concerns::ComplexEntity
           next nil unless idmap.to_connec
 
           # Entity has not been modified since its last push to connec!
-          next nil if Maestrano::Connector::Rails::Entity.not_modified_since_last_push_to_connec(idmap, entity, sub_entity_instance, organization)
+          next nil if Maestrano::Connector::Rails::Entity.not_modified_since_last_push_to_connec?(idmap, entity, sub_entity_instance, organization)
 
           # Check for conflict with entities from connec!
           equivalent_connec_entities = modeled_connec_entities[connec_entity_name][external_entity_name] || []

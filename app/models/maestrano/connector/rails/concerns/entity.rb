@@ -302,7 +302,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
       next nil unless idmap.to_connec
 
       # Entity has not been modified since its last push to connec!
-      next nil if self.class.not_modified_since_last_push_to_connec(idmap, entity, self, organization)
+      next nil if self.class.not_modified_since_last_push_to_connec?(idmap, entity, self, organization)
 
       # Check for conflict with entities from connec!
       self.class.solve_conflict(entity, self, connec_entities, self.class.connec_entity_name, idmap, organization, opts)
@@ -355,7 +355,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
   #             Internal helper methods
   # ----------------------------------------------
   module ClassMethods
-    def not_modified_since_last_push_to_connec(idmap, entity, entity_instance, organization)
+    def not_modified_since_last_push_to_connec?(idmap, entity, entity_instance, organization)
       result = idmap.last_push_to_connec && idmap.last_push_to_connec > entity_instance.class.last_update_date_from_external_entity_hash(entity)
       Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Discard #{entity_instance.class.external_entity_name} : #{entity}") if result
       result
