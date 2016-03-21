@@ -74,7 +74,7 @@ module Maestrano::Connector::Rails::Concerns::ComplexEntity
   def get_connec_entities(client, last_synchronization, organization, opts={})
     entities = ActiveSupport::HashWithIndifferentAccess.new
 
-    self.connec_entities_names.each do |connec_entity_name|
+    self.class.connec_entities_names.each do |connec_entity_name|
       sub_entity_instance = "Entities::SubEntities::#{connec_entity_name.titleize.split.join}".constantize.new
       entities[connec_entity_name] = sub_entity_instance.get_connec_entities(client, last_synchronization, organization, opts)
     end
@@ -84,7 +84,7 @@ module Maestrano::Connector::Rails::Concerns::ComplexEntity
   def get_external_entities(client, last_synchronization, organization, opts={})
     entities = ActiveSupport::HashWithIndifferentAccess.new
 
-    self.external_entities_names.each do |external_entity_name|
+    self.class.external_entities_names.each do |external_entity_name|
       sub_entity_instance = "Entities::SubEntities::#{external_entity_name.titleize.split.join}".constantize.new
       entities[external_entity_name] = sub_entity_instance.get_external_entities(client, last_synchronization, organization, opts)
     end
