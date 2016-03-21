@@ -96,7 +96,7 @@ describe Maestrano::Connector::Rails::ComplexEntity do
 
     describe 'get_connec_entities' do
       before {
-        allow(subject).to receive(:connec_entities_names).and_return(%w(sc_e1 ScE2))
+        allow(subject.class).to receive(:connec_entities_names).and_return(%w(sc_e1 ScE2))
       }
 
       it 'calls get_connec_entities on each connec sub complex entities' do
@@ -116,7 +116,7 @@ describe Maestrano::Connector::Rails::ComplexEntity do
 
     describe 'get_external_entities' do
       before {
-        allow(subject).to receive(:external_entities_names).and_return(%w(sc_e1 ScE2))
+        allow(subject.class).to receive(:external_entities_names).and_return(%w(sc_e1 ScE2))
       }
 
       it 'calls get_external_entities on each connec sub complex entities' do
