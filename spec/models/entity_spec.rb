@@ -132,15 +132,43 @@ describe Maestrano::Connector::Rails::Entity do
 
       describe 'map_to_external' do
         it 'calls the mapper normalize' do
-          expect(AMapper).to receive(:normalize).with({})
+          expect(AMapper).to receive(:normalize).with({}).and_return({})
           subject.map_to_external({}, nil)
+        end
+
+        context 'with references' do
+          let!(:organization) { create(:organization) }
+          let!(:idmap) { create(:idmap, organization: organization) }
+          before {
+            clazz = Maestrano::Connector::Rails::Entity
+            allow(clazz).to receive(:find_idmap).and_return(idmap)
+            allow(clazz).to receive(:references).and_return([{reference_class: clazz, connec_field: 'organization_id', external_field: 'contact_id'}])
+          }
+
+          it 'returns the mapped entity with its references' do
+            expect(subject.map_to_external({'organization_id' => 'abcd'}, organization)).to eql({contact_id: idmap.external_id})
+          end
         end
       end
 
       describe 'map_to_connec' do
         it 'calls the mapper denormalize' do
-          expect(AMapper).to receive(:denormalize).with({})
+          expect(AMapper).to receive(:denormalize).with({}).and_return({})
           subject.map_to_connec({}, nil)
+        end
+
+        context 'with references' do
+          let!(:organization) { create(:organization) }
+          let!(:idmap) { create(:idmap, organization: organization) }
+          before {
+            clazz = Maestrano::Connector::Rails::Entity
+            allow(clazz).to receive(:find_idmap).and_return(idmap)
+            allow(clazz).to receive(:references).and_return([{reference_class: clazz, connec_field: 'organization_id', external_field: 'contact_id'}])
+          }
+
+          it 'returns the mapped entity with its references' do
+            expect(subject.map_to_connec({'contact_id' => 'abcd'}, organization)).to eql({organization_id: idmap.connec_id})
+          end
         end
       end
     end

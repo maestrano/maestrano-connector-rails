@@ -116,7 +116,33 @@ describe Maestrano::Connector::Rails::SubEntityBase do
     subject { Maestrano::Connector::Rails::SubEntityBase.new }
 
     describe 'map_to' do
-      it { expect{ subject.map_to('name', {}, nil) }.to raise_error('Not implemented') }
+      before {
+        class AMapper
+          extend HashMapper
+        end
+        allow(subject.class).to receive(:mapper_classes).and_return('Name' => AMapper)
+      }
+
+      context 'when external' do
+        before {
+          allow(subject.class).to receive(:external?).and_return(true)
+        }
+
+        it 'calls the mapper denormalize' do
+          expect(AMapper).to receive(:denormalize).and_return({})
+          subject.map_to('Name', {}, nil)
+        end
+      end
+      context 'when not external' do
+        before {
+          allow(subject.class).to receive(:external?).and_return(false)
+        }
+
+        it 'calls the mapper normalize' do
+          expect(AMapper).to receive(:normalize).and_return({})
+          subject.map_to('Name', {}, nil)
+        end
+      end
     end
   end
 end

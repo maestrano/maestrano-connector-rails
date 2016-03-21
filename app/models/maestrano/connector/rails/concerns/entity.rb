@@ -108,6 +108,13 @@ module Maestrano::Connector::Rails::Concerns::Entity
     def object_name_from_external_entity_hash(entity)
       raise "Not implemented"
     end
+
+    # [{reference_class: Entities::.., connec_field: 'account_id', external_field: 'account/something/id'}]
+    # ledger_account_idmap = Entities::Account.find_idmap({connec_id: entity['account_id'], organization_id: organization.id})
+    # ledger_account_id = ledger_account_idmap && ledger_account_idmap.external_id
+    def references
+      []
+    end
   end
 
   # ----------------------------------------------
@@ -115,12 +122,22 @@ module Maestrano::Connector::Rails::Concerns::Entity
   # ----------------------------------------------
   # Map a Connec! entity to the external format
   def map_to_external(entity, organization)
-    self.class.mapper_class.normalize(entity)
+    ref_hash = {}
+    self.class.references.each do |ref|
+      ref_hash.merge! ref[:external_field].split('/').reverse.inject(self.class.id_from_ref(entity, ref, false, organization)) { |a, n| { n.to_sym => a } }
+    end
+
+    self.class.mapper_class.normalize(entity).merge(ref_hash)
   end
 
   # Map an external entity to Connec! format
   def map_to_connec(entity, organization)
-    self.class.mapper_class.denormalize(entity)
+    ref_hash = {}
+    self.class.references.each do |ref|
+      ref_hash.merge! ref[:connec_field].split('/').reverse.inject(self.class.id_from_ref(entity, ref, true, organization)) { |a, n| { n.to_sym => a } }
+    end
+
+    self.class.mapper_class.denormalize(entity).merge(ref_hash)
   end
 
   # ----------------------------------------------
@@ -383,6 +400,24 @@ module Maestrano::Connector::Rails::Concerns::Entity
 
       else
         entity_instance.map_external_entity_with_idmap(external_entity, connec_entity_name, idmap, organization)
+      end
+    end
+
+    def id_from_ref(entity, ref, is_external, organization)
+      # field can be address/billing/country_id
+      field = is_external ? ref[:external_field] : ref[:connec_field]
+      field = field.split('/')
+      id = entity
+      field.each do |f|
+        id &&= id[f]
+      end
+
+      if is_external
+        idmap = ref[:reference_class].find_idmap({external_id: id, organization_id: organization.id})
+        idmap && idmap.connec_id
+      else
+        idmap = ref[:reference_class].find_idmap({connec_id: id, organization_id: organization.id})
+        idmap && idmap.external_id
       end
     end
   end
