@@ -10,15 +10,11 @@
 #     'person'
 #   end
 
-#   def map_to(name, entity, organization)
-#     case name
-#     when 'lead'
-#       Enities::SubEntities::LeadMapper.normalize(entity)
-#     when 'contact'
-#       Enities::SubEntities::ContactMapper.normalize(entity)
-#     else
-#       raise "Impossible mapping from #{self.class.entity_name} to #{name}"
-#     end
+#   def self.mapper_classes
+#     {
+#       'lead' => Entities::SubEntities::LeadMapper,
+#       'contact' => Entities::SubEntities::ContactMapper,
+#     }
 #   end
 
 #   def self.object_name_from_connec_entity_hash(entity)

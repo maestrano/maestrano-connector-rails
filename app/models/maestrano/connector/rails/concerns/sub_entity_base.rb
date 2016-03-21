@@ -86,7 +86,7 @@ module Maestrano::Connector::Rails::Concerns::SubEntityBase
     if self.class.references[name]
       self.class.references[name].each do |ref|
         field = self.class.external? ? ref[:connec_field] : ref[:external_field]
-        ref_hash.merge! field.split('/').reverse.inject(Maestrano::Connector::Rails::Entity.id_from_ref(entity, ref, false, organization)) { |a, n| { n.to_sym => a } }
+        ref_hash.merge! field.split('/').reverse.inject(Maestrano::Connector::Rails::Entity.id_from_ref(entity, ref, self.class.external?, organization)) { |a, n| { n.to_sym => a } }
       end
     end
 

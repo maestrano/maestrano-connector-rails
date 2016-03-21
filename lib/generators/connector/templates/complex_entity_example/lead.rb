@@ -11,13 +11,10 @@
 #     'lead'
 #   end
 
-#   def map_to(name, entity, organization)
-#     case name
-#     when 'person'
-#       Entities::SubEntities::LeadMapper.denormalize(entity).merge(is_lead: true)
-#     else
-#       raise "Impossible mapping from #{self.class.entity_name} to #{name}"
-#     end
+#   def self.mapper_classes
+#     {
+#       'person' => Entities::SubEntities::LeadMapper
+#     }
 #   end
 
 #   def self.object_name_from_connec_entity_hash(entity)
