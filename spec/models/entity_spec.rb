@@ -186,6 +186,14 @@ describe Maestrano::Connector::Rails::Entity do
       }
 
       describe 'get_connec_entities' do
+        describe 'when write only' do
+          before {
+            allow(subject.class).to receive(:can_read_connec?).and_return(false)
+            allow(client).to receive(:get).and_return(ActionDispatch::Response.new(200, {}, {people: [{first_name: 'Lea'}]}.to_json, {}))
+          }
+
+          it { expect(subject.get_connec_entities(client, nil, organization)).to eql([]) }
+        end
 
         describe 'with response' do
           context 'for a singleton resource' do
@@ -275,6 +283,29 @@ describe Maestrano::Connector::Rails::Entity do
         let(:entity_with_idmap2) { {entity: entity2, idmap: idmap2} }
         let(:entities_with_idmaps) { [entity_with_idmap1, entity_with_idmap2] }
         let(:id) { 'ab12-34re' }
+
+        context 'when read only' do
+          before {
+            allow(subject.class).to receive(:can_write_connec?).and_return(false)
+          }
+
+          it 'does nothing' do
+            expect(subject).to_not receive(:create_connec_entity)
+            expect(subject).to_not receive(:update_connec_entity)
+            subject.push_entities_to_connec_to(client, entities_with_idmaps, connec_name, organization)
+          end
+        end
+
+        context 'when create_only' do
+          before {
+            allow(subject.class).to receive(:can_update_connec?).and_return(false)
+          }
+          it 'calls create only' do
+            expect(subject).to receive(:create_connec_entity).with(client, entity2, connec_name.downcase.pluralize, organization)
+            expect(subject).to_not receive(:update_connec_entity)
+            subject.push_entities_to_connec_to(client, entities_with_idmaps, connec_name, organization)
+          end
+        end
 
         it 'create or update the entities and idmaps according to their idmap state' do
           allow(subject).to receive(:create_connec_entity).and_return({'id' => id})
@@ -421,6 +452,14 @@ describe Maestrano::Connector::Rails::Entity do
       end
 
       describe 'push_entities_to_external_to' do
+        context 'when read only' do
+          it 'does nothing' do
+            allow(subject.class).to receive(:can_write_external?).and_return(false)
+            expect(subject).to_not receive(:push_entity_to_external)
+            subject.push_entities_to_external_to(nil, entities_with_idmaps, external_name, organization)
+          end
+        end
+
         it 'calls push_entity_to_external for each entity' do
           allow(subject.class).to receive(:connec_entity_name).and_return(connec_name)
           expect(subject).to receive(:push_entity_to_external).twice
@@ -430,6 +469,12 @@ describe Maestrano::Connector::Rails::Entity do
 
       describe 'push_entity_to_external' do
         context 'when the entity idmap has an external id' do
+          it 'does not calls update if create_only' do
+            allow(subject.class).to receive(:can_update_external?).and_return(false)
+            expect(subject).to_not receive(:update_external_entity)
+            subject.push_entity_to_external(nil, entity_with_idmap1, external_name, organization)
+          end
+
           it 'calls update_external_entity' do
             expect(subject).to receive(:update_external_entity).with(nil, entity1, idmap1.external_id, external_name, organization)
             subject.push_entity_to_external(nil, entity_with_idmap1, external_name, organization)

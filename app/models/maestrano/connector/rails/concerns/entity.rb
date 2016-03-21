@@ -115,6 +115,30 @@ module Maestrano::Connector::Rails::Concerns::Entity
     def references
       []
     end
+
+    def can_read_connec?
+      true
+    end
+
+    def can_read_external?
+      true
+    end
+
+    def can_write_connec?
+      true
+    end
+
+    def can_write_external?
+      true
+    end
+
+    def can_update_connec?
+      true
+    end
+
+    def can_update_external?
+      true
+    end
   end
 
   # ----------------------------------------------
@@ -144,6 +168,8 @@ module Maestrano::Connector::Rails::Concerns::Entity
   #                 Connec! methods
   # ----------------------------------------------
   def get_connec_entities(client, last_synchronization, organization, opts={})
+    return [] unless self.class.can_read_connec?
+
     Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Fetching Connec! #{self.class.connec_entity_name}")
 
     entities = []
@@ -194,6 +220,8 @@ module Maestrano::Connector::Rails::Concerns::Entity
   end
 
   def push_entities_to_connec_to(connec_client, mapped_external_entities_with_idmaps, connec_entity_name, organization)
+    return unless self.class.can_write_connec?
+
     Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Sending #{Maestrano::Connector::Rails::External.external_name} #{self.class.external_entity_name.pluralize} to Connec! #{connec_entity_name.pluralize}")
     mapped_external_entities_with_idmaps.each do |mapped_external_entity_with_idmap|
       external_entity = mapped_external_entity_with_idmap[:entity]
@@ -204,6 +232,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
           connec_entity = create_connec_entity(connec_client, external_entity, self.class.normalize_connec_entity_name(connec_entity_name), organization)
           idmap.update_attributes(connec_id: connec_entity['id'], last_push_to_connec: Time.now, message: nil)
         else
+          next unless self.class.can_update_connec?
           connec_entity = update_connec_entity(connec_client, external_entity, idmap.connec_id, self.class.normalize_connec_entity_name(connec_entity_name), organization)
           idmap.update_attributes(last_push_to_connec: Time.now, message: nil)
         end
@@ -224,6 +253,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
   end
 
   def update_connec_entity(connec_client, mapped_external_entity, connec_id, connec_entity_name, organization)
+
     Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Sending update #{connec_entity_name}: #{mapped_external_entity} to Connec!")
     response = connec_client.put("/#{connec_entity_name}/#{connec_id}", { "#{connec_entity_name}".to_sym => mapped_external_entity })
     response = JSON.parse(response.body)
@@ -251,6 +281,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
   #                 External methods
   # ----------------------------------------------
   def get_external_entities(client, last_synchronization, organization, opts={})
+    return [] unless self.class.can_read_external?
     Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Fetching #{Maestrano::Connector::Rails::External.external_name} #{self.class.external_entity_name.pluralize}")
     raise "Not implemented"
   end
@@ -260,6 +291,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
   end
 
   def push_entities_to_external_to(external_client, mapped_connec_entities_with_idmaps, external_entity_name, organization)
+    return unless self.class.can_write_external?
     Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Sending Connec! #{self.class.connec_entity_name.pluralize} to #{Maestrano::Connector::Rails::External.external_name} #{external_entity_name.pluralize}")
     mapped_connec_entities_with_idmaps.each do |mapped_connec_entity_with_idmap|
       push_entity_to_external(external_client, mapped_connec_entity_with_idmap, external_entity_name, organization)
@@ -275,6 +307,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
         external_id = create_external_entity(external_client, connec_entity, external_entity_name, organization)
         idmap.update_attributes(external_id: external_id, last_push_to_external: Time.now, message: nil)
       else
+        return unless self.class.can_update_external?
         update_external_entity(external_client, connec_entity, idmap.external_id, external_entity_name, organization)
         idmap.update_attributes(last_push_to_external: Time.now, message: nil)
       end
