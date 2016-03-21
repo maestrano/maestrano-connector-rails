@@ -50,22 +50,42 @@ describe Maestrano::Connector::Rails::SynchronizationJob do
   end
 
   describe 'sync_entity' do
-    before {
-      class Entities::Person < Maestrano::Connector::Rails::Entity
-      end
-    }
-
     subject { Maestrano::Connector::Rails::SynchronizationJob.new }
 
-    it 'calls the seven methods' do
-      expect_any_instance_of(Entities::Person).to receive(:before_sync)
-      expect_any_instance_of(Entities::Person).to receive(:get_connec_entities)
-      expect_any_instance_of(Entities::Person).to receive(:get_external_entities)
-      expect_any_instance_of(Entities::Person).to receive(:consolidate_and_map_data).and_return({})
-      expect_any_instance_of(Entities::Person).to receive(:push_entities_to_external)
-      expect_any_instance_of(Entities::Person).to receive(:push_entities_to_connec)
-      expect_any_instance_of(Entities::Person).to receive(:after_sync)
-      subject.sync_entity('person', organization, nil, nil, nil, {})
+    context 'non complex entity' do
+      before {
+        class Entities::Person < Maestrano::Connector::Rails::Entity
+        end
+      }
+
+      it 'calls the seven methods' do
+        expect_any_instance_of(Entities::Person).to receive(:before_sync)
+        expect_any_instance_of(Entities::Person).to receive(:get_connec_entities)
+        expect_any_instance_of(Entities::Person).to receive(:get_external_entities)
+        expect_any_instance_of(Entities::Person).to receive(:consolidate_and_map_data).and_return({})
+        expect_any_instance_of(Entities::Person).to receive(:push_entities_to_external)
+        expect_any_instance_of(Entities::Person).to receive(:push_entities_to_connec)
+        expect_any_instance_of(Entities::Person).to receive(:after_sync)
+        subject.sync_entity('person', organization, nil, nil, nil, {})
+      end
+    end
+
+    context 'complex entity' do
+      before {
+        class Entities::SomeStuff < Maestrano::Connector::Rails::ComplexEntity
+        end
+      }
+
+      it 'calls the seven methods' do
+        expect_any_instance_of(Entities::SomeStuff).to receive(:before_sync)
+        expect_any_instance_of(Entities::SomeStuff).to receive(:get_connec_entities)
+        expect_any_instance_of(Entities::SomeStuff).to receive(:get_external_entities)
+        expect_any_instance_of(Entities::SomeStuff).to receive(:consolidate_and_map_data).and_return({})
+        expect_any_instance_of(Entities::SomeStuff).to receive(:push_entities_to_external)
+        expect_any_instance_of(Entities::SomeStuff).to receive(:push_entities_to_connec)
+        expect_any_instance_of(Entities::SomeStuff).to receive(:after_sync)
+        subject.sync_entity('some stuff', organization, nil, nil, nil, {})
+      end
     end
   end
 end
