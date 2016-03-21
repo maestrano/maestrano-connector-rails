@@ -110,6 +110,8 @@ describe Maestrano::Connector::Rails::SubEntityBase do
         }
       end
     end
+
+    it { expect(subject.mapper_classes).to eql({}) }
   end
 
   describe 'instance methods' do
@@ -132,6 +134,20 @@ describe Maestrano::Connector::Rails::SubEntityBase do
           expect(AMapper).to receive(:denormalize).and_return({})
           subject.map_to('Name', {}, nil)
         end
+
+        context 'with references' do
+          let!(:organization) { create(:organization) }
+          let!(:idmap) { create(:idmap, organization: organization) }
+          before {
+            clazz = Maestrano::Connector::Rails::Entity
+            allow(clazz).to receive(:find_idmap).and_return(idmap)
+            allow(subject.class).to receive(:references).and_return({'Name' => [{reference_class: clazz, connec_field: 'organization_id', external_field: 'contact_id'}]})
+          }
+
+          it 'returns the mapped entity with its references' do
+            expect(subject.map_to('Name', {'contact_id' => idmap.external_id}, organization)).to eql({organization_id: idmap.connec_id})
+          end
+        end
       end
       context 'when not external' do
         before {
@@ -141,6 +157,20 @@ describe Maestrano::Connector::Rails::SubEntityBase do
         it 'calls the mapper normalize' do
           expect(AMapper).to receive(:normalize).and_return({})
           subject.map_to('Name', {}, nil)
+        end
+
+        context 'with references' do
+          let!(:organization) { create(:organization) }
+          let!(:idmap) { create(:idmap, organization: organization) }
+          before {
+            clazz = Maestrano::Connector::Rails::Entity
+            allow(clazz).to receive(:find_idmap).and_return(idmap)
+            allow(subject.class).to receive(:references).and_return({'Name' => [{reference_class: clazz, connec_field: 'organization_id', external_field: 'contact_id'}]})
+          }
+
+          it 'returns the mapped entity with its references' do
+            expect(subject.map_to('Name', {'organization_id' => idmap.connec_id}, organization)).to eql({contact_id: idmap.external_id})
+          end
         end
       end
     end
