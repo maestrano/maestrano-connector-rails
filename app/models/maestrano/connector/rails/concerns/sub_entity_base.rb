@@ -61,11 +61,41 @@ module Maestrano::Connector::Rails::Concerns::SubEntityBase
         Maestrano::Connector::Rails::IdMap.create(h)
       end
     end
+
+    # { 'External Entity'  => LalaMapper, 'Other external entity' => LiliMapper }
+    # or { 'Connec Entity'  => LalaMapper, 'Other connec entity' => LiliMapper }
+    def mapper_classes
+      {}
+    end
+
+    # {
+    #   'External Entity' => [{reference_class: Entities::.., connec_field: '', external_field: ''}],
+    #   'Other external entity' => [{reference_class: Entities::.., connec_field: '', external_field: ''}]
+    # }
+    def references
+      {}
+    end
   end
 
 
   def map_to(name, entity, organization)
-    raise "Not implemented"
+    mapper = self.class.mapper_classes[name]
+    raise "Impossible mapping from #{self.class.entity_name} to #{name}" unless mapper
+
+    ref_hash = {}
+    if self.class.references[name]
+      self.class.references[name].each do |ref|
+        field = self.class.external? ? ref[:connec_field] : ref[:external_field]
+        ref_hash.merge! field.split('/').reverse.inject(Maestrano::Connector::Rails::Entity.id_from_ref(entity, ref, false, organization)) { |a, n| { n.to_sym => a } }
+      end
+    end
+
+    if self.class.external?
+      mapped_entity = mapper.denormalize(entity)
+    else
+      mapped_entity = mapper.normalize(entity)
+    end
+    mapped_entity.merge(ref_hash)
   end
 
 
