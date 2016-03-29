@@ -51,7 +51,6 @@ module Connector
 
       def copy_stylesheets
         copy_file 'stylesheets/application.sass', 'app/assets/stylesheets/application.sass'
-        copy_file 'stylesheets/banners.sass', 'app/assets/stylesheets/banners.sass'
         copy_file 'stylesheets/home.sass', 'app/assets/stylesheets/home.sass'
         copy_file 'stylesheets/layout.sass', 'app/assets/stylesheets/layout.sass'
         copy_file 'stylesheets/spacers.sass', 'app/assets/stylesheets/spacers.sass'

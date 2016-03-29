@@ -1,59 +1,30 @@
-.mno-main-logo
-  width: 201px
-  height: 51px
-  background: image-url('sprites/shared-icons.sprite.png') 0px 0px no-repeat
+html, body
+  height: 100%
+  background-color: $bg-color
+  color: $text-color
 
-.logo
-  height: 51px
+.wrapper
+  min-height: 100%
+  margin-bottom: -$footer-height
+
+  &:after
+    content: ""
+    display: block
+
+.footer
+  padding-top: $navbar-padding
+  height: $footer-height
+  border-top: 1px solid darken($navbar-bg-color, 10%)
+  border-bottom: 1px solid darken($navbar-bg-color, 10%)
+  background-color: $navbar-bg-color
+
+  .copyright
+    text-align: center
+    font-size: 10px
+    color: $copyright-color
+    margin-top: 20px
 
 .navbar
-  &.navbar-dashboard
-    top: 0px
-
-    .container-fluid
-      .navbar-brand
-        position: absolute
-        margin-top: -44px
-
-  .navbar-submenu
-    background-color: $purple
-    padding: 15px
-    margin-top: 14px
-    margin-bottom: -1px
-    width: 100%
-
-    ul
-      margin: auto
-      list-style-type: none
-
-      li
-        display: inline
-        margin: 0px 13px
-
-        a
-          color: white
-          font-size: 14px
-          font-weight: 300
-
-          &.active
-            color: $darkblue
-            font-weight: 300
-
-  .navbar-nav
-    &.navbar-right:last-child
-      margin-right: 10px
-
-    li.active
-      .navbar-arrow
-        position: absolute
-        margin-top: 60px
-        width: 0
-        height: 0
-        border-left: 27px solid transparent
-        border-right: 27px solid transparent
-        margin-left: calc(50% - 27px)
-        border-bottom: 20px solid $purple
-
   .container-fluid
     .navbar-brand
       margin-left: 20px
@@ -69,17 +40,6 @@
       a
         font-size: $normal
 
-    ul.nav.navbar-nav.navbar-right
-      button
-        margin-top: (($navbar-height - $line-height-computed) / 2) - 18
-
-      a
-        text-transform: none
-
-.padding-navbar
-  margin-top: $navbar-height
-
-
 // Reduce the height of the navbar if on mobile device
 @media(min-width: 768px)
   .navbar-fixed-top
@@ -89,37 +49,15 @@
   .padding-navbar
     margin-top: $navbar-desktop-height
 
+.banners
+  width: 100%
+  padding: 58px 0 58px 0
+
+.logo
+  height: 51px
+
 .center
   text-align: center
 
 .align-right
   text-align: right
-
-html, body
-  height: 100%
-
-.wrapper
-  min-height: 100%
-  margin-bottom: -$footer-height 
-
-  &:after
-    content: ""
-    display: block
-
-.footer
-  padding-top: $navbar-padding
-  height: $footer-height
-  border-top: 1px solid darken(#e5e5e5, 10%)
-  border-bottom: 1px solid darken(#e5e5e5, 10%)
-  background-color: $darkblue
-
-  .copyright
-    text-align: center
-    font-size: 10px
-    color: #f4f4f4
-    margin-top: 20px
-
-
-.banners
-  &.sticky-top
-    padding-top: 10px

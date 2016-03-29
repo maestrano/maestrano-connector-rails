@@ -3,7 +3,7 @@
 !!!
 %html
   %head
-    %title ApplicationName Connector for Connec!™
+    %title SalesForce Connector
     = stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track' => true
     = javascript_include_tag 'application', 'data-turbolinks-track' => true
     = csrf_meta_tags
@@ -16,7 +16,9 @@
 
           %ul.nav.navbar-nav
             %li=link_to "Status", root_path
+
             %li=link_to "History", synchronizations_index_path
+
             -if is_admin
               %li=link_to "Mapping", shared_entities_index_path
 
@@ -41,5 +43,4 @@
         .row
           .col-xs-12
             .copyright
-              © Copyright #{Time.now.year} Maestrano Pty Ltd (ABN: 80 152 564 424).
-              All rights reserved. Various trademarks held by their respective owners.
+              © Copyright #{Time.now.year}. All rights reserved. Various trademarks held by their respective owners.

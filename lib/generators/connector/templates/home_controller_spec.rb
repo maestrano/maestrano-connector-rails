@@ -32,10 +32,27 @@ describe HomeController, :type => :controller do
 
       it { expect(subject).to redirect_to back_path }
 
-      it 'updates organization' do
+      it 'updates organization synchronized_entities' do
         subject
         organization.reload
         expect(organization.synchronized_entities).to eq({'people' => true, 'item' => false})
+      end
+
+      it 'updates organization sync_enabled' do
+        subject
+        organization.reload
+        expect(organization.sync_enabled).to eq true
+      end
+
+      context 'when removing all entities' do
+        subject { put :update, id: organization.id, 'people' => false, 'item' => false }
+        before { organization.update(sync_enabled: true) }
+
+        it 'set sync_enabled to false' do
+          subject
+          organization.reload
+          expect(organization.sync_enabled).to eq false
+        end
       end
     end
   end
@@ -49,7 +66,7 @@ describe HomeController, :type => :controller do
 
     context 'when user is not admin' do
       before {
-        allow_any_instance_of(Maestrano::Connector::Rails::SessionHelper).to receive(:is_admin).and_return(false)
+        allow_any_instance_of(ApplicationHelper).to receive(:is_admin).and_return(false)
       }
 
       it { expect(subject).to redirect_to back_path }
@@ -62,7 +79,7 @@ describe HomeController, :type => :controller do
 
     context 'when user is admin' do
       before {
-        allow_any_instance_of(Maestrano::Connector::Rails::SessionHelper).to receive(:is_admin).and_return(true)
+        allow_any_instance_of(ApplicationHelper).to receive(:is_admin).and_return(true)
       }
 
       it { expect(subject).to redirect_to back_path }
@@ -85,40 +102,22 @@ describe HomeController, :type => :controller do
         end
       end
     end
+  end
 
-    describe 'toggle_sync' do
-      subject { put :toggle_sync }
-      let(:organization) { create(:organization, sync_enabled: true) }
+  describe 'redirect_to_external' do
+    subject { get :redirect_to_external }
+
+    context 'when organization has a redirect url' do
+      let(:organization) {  create(:organization, instance_url: 'url') }
       before {
         allow_any_instance_of(Maestrano::Connector::Rails::SessionHelper).to receive(:current_organization).and_return(organization)
       }
 
-      context 'when user is not an admin' do
-        before {
-          allow_any_instance_of(Maestrano::Connector::Rails::SessionHelper).to receive(:is_admin).and_return(false)
-        }
-        it { expect(subject).to redirect_to back_path }
+      it {expect(subject).to redirect_to('url')}
+    end
 
-        it 'does nothing' do
-          expect{ subject }.to_not change{ organization.sync_enabled }
-        end
-      end
-
-      context 'when user is admin' do
-        before {
-          allow_any_instance_of(Maestrano::Connector::Rails::SessionHelper).to receive(:is_admin).and_return(true)
-        }
-        it { expect(subject).to redirect_to back_path }
-
-        it 'change sync_enabled from true to false' do
-          expect{ subject }.to change{ organization.sync_enabled }.from(true).to(false)
-        end
-
-        it 'change sync_enabled from false to true' do
-          organization.update(sync_enabled: false)
-          expect{ subject }.to change{ organization.sync_enabled }.from(false).to(true)
-        end
-      end
+    context 'otherwise' do
+      it {expect(subject).to redirect_to('https://login.salesforce.com')}
     end
   end
 end
