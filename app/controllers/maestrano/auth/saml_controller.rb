@@ -1,16 +1,14 @@
 class Maestrano::Auth::SamlController < Maestrano::Rails::SamlBaseController
+
+  def init
+    session[:settings] = !!params[:settings]
+    super
+  end
+
   #== POST '/maestrano/auth/saml/consume'
   # Final phase of the Single Sign-On handshake. Find or create
   # the required resources (user and group) and sign the user
   # in
-  #
-  # This action is left to you to customize based on your application
-  # requirements. Below is presented a potential way of writing 
-  # the action.
-  #
-  # Assuming you have enabled maestrano on a user model
-  # called 'User' and a group model called 'Organization'
-  # the action could be written the following way
   def consume
     params[:tenant] ||= 'default'
     user = Maestrano::Connector::Rails::User.find_or_create_for_maestrano(user_auth_hash, params[:tenant])
@@ -25,7 +23,16 @@ class Maestrano::Auth::SamlController < Maestrano::Rails::SamlBaseController
       session[:org_uid] = organization.uid
       session[:"role_#{organization.uid}"] = user_group_rel_hash[:role]
     end
-    
-    redirect_to main_app.root_path
+
+    if session[:settings]
+      session.delete(:setting)
+      redirect_to main_app.root_path
+    else
+      if current_organization && current_organization.oauth_uid && current_organization.sync_enabled
+        redirect_to main_app.home_redirect_to_external_path
+      else
+        redirect_to main_app.root_path
+      end
+    end
   end
 end
