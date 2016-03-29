@@ -34,6 +34,7 @@ class OauthController < ApplicationController
       organization.oauth_uid = nil
       organization.oauth_token = nil
       organization.refresh_token = nil
+      organization.sync_enabled = false
       organization.save
     end
 

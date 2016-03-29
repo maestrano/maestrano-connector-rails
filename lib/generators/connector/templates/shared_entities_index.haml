@@ -7,15 +7,15 @@
         .row
           .col-md-10
             %h3 Data Shared
-            %small Equivalence between Maestrano's Connec!™ id and ApplicationName id for each of your entities
+            %small Equivalence between the internal id and ApplicationName id for each of your entities
 
         - if @idmaps
           %table.table.table-condensed
             %th Entity name
-            %th Connec!™ entity
-            %th Connec!™ id
-            %th SalesForce entity
-            %th SalesForce id
+            %th Internal entity
+            %th Internal id
+            %th ApplicationName entity
+            %th ApplicationName id
             %th Message
 
             - @idmaps.each do |idmap|

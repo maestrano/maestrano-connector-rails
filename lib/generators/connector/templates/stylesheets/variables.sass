@@ -11,30 +11,23 @@ $font-family-base:               $font-family-sans-serif
 /*-----------------------------------------------------------------------*/
 /*                          Color palette                                */
 /*-----------------------------------------------------------------------*/
-$darkerblue:                     #16252c
-$darkblue:                       #17262d
-$darkerblue:                     darken($darkblue,4%)
-$darkblue2:                      #25333a
-$mediumblue:                     #626d6d
-$lightblue:                      #abc4c6
-$pink:                           #ed1e79
-$fluroblue:                      #00e5f0
-$fluroorange:                    #ff7300
-$flureoyellow:                   #fbd925
-$flurogreen:                     #47ff00
-$fluropink:                      #e01f74
-$darkgreen:                      #33d375
-$green:                          #d1e55c
-$purple:                         #977bf0
-$lightgray:                      #e6edee
-$bluegray:                       #abc4c6
-$bluegray2:                      #35464c
+$bg-color:                #fff
+$text-color:              #000
 
-$brand-success:                  $fluroblue
-$brand-warning:                  $purple
-$brand-info:                     $fluroblue
-$brand-danger:                   $fluropink
-$brand-primary:                  $fluroblue
+$navbar-bg-color:         #aaa
+$navbar-text-color:       #fff
+
+$copyright-color:         $navbar-text-color
+
+$primary-button-color:    blue
+$warning-button-color:    red
+
+$done-step-bg-color:      #dff0d8
+$done-step-border-color:  #d6e9c6
+$done-step-badge-color:   darken($done-step-border-color, 20%)
+$todo-step-bg-color:      #fcf8e3
+$todo-step-border-color:  #faebcc
+$todo-step-badge-color:   darken($todo-step-border-color, 20%)
 
 /*-----------------------------------------------------------------------*/
 /*                          Text Size                                    */
@@ -45,13 +38,17 @@ $normal:                         13px
 /*-----------------------------------------------------------------------*/
 /*                          Nav bar                                      */
 /*-----------------------------------------------------------------------*/
-$navbar-inverse-bg:              $darkblue
+$navbar-inverse-bg:              $navbar-bg-color
 $navbar-height:                  40px
-$navbar-inverse-link-color:      $lightblue
+$navbar-inverse-link-color:      $navbar-text-color
 $navbar-border-radius:           0px
-$navbar-inverse-border:          $darkblue
+$navbar-inverse-border:          $navbar-bg-color
 $navbar-desktop-height:          80px
 $navbar-inverse-link-active-bg:  $navbar-inverse-bg
 
 $navbar-padding: 10px
 $footer-height: 50px
+
+$brand-success:                  $primary-button-color
+$brand-primary:                  $primary-button-color
+$brand-warning:                  $warning-button-color

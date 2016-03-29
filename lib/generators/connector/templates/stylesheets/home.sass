@@ -10,7 +10,6 @@
       .link-step-badge
         padding: 10px
         font-size: 20px
-        background-color: cornflowerblue
         border-radius: 20px
 
     .link-step-description
@@ -19,7 +18,22 @@
     .link-step-action
       padding-top: 3px
 
+    &.done
+      background-color: $done-step-bg-color
+      border-color: $done-step-border-color
+      .link-step-badge
+        background-color: $done-step-badge-color
+
+    &.todo
+      background-color: $todo-step-bg-color
+      border-color: $todo-step-border-color
+      .link-step-badge
+        background-color: $todo-step-badge-color
+
   .sync-entity
     padding-bottom: 8px
     margin-bottom: 8px
     border-bottom: dashed 1px silver
+
+  .btn.btn-lg.text-sm
+    font-size: 16px
