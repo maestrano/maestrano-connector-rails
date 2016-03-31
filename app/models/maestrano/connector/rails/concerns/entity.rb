@@ -190,8 +190,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
       filter += " and #{opts[:$filter]}" if opts[:$filter]
       query_params[:$filter] = filter
     end
-    query_params = URI.escape(query_params.collect{|k,v| "#{k}=#{v}"}.join('&'))
-    response = client.get("/#{self.class.normalized_connec_entity_name}?#{query_params}")
+    response = client.get("/#{self.class.normalized_connec_entity_name}?#{query_params.to_query}")
     raise "No data received from Connec! when trying to fetch #{self.class.connec_entity_name.pluralize}" unless response
 
     response_hash = JSON.parse(response.body)

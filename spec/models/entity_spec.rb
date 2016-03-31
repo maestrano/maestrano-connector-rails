@@ -229,7 +229,7 @@ describe Maestrano::Connector::Rails::Entity do
 
             context 'when there is a last sync' do
               it 'performs a time limited get' do
-                uri_param = URI.encode("$filter=updated_at gt '#{sync.updated_at.iso8601}'")
+                uri_param = {"$filter" => "updated_at gt '#{sync.updated_at.iso8601}'"}.to_query
                 expect(client).to receive(:get).with("/#{connec_name.downcase.pluralize}?#{uri_param}")
                 subject.get_connec_entities(client, sync, organization)
               end
@@ -237,19 +237,19 @@ describe Maestrano::Connector::Rails::Entity do
 
             context 'with options' do
               it 'support filter option for full sync' do
-                uri_param = URI.encode('$filter=code eq \'PEO12\'')
+                uri_param = {'$filter'=>'code eq \'PEO12\''}.to_query
                 expect(client).to receive(:get).with("/#{connec_name.downcase.pluralize}?#{uri_param}")
                 subject.get_connec_entities(client, sync, organization, {full_sync: true, :$filter => "code eq 'PEO12'"})
               end
 
               it 'support filter option for time limited sync' do
-                uri_param = URI.encode("$filter=updated_at gt '#{sync.updated_at.iso8601}' and code eq 'PEO12'")
+                uri_param = {"$filter"=>"updated_at gt '#{sync.updated_at.iso8601}' and code eq 'PEO12'"}.to_query
                 expect(client).to receive(:get).with("/#{connec_name.downcase.pluralize}?#{uri_param}")
                 subject.get_connec_entities(client, sync, organization, {:$filter => "code eq 'PEO12'"})
               end
 
               it 'support orderby option for time limited sync' do
-                uri_param = URI.encode("$orderby=name asc&$filter=updated_at gt '#{sync.updated_at.iso8601}'")
+                uri_param = {"$orderby"=>"name asc", "$filter"=>"updated_at gt '#{sync.updated_at.iso8601}'"}.to_query
                 expect(client).to receive(:get).with("/#{connec_name.downcase.pluralize}?#{uri_param}")
                 subject.get_connec_entities(client, sync, organization, {:$orderby => "name asc"})
               end
