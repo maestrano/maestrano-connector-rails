@@ -167,22 +167,30 @@ module Maestrano::Connector::Rails::Concerns::Entity
   # ----------------------------------------------
   #                 Connec! methods
   # ----------------------------------------------
+  # Supported options:
+  # * full_sync
+  # * $filter (see Connec! documentation)
+  # * $orderby (see Connec! documentation)
   def get_connec_entities(client, last_synchronization, organization, opts={})
     return [] unless self.class.can_read_connec?
 
     Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Fetching Connec! #{self.class.connec_entity_name}")
 
     entities = []
+    query_params = {}
+    query_params[:$orderby] = opts[:$orderby] if opts[:$orderby]
 
     # Fetch first page
     if last_synchronization.blank? || opts[:full_sync]
       Maestrano::Connector::Rails::ConnectorLogger.log('debug', organization, "entity=#{self.class.connec_entity_name}, fetching all data")
-      response = client.get("/#{self.class.normalized_connec_entity_name}")
+      query_params[:$filter] = opts[:$filter] if opts[:$filter]
     else
       Maestrano::Connector::Rails::ConnectorLogger.log('debug', organization, "entity=#{self.class.connec_entity_name}, fetching data since #{last_synchronization.updated_at.iso8601}")
-      query_param = URI.encode("$filter=updated_at gt '#{last_synchronization.updated_at.iso8601}'")
-      response = client.get("/#{self.class.normalized_connec_entity_name}?#{query_param}")
+      filter = "updated_at gt '#{last_synchronization.updated_at.iso8601}'"
+      filter += " and #{opts[:$filter]}" if opts[:$filter]
+      query_params[:$filter] = filter
     end
+    response = client.get("/#{self.class.normalized_connec_entity_name}?#{query_params.to_query}")
     raise "No data received from Connec! when trying to fetch #{self.class.connec_entity_name.pluralize}" unless response
 
     response_hash = JSON.parse(response.body)
