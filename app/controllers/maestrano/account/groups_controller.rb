@@ -5,13 +5,13 @@ class Maestrano::Account::GroupsController < Maestrano::Rails::WebHookController
   # Delete an entire group
   def destroy
     # id
-    group_uid = params[:id]
+    org_uid = params[:id]
     
     # Get entity
-    organization = Organization.find_by_provider_and_uid_and_tenant('maestrano', group_uid, params[:tenant])
+    organization = Maestrano::Connector::Rails::Organization.find_by_uid_and_tenant(org_uid, params[:tenant] || 'default')
     
     # Delete all relations
-    organization.user_company_rels.delete_all
+    organization.user_organization_rels.delete_all
     
     # Delete the organization
     organization.destroy
