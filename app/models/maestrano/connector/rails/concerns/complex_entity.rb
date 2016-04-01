@@ -53,7 +53,7 @@ module Maestrano::Connector::Rails::Concerns::ComplexEntity
   #          General methods
   # -------------------------------------------------------------
   def map_to_external_with_idmap(entity, organization, external_entity_name, sub_entity_instance)
-    idmap = sub_entity_instance.class.find_idmap({connec_id: entity['id'], external_entity: external_entity_name, organization_id: organization.id})
+    idmap = sub_entity_instance.class.find_idmap({connec_id: entity['id'], external_entity: external_entity_name.downcase, organization_id: organization.id})
 
     if idmap
       idmap.update(name: sub_entity_instance.class.object_name_from_connec_entity_hash(entity))
@@ -100,7 +100,7 @@ module Maestrano::Connector::Rails::Concerns::ComplexEntity
         sub_entity_instance = "Entities::SubEntities::#{external_entity_name.titleize.split.join}".constantize.new
 
         entities.map!{|entity|
-          idmap = sub_entity_instance.class.find_idmap(external_id: sub_entity_instance.class.id_from_external_entity_hash(entity), connec_entity: connec_entity_name, organization_id: organization.id)
+          idmap = sub_entity_instance.class.find_idmap(external_id: sub_entity_instance.class.id_from_external_entity_hash(entity), connec_entity: connec_entity_name.downcase, organization_id: organization.id)
 
           # No idmap: creating one, nothing else to do
           if idmap

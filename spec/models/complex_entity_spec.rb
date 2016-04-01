@@ -27,8 +27,8 @@ describe Maestrano::Connector::Rails::ComplexEntity do
       let(:id) { '322j-bbfg4' }
       let(:entity) { {'id' => id, 'name' => 'John', 'updated_at' => 2.day.ago} }
       let(:mapped_entity) { {'first_name' => 'John'} }
-      let(:connec_name) { 'connec_name' }
-      let(:external_name) { 'external_name' }
+      let(:connec_name) { 'Connec_name' }
+      let(:external_name) { 'External_name' }
       let(:sub_instance) { Maestrano::Connector::Rails::SubEntityBase.new }
       let(:human_name) { 'ET' }
       before {
@@ -50,7 +50,7 @@ describe Maestrano::Connector::Rails::ComplexEntity do
       end
 
       context 'when entity has an idmap without last_push_to_external' do
-        let!(:idmap) { create(:idmap, organization: organization, connec_id: id, connec_entity: connec_name, last_push_to_external: nil, external_entity: external_name) }
+        let!(:idmap) { create(:idmap, organization: organization, connec_id: id, connec_entity: connec_name.downcase, last_push_to_external: nil, external_entity: external_name.downcase) }
 
         it 'returns the mapped entity with its idmap' do
           expect(subject.map_to_external_with_idmap(entity, organization, external_name, sub_instance)).to eql({entity: mapped_entity, idmap: idmap})
@@ -58,7 +58,7 @@ describe Maestrano::Connector::Rails::ComplexEntity do
       end
 
       context 'when entity has an idmap with an older last_push_to_external' do
-        let!(:idmap) { create(:idmap, organization: organization, connec_id: id, connec_entity: connec_name, last_push_to_external: 1.year.ago, external_entity: external_name) }
+        let!(:idmap) { create(:idmap, organization: organization, connec_id: id, connec_entity: connec_name.downcase, last_push_to_external: 1.year.ago, external_entity: external_name.downcase) }
 
         it 'returns the mapped entity with its idmap' do
           expect(subject.map_to_external_with_idmap(entity, organization, external_name, sub_instance)).to eql({entity: mapped_entity, idmap: idmap})
@@ -66,7 +66,7 @@ describe Maestrano::Connector::Rails::ComplexEntity do
       end
 
       context 'when entity has an idmap with a more recent last_push_to_external' do
-        let!(:idmap) { create(:idmap, organization: organization, connec_id: id, connec_entity: connec_name, last_push_to_external: 1.second.ago, external_entity: external_name) }
+        let!(:idmap) { create(:idmap, organization: organization, connec_id: id, connec_entity: connec_name.downcase, last_push_to_external: 1.second.ago, external_entity: external_name.downcase) }
 
         it 'discards the entity' do
           expect(subject.map_to_external_with_idmap(entity, organization, external_name, sub_instance)).to be_nil
@@ -74,7 +74,7 @@ describe Maestrano::Connector::Rails::ComplexEntity do
       end
 
       context 'when entity has an idmap with to_external set to false' do
-        let!(:idmap) { create(:idmap, organization: organization, connec_id: id, connec_entity: connec_name, to_external: false, external_entity: external_name) }
+        let!(:idmap) { create(:idmap, organization: organization, connec_id: id, connec_entity: connec_name.downcase, to_external: false, external_entity: external_name.downcase) }
 
         it 'discards the entity' do
           expect(subject.map_to_external_with_idmap(entity, organization, external_name, sub_instance)).to be_nil
@@ -180,8 +180,8 @@ describe Maestrano::Connector::Rails::ComplexEntity do
         let(:mapped_entity2) { {'net_price' => 45} }
         let(:external_hash) {
           {
-            'sc_e1' => {'connec1' => [entity1]},
-            'ScE2' => {'connec1' => [entity1], 'connec2' => [entity2]}
+            'sc_e1' => {'Connec1' => [entity1]},
+            'ScE2' => {'Connec1' => [entity1], 'connec2' => [entity2]}
           }
         }
         let(:connec_hash) { {} }
@@ -193,13 +193,13 @@ describe Maestrano::Connector::Rails::ComplexEntity do
           allow(Entities::SubEntities::ScE1).to receive(:entity_name).and_return('sc_e1')
           allow(Entities::SubEntities::ScE1).to receive(:id_from_external_entity_hash).with(entity1).and_return(id1)
           allow(Entities::SubEntities::ScE1).to receive(:last_update_date_from_external_entity_hash).and_return(1.minute.ago)
-          allow_any_instance_of(Entities::SubEntities::ScE1).to receive(:map_to).with('connec1', entity1, organization).and_return(mapped_entity1)
+          allow_any_instance_of(Entities::SubEntities::ScE1).to receive(:map_to).with('Connec1', entity1, organization).and_return(mapped_entity1)
           allow(Entities::SubEntities::ScE2).to receive(:external?).and_return(true)
           allow(Entities::SubEntities::ScE2).to receive(:entity_name).and_return('Sce2')
           allow(Entities::SubEntities::ScE2).to receive(:id_from_external_entity_hash).with(entity1).and_return(id1)
           allow(Entities::SubEntities::ScE2).to receive(:id_from_external_entity_hash).with(entity2).and_return(id2)
           allow(Entities::SubEntities::ScE2).to receive(:last_update_date_from_external_entity_hash).and_return(1.minute.ago)
-          allow_any_instance_of(Entities::SubEntities::ScE2).to receive(:map_to).with('connec1', entity1, organization).and_return(mapped_entity1)
+          allow_any_instance_of(Entities::SubEntities::ScE2).to receive(:map_to).with('Connec1', entity1, organization).and_return(mapped_entity1)
           allow_any_instance_of(Entities::SubEntities::ScE2).to receive(:map_to).with('connec2', entity2, organization).and_return(mapped_entity2)
           allow(Entities::SubEntities::ScE1).to receive(:object_name_from_external_entity_hash).and_return(human_name)
           allow(Entities::SubEntities::ScE2).to receive(:object_name_from_external_entity_hash).and_return(human_name)
@@ -216,9 +216,9 @@ describe Maestrano::Connector::Rails::ComplexEntity do
           it 'returns the entity with their new idmaps' do
             mapped_entities = subject.consolidate_and_map_data({}, external_hash, organization, opt)
             expect(mapped_entities).to eql(external_entities: {
-              'sc_e1' => {'connec1' => [{entity: mapped_entity1, idmap: Maestrano::Connector::Rails::IdMap.first}]},
+              'sc_e1' => {'Connec1' => [{entity: mapped_entity1, idmap: Maestrano::Connector::Rails::IdMap.first}]},
               'ScE2' => {
-                'connec1' => [{entity: mapped_entity1, idmap: Maestrano::Connector::Rails::IdMap.all[1]}],
+                'Connec1' => [{entity: mapped_entity1, idmap: Maestrano::Connector::Rails::IdMap.all[1]}],
                 'connec2' => [{entity: mapped_entity2, idmap: Maestrano::Connector::Rails::IdMap.last}],
               }
             },
@@ -234,9 +234,9 @@ describe Maestrano::Connector::Rails::ComplexEntity do
           it 'discards the entities' do
             mapped_entities = subject.consolidate_and_map_data({}, external_hash, organization, opt)
             expect(mapped_entities).to eql(external_entities: {
-              'sc_e1' => {'connec1' => []},
+              'sc_e1' => {'Connec1' => []},
               'ScE2' => {
-                'connec1' => [],
+                'Connec1' => [],
                 'connec2' => [],
               }
             },
@@ -252,9 +252,9 @@ describe Maestrano::Connector::Rails::ComplexEntity do
           it 'discards the entities' do
             mapped_entities = subject.consolidate_and_map_data({}, external_hash, organization, opt)
             expect(mapped_entities).to eql(external_entities: {
-              'sc_e1' => {'connec1' => []},
+              'sc_e1' => {'Connec1' => []},
               'ScE2' => {
-                'connec1' => [],
+                'Connec1' => [],
                 'connec2' => [],
               }
             },
@@ -270,22 +270,22 @@ describe Maestrano::Connector::Rails::ComplexEntity do
             end
             allow_any_instance_of(Entities::SubEntities::Connec1).to receive(:map_to).and_return({'name' => 'Jacob'})
             allow(Entities::SubEntities::Connec1).to receive(:external?).and_return(false)
-            allow(Entities::SubEntities::Connec1).to receive(:entity_name).and_return('connec1')
+            allow(Entities::SubEntities::Connec1).to receive(:entity_name).and_return('Connec1')
             allow(Entities::SubEntities::Connec1).to receive(:object_name_from_connec_entity_hash).and_return('human name')
           }
           let(:connec_id1) { '67ttf-5rr4d' }
           let!(:idmap1) { create(:idmap, organization: organization, external_id: id1, external_entity: 'sc_e1', connec_entity: 'connec1', last_push_to_connec: 1.year.ago, connec_id: connec_id1) }
           let!(:idmap21) { create(:idmap, organization: organization, external_id: id1, external_entity: 'sce2', connec_entity: 'connec1', last_push_to_connec: 1.year.ago) }
           let!(:idmap22) { create(:idmap, organization: organization, external_id: id2, external_entity: 'sce2', connec_entity: 'connec2', last_push_to_connec: 1.year.ago) }
-          let(:connec_hash) { {'connec1' => {'sc_e1' => [{'id' => connec_id1, 'first_name' => 'Jacob', 'updated_at' => 1.hour.ago}]}, 'connec2' => {'sc_e1' => [], 'ScE2' => []}} }
+          let(:connec_hash) { {'Connec1' => {'sc_e1' => [{'id' => connec_id1, 'first_name' => 'Jacob', 'updated_at' => 1.hour.ago}]}, 'connec2' => {'sc_e1' => [], 'ScE2' => []}} }
 
           context 'without conflict' do
             it 'returns the entity with their idmaps' do
-              subject.consolidate_and_map_data({'connec1' => []}, {'sc_e1' => []}, organization, opt)
+              subject.consolidate_and_map_data({'Connec1' => []}, {'sc_e1' => []}, organization, opt)
               expect(external_hash).to eql({
-                'sc_e1' => {'connec1' => [{entity: mapped_entity1, idmap: idmap1}]},
+                'sc_e1' => {'Connec1' => [{entity: mapped_entity1, idmap: idmap1}]},
                 'ScE2' => {
-                  'connec1' => [{entity: mapped_entity1, idmap: idmap21}],
+                  'Connec1' => [{entity: mapped_entity1, idmap: idmap21}],
                   'connec2' => [{entity: mapped_entity2, idmap: idmap22}],
                 }
               })
@@ -298,12 +298,12 @@ describe Maestrano::Connector::Rails::ComplexEntity do
                 let(:opt) { {connec_preemption: true} }
 
                 it 'keeps the connec entities' do
-                  mapped_entities = subject.consolidate_and_map_data({'connec1' => []}, {'sc_e1' => []}, organization, opt)
-                  expect(mapped_entities[:connec_entities]).to eq({'connec1' => {'sc_e1' => [{entity: {'name' => 'Jacob'}, idmap: idmap1}]}, 'connec2' => {'sc_e1' => [], 'ScE2' => []}})
+                  mapped_entities = subject.consolidate_and_map_data({'Connec1' => []}, {'sc_e1' => []}, organization, opt)
+                  expect(mapped_entities[:connec_entities]).to eq({'Connec1' => {'sc_e1' => [{entity: {'name' => 'Jacob'}, idmap: idmap1}]}, 'connec2' => {'sc_e1' => [], 'ScE2' => []}})
                   expect(mapped_entities[:external_entities]).to eql({
-                    'sc_e1' => {'connec1' => []},
+                    'sc_e1' => {'Connec1' => []},
                     'ScE2' => {
-                      'connec1' => [{entity: mapped_entity1, idmap: idmap21}],
+                      'Connec1' => [{entity: mapped_entity1, idmap: idmap21}],
                       'connec2' => [{entity: mapped_entity2, idmap: idmap22}],
                     }
                   })
@@ -314,12 +314,12 @@ describe Maestrano::Connector::Rails::ComplexEntity do
                 let(:opt) { {connec_preemption: false} }
 
                 it 'keeps the external entities' do
-                  mapped_entities = subject.consolidate_and_map_data({'connec1' => []}, {'sc_e1' => []}, organization, opt)
-                  expect(mapped_entities[:connec_entities]).to eq({'connec1' => {'sc_e1' => []}, 'connec2' => {'sc_e1' => [], 'ScE2' => []}})
+                  mapped_entities = subject.consolidate_and_map_data({'Connec1' => []}, {'sc_e1' => []}, organization, opt)
+                  expect(mapped_entities[:connec_entities]).to eq({'Connec1' => {'sc_e1' => []}, 'connec2' => {'sc_e1' => [], 'ScE2' => []}})
                   expect(mapped_entities[:external_entities]).to eql({
-                    'sc_e1' => {'connec1' => [{entity: mapped_entity1, idmap: idmap1}]},
+                    'sc_e1' => {'Connec1' => [{entity: mapped_entity1, idmap: idmap1}]},
                     'ScE2' => {
-                      'connec1' => [{entity: mapped_entity1, idmap: idmap21}],
+                      'Connec1' => [{entity: mapped_entity1, idmap: idmap21}],
                       'connec2' => [{entity: mapped_entity2, idmap: idmap22}],
                     }
                   })
@@ -330,12 +330,12 @@ describe Maestrano::Connector::Rails::ComplexEntity do
             context 'without option' do
               context 'with a more recently updated external entity' do
                 it 'keeps the external entity' do
-                  mapped_entities = subject.consolidate_and_map_data({'connec1' => []}, {'sc_e1' => []}, organization, opt)
-                  expect(mapped_entities[:connec_entities]).to eq({'connec1' => {'sc_e1' => []}, 'connec2' => {'sc_e1' => [], 'ScE2' => []}})
+                  mapped_entities = subject.consolidate_and_map_data({'Connec1' => []}, {'sc_e1' => []}, organization, opt)
+                  expect(mapped_entities[:connec_entities]).to eq({'Connec1' => {'sc_e1' => []}, 'connec2' => {'sc_e1' => [], 'ScE2' => []}})
                   expect(mapped_entities[:external_entities]).to eql({
-                    'sc_e1' => {'connec1' => [{entity: mapped_entity1, idmap: idmap1}]},
+                    'sc_e1' => {'Connec1' => [{entity: mapped_entity1, idmap: idmap1}]},
                     'ScE2' => {
-                      'connec1' => [{entity: mapped_entity1, idmap: idmap21}],
+                      'Connec1' => [{entity: mapped_entity1, idmap: idmap21}],
                       'connec2' => [{entity: mapped_entity2, idmap: idmap22}],
                     }
                   })
@@ -343,15 +343,15 @@ describe Maestrano::Connector::Rails::ComplexEntity do
               end
 
               context 'with a more recently updated connec entity' do
-                let(:connec_hash) { {'connec1' => {'sc_e1' => [{'id' => connec_id1, 'first_name' => 'Jacob', 'updated_at' => 1.second.ago}]}, 'connec2' => {'sc_e1' => [], 'ScE2' => []}} }
+                let(:connec_hash) { {'Connec1' => {'sc_e1' => [{'id' => connec_id1, 'first_name' => 'Jacob', 'updated_at' => 1.second.ago}]}, 'connec2' => {'sc_e1' => [], 'ScE2' => []}} }
 
                 it 'keeps the connec entities' do
-                  mapped_entities = subject.consolidate_and_map_data({'connec1' => []}, {'sc_e1' => []}, organization, opt)
-                  expect(mapped_entities[:connec_entities]).to eq({'connec1' => {'sc_e1' => [{entity: {'name' => 'Jacob'}, idmap: idmap1}]}, 'connec2' => {'sc_e1' => [], 'ScE2' => []}})
+                  mapped_entities = subject.consolidate_and_map_data({'Connec1' => []}, {'sc_e1' => []}, organization, opt)
+                  expect(mapped_entities[:connec_entities]).to eq({'Connec1' => {'sc_e1' => [{entity: {'name' => 'Jacob'}, idmap: idmap1}]}, 'connec2' => {'sc_e1' => [], 'ScE2' => []}})
                   expect(mapped_entities[:external_entities]).to eql({
-                    'sc_e1' => {'connec1' => []},
+                    'sc_e1' => {'Connec1' => []},
                     'ScE2' => {
-                      'connec1' => [{entity: mapped_entity1, idmap: idmap21}],
+                      'Connec1' => [{entity: mapped_entity1, idmap: idmap21}],
                       'connec2' => [{entity: mapped_entity2, idmap: idmap22}],
                     }
                   })
@@ -368,13 +368,13 @@ describe Maestrano::Connector::Rails::ComplexEntity do
       let(:mapped_entity_with_idmap) { {entity: {}, idmap: idmap} }
       let(:external_hash) {
         {
-          'sc_e1' => {'connec1' => [mapped_entity_with_idmap]},
-          'ScE2' => {'connec1' => [mapped_entity_with_idmap, mapped_entity_with_idmap], 'connec2' => [mapped_entity_with_idmap]}
+          'sc_e1' => {'Connec1' => [mapped_entity_with_idmap]},
+          'ScE2' => {'Connec1' => [mapped_entity_with_idmap, mapped_entity_with_idmap], 'connec2' => [mapped_entity_with_idmap]}
         }
       }
 
       it 'calls push_entities_to_connec on each sub complex entity' do
-        expect_any_instance_of(Entities::SubEntities::ScE1).to receive(:push_entities_to_connec_to).once.with(nil, [mapped_entity_with_idmap], 'connec1', nil)
+        expect_any_instance_of(Entities::SubEntities::ScE1).to receive(:push_entities_to_connec_to).once.with(nil, [mapped_entity_with_idmap], 'Connec1', nil)
         expect_any_instance_of(Entities::SubEntities::ScE2).to receive(:push_entities_to_connec_to).twice
         subject.push_entities_to_connec(nil, external_hash, nil)
       end
