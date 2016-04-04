@@ -23,6 +23,8 @@ module Maestrano::Connector::Rails
     #===================================
     has_many :user_organization_rels
     has_many :users, through: :user_organization_rels
+    has_many :id_maps
+    has_many :synchronizations
 
     #===================================
     # Validation
