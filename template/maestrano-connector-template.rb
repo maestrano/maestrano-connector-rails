@@ -31,14 +31,19 @@ add_source 'https://rubygems.org'
 
 if yes?("Use JRuby? [y/n]")
   run 'echo "ruby \'2.2.3\', :engine => \'jruby\', :engine_version => \'9.0.5.0\'" | cat - Gemfile > temp && mv temp Gemfile'
-  gem_group :production do
+  gem_group :production, :uat do
     gem 'activerecord-jdbcpostgresql-adapter'
+    gem 'rails_12factor'
   end
   gem_group :test, :develpment do
     gem 'activerecord-jdbcsqlite3-adapter'
   end
 else
   gem 'sqlite3'
+
+  gem_group :production, :uat do
+    gem 'rails_12factor'
+  end
 end
 
 gem 'haml-rails'
@@ -54,6 +59,7 @@ gem 'tzinfo-data', platforms: [:mingw, :mswin, :jruby]
 gem 'uglifier', '>= 1.3.0'
 
 gem 'maestrano-connector-rails'
+gem 'config'
 
 
 gem_group :test do
@@ -81,6 +87,24 @@ after_bundle do
   copy_file 'factories.rb', 'spec/factories.rb'
   copy_file 'routes.rb', 'config/routes.rb'
 
+  # Heroku and uat
+  copy_file 'Procfile', 'Procfile'
+  run 'cp config/environments/production.rb config/environments/uat.rb'
+  remove_file 'config/database.yml'
+  copy_file 'database.yml', 'config/database.yml'
+  run 'echo \'uat:
+  secret_key_base: <%= ENV["SECRET_KEY_BASE"] %>\' >> config/secrets.yml'
+
+  # Settings
+  run 'bundle exec rails g config:install'
+  remove_dir 'config/settings'
+  remove_file 'config/settings.yml'
+  run 'mkdir config/settings'
+  %w(development production test uat).each do |file|
+    copy_file "settings/#{file}.yml", "config/settings/#{file}.yml"
+  end
+  copy_file 'settings/settings.yml', 'config/settings.yml'
+
   application do <<-RUBY
     config.generators do |g|
       g.test_framework :rspec, fixture: false
@@ -94,6 +118,9 @@ after_bundle do
   run 'bundle exec figaro install'
   run 'bundle exec rake railties:install:migrations'
   run 'bundle exec rake db:migrate'
+
+  remove_file 'config/initializers/maestrano.rb'
+  copy_file 'maestrano.rb', 'config/initializers/maestrano.rb'
 
   # Init repo and commit
   git :init
