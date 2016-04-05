@@ -135,16 +135,16 @@
     # This is the list of entities (organizations,people,invoices etc.) for which you want to be
     # notified upon creation/update in Connec!™
     config.webhook.connec.subscriptions = {
-      accounts: true,
+      accounts: false,
       company: false,
       employees: false,
       events: false,
       event_orders: false,
-      invoices: true,
-      items: true,
-      journals: true,
+      invoices: false,
+      items: false,
+      journals: false,
       opportunities: false,
-      organizations: true,
+      organizations: false,
       payments: false,
       pay_items: false,
       pay_schedules: false,
