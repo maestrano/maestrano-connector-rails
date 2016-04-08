@@ -28,7 +28,7 @@ module Maestrano::Connector::Rails::Concerns::ComplexEntity
   #               external_entities_names[1]: [unmapped_connec_entitiy4]
   #             }
   #          }
-  def connec_model_to_external_model(connec_hash_of_entities)
+  def connec_model_to_external_model(connec_hash_of_entities, organization)
     raise "Not implemented"
   end
 
@@ -45,7 +45,7 @@ module Maestrano::Connector::Rails::Concerns::ComplexEntity
   #               connec_entities_names[0]: [unmapped_external_entity3, unmapped_external_entity4]
   #             }
   #           }
-  def external_model_to_connec_model(external_hash_of_entities)
+  def external_model_to_connec_model(external_hash_of_entities, organization)
     raise "Not implemented"
   end
 

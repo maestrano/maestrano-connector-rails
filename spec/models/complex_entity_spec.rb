@@ -13,10 +13,10 @@ describe Maestrano::Connector::Rails::ComplexEntity do
       it { expect{ subject.class.external_entities_names }.to raise_error('Not implemented') }
     end
     describe 'connec_model_to_external_model' do
-      it { expect{ subject.connec_model_to_external_model({}) }.to raise_error('Not implemented') }
+      it { expect{ subject.connec_model_to_external_model({}, nil) }.to raise_error('Not implemented') }
     end
     describe 'external_model_to_connec_model' do
-      it { expect{ subject.external_model_to_connec_model({}) }.to raise_error('Not implemented') }
+      it { expect{ subject.external_model_to_connec_model({}, nil) }.to raise_error('Not implemented') }
     end
   end
 
