@@ -92,8 +92,8 @@ module Maestrano::Connector::Rails::Concerns::ComplexEntity
   end
 
   def consolidate_and_map_data(connec_entities, external_entities, organization, opts={})
-    modeled_external_entities = external_model_to_connec_model(external_entities)
-    modeled_connec_entities = connec_model_to_external_model(connec_entities)
+    modeled_external_entities = external_model_to_connec_model(external_entities, organization)
+    modeled_connec_entities = connec_model_to_external_model(connec_entities, organization)
 
     modeled_external_entities.each do |external_entity_name, entities_in_connec_model|
       entities_in_connec_model.each do |connec_entity_name, entities|
