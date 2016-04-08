@@ -141,13 +141,13 @@ describe Maestrano::Connector::Rails::ComplexEntity do
 
       it 'calls external_model_to_connec_model' do
         allow(subject).to receive(:connec_model_to_external_model).and_return({})
-        expect(subject).to receive(:external_model_to_connec_model).with({a: {}}).and_return({})
+        expect(subject).to receive(:external_model_to_connec_model).with({a: {}}, organization).and_return({})
         subject.consolidate_and_map_data({}, {a: {}}, organization, opt)
       end
 
       it 'calls connec_model_to_external_model' do
         allow(subject).to receive(:external_model_to_connec_model).and_return({})
-        expect(subject).to receive(:connec_model_to_external_model).with({a: {}}).and_return({})
+        expect(subject).to receive(:connec_model_to_external_model).with({a: {}}, organization).and_return({})
         subject.consolidate_and_map_data({a: {}}, {}, organization, opt)
       end
 
