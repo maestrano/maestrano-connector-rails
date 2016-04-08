@@ -23,7 +23,7 @@
 #   #               external_entities_names[1]: [unmapped_connec_entitiy4]
 #   #             }
 #   #          }
-#   def connec_model_to_external_model(connec_hash_of_entities)
+#   def connec_model_to_external_model(connec_hash_of_entities, organization)
 #     people = connec_hash_of_entities['person']
 #     modeled_connec_entities = {'person' => { 'lead' => [], 'contact' => [] }}
 
@@ -50,7 +50,7 @@
 #   #               connec_entity_names[0]: [unmapped_external_entity3, unmapped_external_entity4]
 #   #             }
 #   #           }
-#   def external_model_to_connec_model(external_hash_of_entities)
+#   def external_model_to_connec_model(external_hash_of_entities, organization)
 #     return {'lead' => {'person' => external_hash_of_entities['lead']}, 'contact' => {'person' => external_hash_of_entities['contact']}}
 #   end
 # end
