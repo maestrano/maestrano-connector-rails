@@ -22,6 +22,7 @@ class OauthController < ApplicationController
     if organization && is_admin?(current_user, organization)
       # TODO
       # Update organization with oauth params
+      # Should at least set oauth_uid, oauth_token and oauth_provider
     end
 
     redirect_to root_url

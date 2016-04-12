@@ -61,6 +61,12 @@ gem 'uglifier', '>= 1.3.0'
 gem 'maestrano-connector-rails'
 gem 'config'
 
+# Background jobs
+gem 'sinatra', :require => nil
+gem 'sidekiq'
+gem 'sidekiq-cron'
+gem 'slim'
+
 
 gem_group :test do
   gem 'simplecov'
@@ -94,6 +100,10 @@ after_bundle do
   copy_file 'database.yml', 'config/database.yml'
   run 'echo \'uat:
   secret_key_base: <%= ENV["SECRET_KEY_BASE"] %>\' >> config/secrets.yml'
+
+  # Sidekiq
+  copy_file 'sidekiq.yml', 'config/sidekiq.yml'
+  copy_file 'sidekiq.rb', 'config/initializers/sidekiq.rb'
 
   # Settings
   run 'bundle exec rails g config:install'
