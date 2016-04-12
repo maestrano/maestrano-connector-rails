@@ -11,11 +11,22 @@ module Maestrano::Connector::Rails
       return unless organization.sync_enabled
 
       # Check if previous synchronization is still running
-      previous_synchronization = Synchronization.where(organization_id: organization.id).order(created_at: :desc).first
+      previous_synchronizations = Synchronization.where(organization_id: organization.id).order(created_at: :desc).limit(3)
+      previous_synchronization = previous_synchronizations.first
       if previous_synchronization && previous_synchronization.status == 'RUNNING' && previous_synchronization.created_at > (Time.now - 30.minutes)
-        ConnectorLogger.log('info', organization, "Previous synchronization is still running")
+        ConnectorLogger.log('info', organization, "Synchronization skipped: Previous synchronization is still running")
         return
       end
+
+      # Check if recovery mode
+      if previous_synchronization && previous_synchronization.status == 'ERROR' && previous_synchronizations.count == 3 && previous_synchronizations.last(2).map(&:status).uniq.first == 'ERROR'
+        # Three previous sync have failed, doing only one sync per day
+        if previous_synchronization.updated_at > 1.day.ago
+          ConnectorLogger.log('info', organization, "Synchronization skipped: Recovery mode (three previous synchronizations have failed)")
+          return
+        end
+      end
+
 
       ConnectorLogger.log('info', organization, "Start synchronization, opts=#{opts}")
       current_synchronization = Synchronization.create_running(organization)
