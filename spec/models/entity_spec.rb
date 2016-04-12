@@ -310,8 +310,7 @@ describe Maestrano::Connector::Rails::Entity do
           }
 
           it 'does nothing' do
-            expect(subject).to_not receive(:create_connec_entity)
-            expect(subject).to_not receive(:update_connec_entity)
+            expect(subject).to_not receive(:batch_op)
             subject.push_entities_to_connec_to(client, entities_with_idmaps, connec_name, organization)
           end
         end
@@ -319,66 +318,75 @@ describe Maestrano::Connector::Rails::Entity do
         context 'when create_only' do
           before {
             allow(subject.class).to receive(:can_update_connec?).and_return(false)
+
+            allow(client).to receive(:post).and_return(ActionDispatch::Response.new(200, {}, {results: []}.to_json, {}))
           }
-          it 'calls create only' do
-            expect(subject).to receive(:create_connec_entity).with(client, entity2, connec_name.downcase.pluralize, organization)
-            expect(subject).to_not receive(:update_connec_entity)
+          it 'creates batch op for create only' do
+            expect(subject).to receive(:batch_op).once.with('post', entity2, connec_name.downcase.pluralize, organization)
+            expect(subject).to_not receive(:batch_op).with('put', any_args)
             subject.push_entities_to_connec_to(client, entities_with_idmaps, connec_name, organization)
           end
         end
 
-        it 'create or update the entities and idmaps according to their idmap state' do
-          allow(subject).to receive(:create_connec_entity).and_return({'id' => id})
-          allow(subject).to receive(:external_entity_name).and_return(external_name)
+        context 'without errors' do
+          let(:result200) { {status: 200, body: {connec_name.downcase.pluralize.to_sym => {}}} }
+          let(:result201) { {status: 201, body: {connec_name.downcase.pluralize.to_sym => {id: id}}} }
+          before {
+            allow(client).to receive(:post).and_return(ActionDispatch::Response.new(200, {}, {results: [result200, result201]}.to_json, {}))
+          }
 
-          expect(subject).to receive(:create_connec_entity).with(client, entity2, connec_name.downcase.pluralize, organization)
-          expect(subject).to receive(:update_connec_entity).with(client, entity1, idmap1.connec_id, connec_name.downcase.pluralize, organization)
-          old_push_date = idmap1.last_push_to_connec
+          let(:batch_request) {
+            {
+              sequential: true,
+              ops: [
+                {
+                  :method=>"put",
+                  :url=>"/api/v2//people",
+                  :params=>{:people=>{:name=>"John"}}
+                },
+                {
+                  :method=>"post",
+                  :url=>"/api/v2//people",
+                  :params=>{:people=>{:name=>"Jane"}}
+                }
+              ]
+            }
+          }
 
-          subject.push_entities_to_connec_to(client, entities_with_idmaps, connec_name, organization)
+          it 'calls batch op' do
+            expect(subject).to receive(:batch_op).twice
+            subject.push_entities_to_connec_to(client, entities_with_idmaps, connec_name, organization)
+          end
 
-          idmap1.reload
-          expect(idmap1.last_push_to_connec).to_not eql(old_push_date)
-          idmap2.reload
-          expect(idmap2.connec_id).to eql(id)
-          expect(idmap2.last_push_to_connec).to_not be_nil
+          it 'creates a batch request' do
+            expect(client).to receive(:post).with('/batch', batch_request)
+            subject.push_entities_to_connec_to(client, entities_with_idmaps, connec_name, organization)
+          end
+
+          it 'update the idmaps' do
+            old_push_date = idmap1.last_push_to_connec
+
+            subject.push_entities_to_connec_to(client, entities_with_idmaps, connec_name, organization)
+
+            idmap1.reload
+            expect(idmap1.last_push_to_connec).to_not eql(old_push_date)
+            idmap2.reload
+            expect(idmap2.connec_id).to eql(id)
+            expect(idmap2.last_push_to_connec).to_not be_nil
+          end
         end
 
-        it 'stores an errr if any in the idmap' do
-          subject.push_entities_to_connec_to(client, entities_with_idmaps, '', organization)
-          idmap1.reload
-          expect(idmap1.message).to_not be nil
-        end
-      end
+        context 'with errors' do
+          let(:result400) { {status: 400, body: 'Not Found'} }
+          before {
+            allow(client).to receive(:post).and_return(ActionDispatch::Response.new(200, {}, {results: [result400, result400]}.to_json, {}))
+          }
 
-      describe 'create_connec_entity' do
-        let(:entity) { {name: 'John'} }
-
-        before {
-          allow(client).to receive(:post).and_return(ActionDispatch::Response.new(200, {}, {people: entity}.to_json, {}))
-        }
-
-        it 'sends a post to connec' do
-          expect(client).to receive(:post).with("/#{connec_name.downcase.pluralize}", {"#{connec_name.downcase.pluralize}".to_sym => entity})
-          subject.create_connec_entity(client, entity, connec_name.downcase.pluralize, organization)
-        end
-
-        it 'returns the created entity' do
-          expect(subject.create_connec_entity(client, entity, connec_name.downcase.pluralize, organization)).to eql(JSON.parse(entity.to_json))
-        end
-      end
-
-       describe 'update_connec_entity' do
-        let(:organization) { create(:organization) }
-        let(:entity) { {name: 'John'} }
-        let(:id) { '88ye-777ab' }
-        before {
-          allow(client).to receive(:put).and_return(ActionDispatch::Response.new(200, {}, {}.to_json, {}))
-        }
-
-        it 'sends a put to connec' do
-          expect(client).to receive(:put).with("/#{connec_name.downcase.pluralize}/#{id}", {"#{connec_name.downcase.pluralize}".to_sym => entity})
-          subject.update_connec_entity(client, entity, id, connec_name.downcase.pluralize, organization)
+          it 'stores the errr in the idmap' do
+            subject.push_entities_to_connec_to(client, entities_with_idmaps, '', organization)
+            idmap2.reload
+            expect(idmap2.message).to eq result400[:body]
+          end
         end
       end
 
