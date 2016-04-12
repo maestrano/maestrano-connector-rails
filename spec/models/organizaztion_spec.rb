@@ -13,8 +13,8 @@ describe Maestrano::Connector::Rails::Organization do
   #Associations
   it { should have_many(:user_organization_rels) }
   it { should have_many(:users) }
-  it { should have_many(:id_maps) }
-  it { should have_many(:synchronizations) }
+  it { should have_many(:id_maps).dependent(:destroy) }
+  it { should have_many(:synchronizations).dependent(:destroy) }
 
   describe 'creation' do
     subject { Maestrano::Connector::Rails::Organization.new }
