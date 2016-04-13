@@ -294,7 +294,7 @@ describe Maestrano::Connector::Rails::Entity do
       end
 
       describe 'push_entities_to_connec_to' do
-        let(:organization) { create(:organization) }
+        let(:organization) { create(:organization, uid: 'cld-123') }
         let(:idmap1) { create(:idmap, organization: organization) }
         let(:idmap2) { create(:idmap, organization: organization, connec_id: nil, last_push_to_connec: nil) }
         let(:entity1) { {name: 'John'} }
@@ -318,11 +318,11 @@ describe Maestrano::Connector::Rails::Entity do
         context 'when create_only' do
           before {
             allow(subject.class).to receive(:can_update_connec?).and_return(false)
-
             allow(client).to receive(:post).and_return(ActionDispatch::Response.new(200, {}, {results: []}.to_json, {}))
           }
+
           it 'creates batch op for create only' do
-            expect(subject).to receive(:batch_op).once.with('post', entity2, connec_name.downcase.pluralize, organization)
+            expect(subject).to receive(:batch_op).once.with('post', entity2, nil, connec_name.downcase.pluralize, organization)
             expect(subject).to_not receive(:batch_op).with('put', any_args)
             subject.push_entities_to_connec_to(client, entities_with_idmaps, connec_name, organization)
           end
@@ -341,12 +341,12 @@ describe Maestrano::Connector::Rails::Entity do
               ops: [
                 {
                   :method=>"put",
-                  :url=>"/api/v2//people",
+                  :url=>"/api/v2/cld-123/people/#{idmap1.connec_id}",
                   :params=>{:people=>{:name=>"John"}}
                 },
                 {
                   :method=>"post",
-                  :url=>"/api/v2//people",
+                  :url=>"/api/v2/cld-123/people",
                   :params=>{:people=>{:name=>"Jane"}}
                 }
               ]
@@ -373,6 +373,49 @@ describe Maestrano::Connector::Rails::Entity do
             idmap2.reload
             expect(idmap2.connec_id).to eql(id)
             expect(idmap2.last_push_to_connec).to_not be_nil
+          end
+
+          describe 'batch batch calls' do
+            let(:entities) { [] }
+            let(:results) { [] }
+
+            context 'when 100 entities' do
+              before {
+                100.times do
+                  entities << entity_with_idmap1
+                  results << result200
+                end
+                allow(client).to receive(:post).and_return(ActionDispatch::Response.new(200, {}, {results: results}.to_json, {}))
+              }
+
+              it 'does one call' do
+                expect(client).to receive(:post).once
+                subject.push_entities_to_connec_to(client, entities, connec_name, organization)
+              end              
+            end
+
+            context 'when more than 100 entities' do
+              before {
+                100.times do
+                  entities << entity_with_idmap1
+                  results << result200
+                end
+                entities << entity_with_idmap2
+                allow(client).to receive(:post).and_return(ActionDispatch::Response.new(200, {}, {results: results}.to_json, {}), ActionDispatch::Response.new(200, {}, {results: [result201]}.to_json, {}))
+              }
+
+              it 'does several call' do
+                expect(client).to receive(:post).twice
+                subject.push_entities_to_connec_to(client, entities, connec_name, organization)
+              end
+
+              it 'updates the idmap' do
+                subject.push_entities_to_connec_to(client, entities, connec_name, organization)
+                idmap2.reload
+                expect(idmap2.connec_id).to eql(id)
+                expect(idmap2.last_push_to_connec).to_not be_nil
+              end
+            end
           end
         end
 
