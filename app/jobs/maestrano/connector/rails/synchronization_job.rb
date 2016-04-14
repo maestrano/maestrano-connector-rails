@@ -11,12 +11,19 @@ module Maestrano::Connector::Rails
       return unless organization.sync_enabled
 
       # Check if previous synchronization is still running
-      previous_synchronization = Synchronization.where(organization_id: organization.id).order(created_at: :desc).first
-      if previous_synchronization && previous_synchronization.status == 'RUNNING' && previous_synchronization.created_at > (Time.now - 30.minutes)
-        ConnectorLogger.log('info', organization, "Previous synchronization is still running")
+      if Synchronization.where(organization_id: organization.id, status: 'RUNNING').where(created_at: (30.minutes.ago..Time.now)).exists?
+        ConnectorLogger.log('info', organization, "Synchronization skipped: Previous synchronization is still running")
         return
       end
 
+      # Check if recovery mode: last 3 synchronizations have failed
+      if Synchronization.where(organization_id: organization.id, status: 'ERROR').order(created_at: :desc).limit(3).count == 3 \
+          && Synchronization.where(organization_id: organization.id).order(created_at: :desc).limit(1).first.updated_at > 1.day.ago
+        ConnectorLogger.log('info', organization, "Synchronization skipped: Recovery mode (three previous synchronizations have failed)")
+        return
+      end
+
+      # Trigger synchronization
       ConnectorLogger.log('info', organization, "Start synchronization, opts=#{opts}")
       current_synchronization = Synchronization.create_running(organization)
 
@@ -48,7 +55,6 @@ module Maestrano::Connector::Rails
 
     def sync_entity(entity_name, organization, connec_client, external_client, last_synchronization, opts)
       entity_instance = "Entities::#{entity_name.titleize.split.join}".constantize.new
-
 
       entity_instance.before_sync(connec_client, external_client, last_synchronization, organization, opts)
       external_entities = entity_instance.get_external_entities(external_client, last_synchronization, organization, opts)

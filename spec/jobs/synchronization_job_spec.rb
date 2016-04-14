@@ -19,6 +19,32 @@ describe Maestrano::Connector::Rails::SynchronizationJob do
     context 'with sync_enabled set to true' do
       before {organization.update(sync_enabled: true)}
 
+      describe 'recovery mode' do
+        describe 'skipping' do
+          before {
+            3.times do
+              organization.synchronizations.create(status: 'ERROR')
+            end
+          }
+
+          it 'skipped the sync if 3 failed sync' do
+            expect{ subject }.to_not change{ Maestrano::Connector::Rails::Synchronization.count }
+          end
+        end
+
+        describe 'not skipping' do
+          before {
+            3.times do
+              organization.synchronizations.create(status: 'ERROR', created_at: 2.day.ago, updated_at: 2.day.ago)
+            end
+          }
+
+          it 'does not skip the sync if 3 failed sync but last sync more than a day ago' do
+            expect{ subject }.to change{ Maestrano::Connector::Rails::Synchronization.count }.by(1)
+          end
+        end
+      end
+
       it 'creates a synchronization' do
         expect{ subject }.to change{ Maestrano::Connector::Rails::Synchronization.count }.by(1)
       end

@@ -1,5 +1,7 @@
 module Maestrano::Connector::Rails
   class Synchronization < ActiveRecord::Base
+    # Keeping only 100 synchronizations per organization
+    after_create :clean_synchronizations
 
     #===================================
     # Associations
@@ -34,6 +36,13 @@ module Maestrano::Connector::Rails
 
     def set_partial
       self.update_attributes(partial: true)
+    end
+
+    def clean_synchronizations
+      count = self.organization.synchronizations.count
+      if count > 100
+        self.organization.synchronizations.limit(count - 100).destroy_all
+      end
     end
   end
 end

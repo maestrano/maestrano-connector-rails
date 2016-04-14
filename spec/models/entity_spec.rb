@@ -281,7 +281,7 @@ describe Maestrano::Connector::Rails::Entity do
           before {
             allow(client).to receive(:get).and_return(nil)
           }
-          it { expect{ subject.get_connec_entities(client, nil, organization) }.to raise_error("No data received from Connec! when trying to fetch #{connec_name.pluralize}") }
+          it { expect{ subject.get_connec_entities(client, nil, organization) }.to raise_error("No data received from Connec! when trying to fetch #{connec_name.pluralize.downcase}") }
         end
       end
 

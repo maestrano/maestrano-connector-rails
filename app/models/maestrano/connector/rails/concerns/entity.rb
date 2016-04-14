@@ -117,11 +117,11 @@ module Maestrano::Connector::Rails::Concerns::Entity
     end
 
     def can_read_connec?
-      true
+      can_write_external?
     end
 
     def can_read_external?
-      true
+      can_write_connec?
     end
 
     def can_write_connec?
@@ -191,14 +191,14 @@ module Maestrano::Connector::Rails::Concerns::Entity
       query_params[:$filter] = filter
     end
     response = client.get("/#{self.class.normalized_connec_entity_name}?#{query_params.to_query}")
-    raise "No data received from Connec! when trying to fetch #{self.class.connec_entity_name.pluralize}" unless response
+    raise "No data received from Connec! when trying to fetch #{self.class.normalized_connec_entity_name}" unless response
 
     response_hash = JSON.parse(response.body)
     Maestrano::Connector::Rails::ConnectorLogger.log('debug', organization, "received first page entity=#{self.class.connec_entity_name}, response=#{response.body}")
     if response_hash["#{self.class.normalized_connec_entity_name}"]
       entities << response_hash["#{self.class.normalized_connec_entity_name}"]
     else
-      raise "Received unrecognized Connec! data when trying to fetch #{self.class.connec_entity_name.pluralize}"
+      raise "Received unrecognized Connec! data when trying to fetch #{self.class.normalized_connec_entity_name}"
     end
 
     # Fetch subsequent pages
