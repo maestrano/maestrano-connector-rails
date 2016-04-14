@@ -388,7 +388,7 @@ describe Maestrano::Connector::Rails::ComplexEntity do
             allow(klass).to receive(:external?).and_return(true)
             allow(klass).to receive(:entity_name).and_return('n')
           end
-          allow(client).to receive(:put).and_return(ActionDispatch::Response.new(200, {}, {people: {}}.to_json, {}))
+          allow(client).to receive(:post).and_return(ActionDispatch::Response.new(200, {}, {results: [{status: 200, body: {connec1s: {}}}]}.to_json, {}))
         }
         it 'is successful' do
           subject.push_entities_to_connec(client, external_hash, organization)
