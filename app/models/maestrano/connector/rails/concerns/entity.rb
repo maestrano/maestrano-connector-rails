@@ -251,7 +251,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
 
       # Batch call
       Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Sending batch request to Connec! for #{self.class.normalize_connec_entity_name(connec_entity_name)}. Batch_request_size: #{batch_request[:ops].size}. Call_number: #{(start/request_per_call) + 1}")
-      response = connec_client.post('/batch', batch_request)
+      response = connec_client.batch(batch_request)
       response = JSON.parse(response.body)
 
       # Parse barch response
