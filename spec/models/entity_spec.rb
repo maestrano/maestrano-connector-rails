@@ -279,7 +279,7 @@ describe Maestrano::Connector::Rails::Entity do
 
         describe 'without response' do
           before {
-            allow(client).to receive(:get).and_return(nil)
+            allow(client).to receive(:get).and_return(ActionDispatch::Response.new(200, {}, nil, {}))
           }
           it { expect{ subject.get_connec_entities(client, nil, organization) }.to raise_error("No data received from Connec! when trying to fetch #{connec_name.pluralize.downcase}") }
         end
