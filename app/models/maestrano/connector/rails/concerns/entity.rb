@@ -191,7 +191,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
       query_params[:$filter] = filter
     end
     response = client.get("/#{self.class.normalized_connec_entity_name}?#{query_params.to_query}")
-    raise "No data received from Connec! when trying to fetch #{self.class.normalized_connec_entity_name}" unless response
+    raise "No data received from Connec! when trying to fetch #{self.class.normalized_connec_entity_name}" unless response && !response.body.blank?
 
     response_hash = JSON.parse(response.body)
     Maestrano::Connector::Rails::ConnectorLogger.log('debug', organization, "received first page entity=#{self.class.connec_entity_name}, response=#{response.body}")
@@ -207,7 +207,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
       next_page = response_hash['pagination']['next'].gsub(/^(.*)\/#{self.class.normalized_connec_entity_name}/, self.class.normalized_connec_entity_name)
       response = client.get(next_page)
 
-      raise "No data received from Connec! when trying to fetch subsequent page of #{self.class.connec_entity_name.pluralize}" unless response
+      raise "No data received from Connec! when trying to fetch subsequent page of #{self.class.connec_entity_name.pluralize}" unless response && !response.body.blank?
       Maestrano::Connector::Rails::ConnectorLogger.log('debug', organization, "received next page entity=#{self.class.connec_entity_name}, response=#{response.body}")
 
       response_hash = JSON.parse(response.body)
@@ -251,7 +251,9 @@ module Maestrano::Connector::Rails::Concerns::Entity
 
       # Batch call
       Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Sending batch request to Connec! for #{self.class.normalize_connec_entity_name(connec_entity_name)}. Batch_request_size: #{batch_request[:ops].size}. Call_number: #{(start/request_per_call) + 1}")
-      response = connec_client.post('/batch', batch_request)
+      response = connec_client.batch(batch_request)
+      Maestrano::Connector::Rails::ConnectorLogger.log('debug', organization, "Received batch response from Connec! for #{self.class.normalize_connec_entity_name(connec_entity_name)}: #{response}")
+      raise "No data received from Connec! when trying to send batch request for #{self.class.connec_entity_name.pluralize}" unless response && !response.body.blank?
       response = JSON.parse(response.body)
 
       # Parse barch response

@@ -279,7 +279,7 @@ describe Maestrano::Connector::Rails::Entity do
 
         describe 'without response' do
           before {
-            allow(client).to receive(:get).and_return(nil)
+            allow(client).to receive(:get).and_return(ActionDispatch::Response.new(200, {}, nil, {}))
           }
           it { expect{ subject.get_connec_entities(client, nil, organization) }.to raise_error("No data received from Connec! when trying to fetch #{connec_name.pluralize.downcase}") }
         end
@@ -318,7 +318,7 @@ describe Maestrano::Connector::Rails::Entity do
         context 'when create_only' do
           before {
             allow(subject.class).to receive(:can_update_connec?).and_return(false)
-            allow(client).to receive(:post).and_return(ActionDispatch::Response.new(200, {}, {results: []}.to_json, {}))
+            allow(client).to receive(:batch).and_return(ActionDispatch::Response.new(200, {}, {results: []}.to_json, {}))
           }
 
           it 'creates batch op for create only' do
@@ -332,7 +332,7 @@ describe Maestrano::Connector::Rails::Entity do
           let(:result200) { {status: 200, body: {connec_name.downcase.pluralize.to_sym => {}}} }
           let(:result201) { {status: 201, body: {connec_name.downcase.pluralize.to_sym => {id: id}}} }
           before {
-            allow(client).to receive(:post).and_return(ActionDispatch::Response.new(200, {}, {results: [result200, result201]}.to_json, {}))
+            allow(client).to receive(:batch).and_return(ActionDispatch::Response.new(200, {}, {results: [result200, result201]}.to_json, {}))
           }
 
           let(:batch_request) {
@@ -359,7 +359,7 @@ describe Maestrano::Connector::Rails::Entity do
           end
 
           it 'creates a batch request' do
-            expect(client).to receive(:post).with('/batch', batch_request)
+            expect(client).to receive(:batch).with(batch_request)
             subject.push_entities_to_connec_to(client, entities_with_idmaps, connec_name, organization)
           end
 
@@ -385,11 +385,11 @@ describe Maestrano::Connector::Rails::Entity do
                   entities << entity_with_idmap1
                   results << result200
                 end
-                allow(client).to receive(:post).and_return(ActionDispatch::Response.new(200, {}, {results: results}.to_json, {}))
+                allow(client).to receive(:batch).and_return(ActionDispatch::Response.new(200, {}, {results: results}.to_json, {}))
               }
 
               it 'does one call' do
-                expect(client).to receive(:post).once
+                expect(client).to receive(:batch).once
                 subject.push_entities_to_connec_to(client, entities, connec_name, organization)
               end              
             end
@@ -401,11 +401,11 @@ describe Maestrano::Connector::Rails::Entity do
                   results << result200
                 end
                 entities << entity_with_idmap2
-                allow(client).to receive(:post).and_return(ActionDispatch::Response.new(200, {}, {results: results}.to_json, {}), ActionDispatch::Response.new(200, {}, {results: [result201]}.to_json, {}))
+                allow(client).to receive(:batch).and_return(ActionDispatch::Response.new(200, {}, {results: results}.to_json, {}), ActionDispatch::Response.new(200, {}, {results: [result201]}.to_json, {}))
               }
 
               it 'does several call' do
-                expect(client).to receive(:post).twice
+                expect(client).to receive(:batch).twice
                 subject.push_entities_to_connec_to(client, entities, connec_name, organization)
               end
 
@@ -422,7 +422,7 @@ describe Maestrano::Connector::Rails::Entity do
         context 'with errors' do
           let(:result400) { {status: 400, body: 'Not Found'} }
           before {
-            allow(client).to receive(:post).and_return(ActionDispatch::Response.new(200, {}, {results: [result400, result400]}.to_json, {}))
+            allow(client).to receive(:batch).and_return(ActionDispatch::Response.new(200, {}, {results: [result400, result400]}.to_json, {}))
           }
 
           it 'stores the errr in the idmap' do
