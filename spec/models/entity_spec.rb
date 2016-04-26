@@ -196,6 +196,7 @@ describe Maestrano::Connector::Rails::Entity do
         end
 
         describe 'with response' do
+          let(:no_inactive_param) { {"$filter" => "status ne 'INACTIVE'"}.to_query }
           context 'for a singleton resource' do
             before {
               allow(client).to receive(:get).and_return(ActionDispatch::Response.new(200, {}, {person: []}.to_json, {}))
@@ -203,7 +204,7 @@ describe Maestrano::Connector::Rails::Entity do
             }
 
             it 'calls get with a singularize url' do
-              expect(client).to receive(:get).with("/#{connec_name.downcase}?")
+              expect(client).to receive(:get).with("/#{connec_name.downcase}?#{no_inactive_param}")
               subject.get_connec_entities(client, nil, organization)
             end
           end
@@ -215,43 +216,49 @@ describe Maestrano::Connector::Rails::Entity do
 
             context 'when opts[:full_sync] is true' do
               it 'performs a full get' do
-                expect(client).to receive(:get).with("/#{connec_name.downcase.pluralize}?")
+                expect(client).to receive(:get).with("/#{connec_name.downcase.pluralize}?#{no_inactive_param}")
                 subject.get_connec_entities(client, sync, organization, {full_sync: true})
               end
             end
 
             context 'when there is no last sync' do
               it 'performs a full get' do
-                expect(client).to receive(:get).with("/#{connec_name.downcase.pluralize}?")
+                expect(client).to receive(:get).with("/#{connec_name.downcase.pluralize}?#{no_inactive_param}")
                 subject.get_connec_entities(client, nil, organization)
               end
             end
 
             context 'when there is a last sync' do
               it 'performs a time limited get' do
-                uri_param = {"$filter" => "updated_at gt '#{sync.updated_at.iso8601}'"}.to_query
+                uri_param = {"$filter" => "updated_at gt '#{sync.updated_at.iso8601}' and status ne 'INACTIVE'"}.to_query
                 expect(client).to receive(:get).with("/#{connec_name.downcase.pluralize}?#{uri_param}")
                 subject.get_connec_entities(client, sync, organization)
               end
             end
 
             context 'with options' do
-              it 'support filter option for full sync' do
-                uri_param = {'$filter'=>'code eq \'PEO12\''}.to_query
+              it 'supports filter option for full sync' do
+                uri_param = {'$filter'=>'status ne \'INACTIVE\' and code eq \'PEO12\''}.to_query
                 expect(client).to receive(:get).with("/#{connec_name.downcase.pluralize}?#{uri_param}")
                 subject.get_connec_entities(client, sync, organization, {full_sync: true, :$filter => "code eq 'PEO12'"})
               end
 
-              it 'support filter option for time limited sync' do
-                uri_param = {"$filter"=>"updated_at gt '#{sync.updated_at.iso8601}' and code eq 'PEO12'"}.to_query
+              it 'supports filter option for time limited sync' do
+                uri_param = {"$filter"=>"updated_at gt '#{sync.updated_at.iso8601}' and status ne 'INACTIVE' and code eq 'PEO12'"}.to_query
                 expect(client).to receive(:get).with("/#{connec_name.downcase.pluralize}?#{uri_param}")
                 subject.get_connec_entities(client, sync, organization, {:$filter => "code eq 'PEO12'"})
               end
 
-              it 'support orderby option for time limited sync' do
-                uri_param = {"$orderby"=>"name asc", "$filter"=>"updated_at gt '#{sync.updated_at.iso8601}'"}.to_query
+              it 'supports orderby option for time limited sync' do
+                uri_param = {"$orderby"=>"name asc", "$filter"=>"updated_at gt '#{sync.updated_at.iso8601}' and status ne 'INACTIVE'"}.to_query
                 expect(client).to receive(:get).with("/#{connec_name.downcase.pluralize}?#{uri_param}")
                 subject.get_connec_entities(client, sync, organization, {:$orderby => "name asc"})
+              end
+
+              it 'supports include_inactive option for time limited sync' do
+                uri_param = {"$filter"=>"updated_at gt '#{sync.updated_at.iso8601}'"}.to_query
+                expect(client).to receive(:get).with("/#{connec_name.downcase.pluralize}?#{uri_param}")
+                subject.get_connec_entities(client, sync, organization, {include_inactive: true})
               end
             end
 

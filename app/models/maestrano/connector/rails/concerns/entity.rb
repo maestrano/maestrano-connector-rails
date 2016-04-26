@@ -171,6 +171,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
   # * full_sync
   # * $filter (see Connec! documentation)
   # * $orderby (see Connec! documentation)
+  # * include_inactive - boolean - does not filter out inative object
   def get_connec_entities(client, last_synchronization, organization, opts={})
     return [] unless self.class.can_read_connec?
 
@@ -179,17 +180,19 @@ module Maestrano::Connector::Rails::Concerns::Entity
     entities = []
     query_params = {}
     query_params[:$orderby] = opts[:$orderby] if opts[:$orderby]
+    filter = []
+    filter << "status ne 'INACTIVE'" unless opts[:include_inactive]
+    filter << opts[:$filter] if opts[:$filter]
 
     # Fetch first page
     if last_synchronization.blank? || opts[:full_sync]
       Maestrano::Connector::Rails::ConnectorLogger.log('debug', organization, "entity=#{self.class.connec_entity_name}, fetching all data")
-      query_params[:$filter] = opts[:$filter] if opts[:$filter]
     else
       Maestrano::Connector::Rails::ConnectorLogger.log('debug', organization, "entity=#{self.class.connec_entity_name}, fetching data since #{last_synchronization.updated_at.iso8601}")
-      filter = "updated_at gt '#{last_synchronization.updated_at.iso8601}'"
-      filter += " and #{opts[:$filter]}" if opts[:$filter]
-      query_params[:$filter] = filter
+      filter.unshift("updated_at gt '#{last_synchronization.updated_at.iso8601}'")
     end
+    query_params[:$filter] = filter.join(' and ')
+
     response = client.get("/#{self.class.normalized_connec_entity_name}?#{query_params.to_query}")
     raise "No data received from Connec! when trying to fetch #{self.class.normalized_connec_entity_name}" unless response && !response.body.blank?
 
