@@ -60,7 +60,7 @@ describe Maestrano::Connector::Rails::PushToConnecJob do
       end
     end
 
-    describe 'with entities in syncrhonized entities' do
+    describe 'with entities in synchronized entities' do
 
       describe 'complex entity' do
         before { organization.update(synchronized_entities: {:"#{entity_name1}" => false, :"#{entity_name2}" => true})}
@@ -73,6 +73,12 @@ describe Maestrano::Connector::Rails::PushToConnecJob do
 
         it 'does not calls methods on the non complex entity' do
           expect_any_instance_of(Entities::Entity1).to_not receive(:consolidate_and_map_data)
+          subject
+        end
+
+        it 'calls before and after sync' do
+          expect_any_instance_of(Entities::Entity2).to receive(:before_sync)
+          expect_any_instance_of(Entities::Entity2).to receive(:after_sync)
           subject
         end
       end
@@ -89,6 +95,13 @@ describe Maestrano::Connector::Rails::PushToConnecJob do
         it 'does not calls methods on the complex entity' do
           allow_any_instance_of(Entities::Entity1).to receive(:consolidate_and_map_data).and_return({})
           expect_any_instance_of(Entities::Entity2).to_not receive(:consolidate_and_map_data)
+          subject
+        end
+
+        it 'calls before and after sync' do
+          allow_any_instance_of(Entities::Entity1).to receive(:consolidate_and_map_data).and_return({})
+          expect_any_instance_of(Entities::Entity1).to receive(:before_sync)
+          expect_any_instance_of(Entities::Entity1).to receive(:after_sync)
           subject
         end
       end

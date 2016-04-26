@@ -28,7 +28,7 @@ module Maestrano::Connector::Rails
       current_synchronization = Synchronization.create_running(organization)
 
       begin
-        last_synchronization = Synchronization.where(organization_id: organization.id, status: 'SUCCESS', partial: false).order(updated_at: :desc).first
+        last_synchronization = organization.last_successful_synchronization
         connec_client = Maestrano::Connec::Client[organization.tenant].new(organization.uid)
         external_client = External.get_client(organization)
 

@@ -132,6 +132,17 @@ describe Maestrano::Connector::Rails::Organization do
         expect(subject.last_three_synchronizations_failed?).to be false
       end
     end
+
+    describe 'last_successful_synchronization' do
+      let!(:running_sync) { create(:synchronization, organization: subject, status: 'RUNNING') }
+      let!(:failed_sync) { create(:synchronization, organization: subject, status: 'ERROR') }
+      let!(:success_sync) { create(:synchronization, organization: subject, status: 'SUCCESS') }
+      let!(:success_sync2) { create(:synchronization, organization: subject, status: 'SUCCESS', updated_at: 3.hours.ago) }
+      let!(:partial) { create(:synchronization, organization: subject, status: 'SUCCESS', partial: true) }
+
+      it { expect(subject.last_successful_synchronization).to eql(success_sync) }
+    end
   end
+
 
 end
