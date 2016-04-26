@@ -102,6 +102,36 @@ describe Maestrano::Connector::Rails::Organization do
     describe 'from_omniauth' do
       #TODO
     end
+
+    describe 'last_three_synchronizations_failed?' do
+      it 'returns true when last three syncs are failed' do
+        3.times do
+          subject.synchronizations.create(status: 'ERROR')
+        end
+        expect(subject.last_three_synchronizations_failed?).to be true
+      end
+
+      it 'returns false when on of the last three sync is success' do
+        subject.synchronizations.create(status: 'SUCCESS')
+        2.times do
+          subject.synchronizations.create(status: 'ERROR')
+        end
+
+        expect(subject.last_three_synchronizations_failed?).to be false
+      end
+
+      it 'returns false when no sync' do
+        expect(subject.last_three_synchronizations_failed?).to be false
+      end
+
+      it 'returns false when less than three sync' do
+        2.times do
+          subject.synchronizations.create(status: 'ERROR')
+        end
+        
+        expect(subject.last_three_synchronizations_failed?).to be false
+      end
+    end
   end
 
 end
