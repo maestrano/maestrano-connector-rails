@@ -56,11 +56,13 @@ module Maestrano::Connector::Rails::Concerns::ComplexEntity
     idmap = sub_entity_instance.class.find_idmap({connec_id: entity['id'], external_entity: external_entity_name.downcase, organization_id: organization.id})
 
     if idmap
-      idmap.update(name: sub_entity_instance.class.object_name_from_connec_entity_hash(entity))
-      if (!idmap.to_external) || idmap.last_push_to_external && idmap.last_push_to_external > entity['updated_at']
+      return nil if idmap.external_inactive || !idmap.to_external
+
+      if idmap.last_push_to_external && idmap.last_push_to_external > entity['updated_at']
         Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Discard Connec! #{sub_entity_instance.class.entity_name} : #{entity}")
         nil
       else
+        idmap.update(name: sub_entity_instance.class.object_name_from_connec_entity_hash(entity))
         {entity: sub_entity_instance.map_to(external_entity_name, entity, organization), idmap: idmap}
       end
     else
@@ -103,17 +105,22 @@ module Maestrano::Connector::Rails::Concerns::ComplexEntity
           idmap = sub_entity_instance.class.find_idmap(external_id: sub_entity_instance.class.id_from_external_entity_hash(entity), connec_entity: connec_entity_name.downcase, organization_id: organization.id)
 
           # No idmap: creating one, nothing else to do
-          if idmap
-            idmap.update(name: sub_entity_instance.class.object_name_from_external_entity_hash(entity))
-          else
+          unless idmap
             next {entity: sub_entity_instance.map_to(connec_entity_name, entity, organization), idmap: sub_entity_instance.class.create_idmap_from_external_entity(entity, connec_entity_name, organization)}
           end
 
           # Not pushing entity to Connec!
           next nil unless idmap.to_connec
 
+          # Not pushing to Connec! and flagging as inactive if inactive in external application
+          inactive = sub_entity_instance.class.inactive_from_external_entity_hash?(entity)
+          idmap.update(external_inactive: inactive)
+          next nil if inactive
+
           # Entity has not been modified since its last push to connec!
           next nil if Maestrano::Connector::Rails::Entity.not_modified_since_last_push_to_connec?(idmap, entity, sub_entity_instance, organization)
+
+          idmap.update(name: sub_entity_instance.class.object_name_from_external_entity_hash(entity))
 
           # Check for conflict with entities from connec!
           equivalent_connec_entities = modeled_connec_entities[connec_entity_name][external_entity_name] || []

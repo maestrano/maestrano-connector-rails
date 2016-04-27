@@ -474,6 +474,17 @@ describe Maestrano::Connector::Rails::Entity do
               expect(subject.map_to_external_with_idmap(entity, organization)).to be_nil
             end
           end
+
+          context 'when external_inactive is true' do
+            let(:entity) { {'id' => id, 'name' => 'John' } }
+            before {
+              idmap.update(external_inactive: true)
+            }
+
+            it 'discards the entity' do
+              expect(subject.map_to_external_with_idmap(entity, organization)).to be_nil
+            end
+          end
         end
 
         context 'when entity has no idmap' do
@@ -703,6 +714,39 @@ describe Maestrano::Connector::Rails::Entity do
             it 'discards the entity' do
               mapped_entities = subject.consolidate_and_map_data([], entities, organization)
               expect(mapped_entities).to eql({connec_entities: [], external_entities: []})
+            end
+          end
+
+          describe 'inactive flagging' do
+            context 'when idmap is inactive' do
+              let!(:idmap) { create(:idmap, external_entity: external_name.downcase, connec_entity: connec_name.downcase, external_id: id, organization: organization, external_inactive: true) }
+
+              context 'when entity is inactive' do
+                before { allow(subject.class).to receive(:inactive_from_external_entity_hash?).and_return(true) }
+
+                it 'discards the entity' do
+                  expect(subject.consolidate_and_map_data([], entities, organization)).to eql({connec_entities: [], external_entities: []})
+                end
+              end
+
+              context 'when entity is active' do
+                before { allow(subject.class).to receive(:inactive_from_external_entity_hash?).and_return(false) }
+
+                it 'set the idmap as active' do
+                  subject.consolidate_and_map_data([], entities, organization)
+                  expect(idmap.reload.external_inactive).to be false
+                end
+              end
+            end
+
+            context 'when idmap is active and entity is inactive' do
+              let!(:idmap) { create(:idmap, external_entity: external_name.downcase, connec_entity: connec_name.downcase, external_id: id, organization: organization, external_inactive: false) }
+              before { allow(subject.class).to receive(:inactive_from_external_entity_hash?).and_return(true) }
+
+              it 'set the idmap as inactive and discards the entity' do
+                expect(subject.consolidate_and_map_data([], entities, organization)).to eql({connec_entities: [], external_entities: []})
+                expect(idmap.reload.external_inactive).to be true
+              end
             end
           end
 

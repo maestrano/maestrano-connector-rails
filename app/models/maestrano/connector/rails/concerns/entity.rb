@@ -75,6 +75,21 @@ module Maestrano::Connector::Rails::Concerns::Entity
       raise "Not implemented"
     end
 
+    # Return a string representing the object from a connec! entity hash
+    def object_name_from_connec_entity_hash(entity)
+      raise "Not implemented"
+    end
+
+    # Return a string representing the object from an external entity hash
+    def object_name_from_external_entity_hash(entity)
+      raise "Not implemented"
+    end
+
+    # Returns a boolean
+    # Returns true is the entity is flagged as inactive (deleted) in the external application
+    def inactive_from_external_entity_hash?(entity)
+      false
+    end
     # ----------------------------------------------
     #             Entity specific methods
     # Those methods need to be define in each entity
@@ -99,19 +114,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
       raise "Not implemented"
     end
 
-    # Return a string representing the object from a connec! entity hash
-    def object_name_from_connec_entity_hash(entity)
-      raise "Not implemented"
-    end
-
-    # Return a string representing the object from an external entity hash
-    def object_name_from_external_entity_hash(entity)
-      raise "Not implemented"
-    end
-
     # [{reference_class: Entities::.., connec_field: 'account_id', external_field: 'account/something/id'}]
-    # ledger_account_idmap = Entities::Account.find_idmap({connec_id: entity['account_id'], organization_id: organization.id})
-    # ledger_account_id = ledger_account_idmap && ledger_account_idmap.external_id
     def references
       []
     end
@@ -286,11 +289,13 @@ module Maestrano::Connector::Rails::Concerns::Entity
     idmap = self.class.find_idmap({connec_id: entity['id'], organization_id: organization.id})
 
     if idmap
-      idmap.update(name: self.class.object_name_from_connec_entity_hash(entity))
-      if (!idmap.to_external) || (idmap.last_push_to_external && idmap.last_push_to_external > entity['updated_at'])
+      return nil if idmap.external_inactive || !idmap.to_external
+
+      if idmap.last_push_to_external && idmap.last_push_to_external > entity['updated_at']
         Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Discard Connec! #{self.class.connec_entity_name} : #{entity}")
         nil
       else
+        idmap.update(name: self.class.object_name_from_connec_entity_hash(entity))
         {entity: map_to_external(entity, organization), idmap: idmap}
       end
     else
@@ -360,28 +365,32 @@ module Maestrano::Connector::Rails::Concerns::Entity
 
     mapped_external_entities = external_entities.map{|entity|
       idmap = self.class.find_idmap({external_id: self.class.id_from_external_entity_hash(entity), organization_id: organization.id})
+
       # No idmap: creating one, nothing else to do
-      if idmap
-        idmap.update(name: self.class.object_name_from_external_entity_hash(entity))
-      else
+      unless idmap
         next {entity: map_to_connec(entity, organization), idmap: self.class.create_idmap_from_external_entity(entity, organization)}
       end
 
       # Not pushing entity to Connec!
       next nil unless idmap.to_connec
 
+      # Not pushing to Connec! and flagging as inactive if inactive in external application
+      inactive = self.class.inactive_from_external_entity_hash?(entity)
+      idmap.update(external_inactive: inactive)
+      next nil if inactive
+
       # Entity has not been modified since its last push to connec!
       next nil if self.class.not_modified_since_last_push_to_connec?(idmap, entity, self, organization)
 
+      idmap.update(name: self.class.object_name_from_external_entity_hash(entity))
+
       # Check for conflict with entities from connec!
       self.class.solve_conflict(entity, self, connec_entities, self.class.connec_entity_name, idmap, organization, opts)
-    }
-    mapped_external_entities.compact!
+    }.compact
 
     mapped_connec_entities = connec_entities.map{|entity|
       map_to_external_with_idmap(entity, organization)
-    }
-    mapped_connec_entities.compact!
+    }.compact
 
     return {connec_entities: mapped_connec_entities, external_entities: mapped_external_entities}
   end
