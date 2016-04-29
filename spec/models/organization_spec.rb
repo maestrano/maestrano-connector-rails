@@ -102,6 +102,47 @@ describe Maestrano::Connector::Rails::Organization do
     describe 'from_omniauth' do
       #TODO
     end
+
+    describe 'last_three_synchronizations_failed?' do
+      it 'returns true when last three syncs are failed' do
+        3.times do
+          subject.synchronizations.create(status: 'ERROR')
+        end
+        expect(subject.last_three_synchronizations_failed?).to be true
+      end
+
+      it 'returns false when on of the last three sync is success' do
+        subject.synchronizations.create(status: 'SUCCESS')
+        2.times do
+          subject.synchronizations.create(status: 'ERROR')
+        end
+
+        expect(subject.last_three_synchronizations_failed?).to be false
+      end
+
+      it 'returns false when no sync' do
+        expect(subject.last_three_synchronizations_failed?).to be false
+      end
+
+      it 'returns false when less than three sync' do
+        2.times do
+          subject.synchronizations.create(status: 'ERROR')
+        end
+        
+        expect(subject.last_three_synchronizations_failed?).to be false
+      end
+    end
+
+    describe 'last_successful_synchronization' do
+      let!(:running_sync) { create(:synchronization, organization: subject, status: 'RUNNING') }
+      let!(:failed_sync) { create(:synchronization, organization: subject, status: 'ERROR') }
+      let!(:success_sync) { create(:synchronization, organization: subject, status: 'SUCCESS') }
+      let!(:success_sync2) { create(:synchronization, organization: subject, status: 'SUCCESS', updated_at: 3.hours.ago) }
+      let!(:partial) { create(:synchronization, organization: subject, status: 'SUCCESS', partial: true) }
+
+      it { expect(subject.last_successful_synchronization).to eql(success_sync) }
+    end
   end
+
 
 end

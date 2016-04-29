@@ -25,7 +25,7 @@ class Maestrano::Auth::SamlController < Maestrano::Rails::SamlBaseController
     end
 
     if session[:settings]
-      session.delete(:setting)
+      session.delete(:settings)
       redirect_to main_app.root_path
     else
       if current_organization && current_organization.oauth_uid && current_organization.sync_enabled

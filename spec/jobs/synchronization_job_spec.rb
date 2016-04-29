@@ -2,52 +2,72 @@ require 'spec_helper'
 
 describe Maestrano::Connector::Rails::SynchronizationJob do
   let(:organization) { create(:organization) }
-  subject { Maestrano::Connector::Rails::SynchronizationJob.perform_now(organization, {}) }
+  let(:opts) { {} }
+  subject { Maestrano::Connector::Rails::SynchronizationJob.perform_now(organization, opts) }
+
+  def does_not_perform
+    expect_any_instance_of(Maestrano::Connector::Rails::SynchronizationJob).to_not receive(:sync_entity)
+    expect{ subject }.to change{ Maestrano::Connector::Rails::Synchronization.count }.by(0)
+  end
+
+  def performes
+    expect{ subject }.to change{ Maestrano::Connector::Rails::Synchronization.count }.by(1)
+  end
 
   describe 'perform' do
     context 'with sync_enabled set to false' do
-      it 'does not creates a syncrhonization' do
-        expect{ subject }.to change{ Maestrano::Connector::Rails::Synchronization.count }.by(0)
-      end
-
-      it 'does not calls sync entity' do
-        expect_any_instance_of(Maestrano::Connector::Rails::SynchronizationJob).to_not receive(:sync_entity)
-        subject
-      end
+      it { does_not_perform }
     end
 
     context 'with sync_enabled set to true' do
       before {organization.update(sync_enabled: true)}
 
+      context 'with a sync still running for less than 30 minutes' do
+        let!(:running_sync) { create(:synchronization, organization: organization, status: 'RUNNING', created_at: 29.minutes.ago) }
+        it { does_not_perform }
+      end
+
+      context 'with a sync still running for more than 30 minutes' do
+        let!(:running_sync) { create(:synchronization, organization: organization, status: 'RUNNING', created_at: 31.minutes.ago) }
+        it { performes }
+      end
+
       describe 'recovery mode' do
-        describe 'skipping' do
+        context 'three last sync failed and last sync less than 24 hours ago' do
           before {
             3.times do
-              organization.synchronizations.create(status: 'ERROR')
+              organization.synchronizations.create(status: 'ERROR', created_at: 2.hour.ago)
             end
           }
+          it { does_not_perform }
 
-          it 'skipped the sync if 3 failed sync' do
-            expect{ subject }.to_not change{ Maestrano::Connector::Rails::Synchronization.count }
+          context 'synchronization is forced' do
+            let(:opts) { {forced: true} }
+            it { performes }
           end
         end
 
-        describe 'not skipping' do
+        context 'three last sync failed and last sync more than 24 hours ago' do
           before {
             3.times do
               organization.synchronizations.create(status: 'ERROR', created_at: 2.day.ago, updated_at: 2.day.ago)
             end
           }
+          it { performes }
+        end
 
-          it 'does not skip the sync if 3 failed sync but last sync more than a day ago' do
-            expect{ subject }.to change{ Maestrano::Connector::Rails::Synchronization.count }.by(1)
-          end
+        context 'three sync failed but last sync is successfull' do
+          before {
+            3.times do
+              organization.synchronizations.create(status: 'ERROR', created_at: 2.hour.ago)
+            end
+            organization.synchronizations.create(status: 'SUCCESS', created_at: 1.hour.ago)
+          }
+          it { performes }
         end
       end
 
-      it 'creates a synchronization' do
-        expect{ subject }.to change{ Maestrano::Connector::Rails::Synchronization.count }.by(1)
-      end
+      it { performes }
 
       it 'calls sync entity on all the organization synchronized entities set to true' do
         organization.synchronized_entities[organization.synchronized_entities.keys.first] = false
@@ -58,7 +78,7 @@ describe Maestrano::Connector::Rails::SynchronizationJob do
 
       context 'with options' do
         context 'with only_entities' do
-          subject { Maestrano::Connector::Rails::SynchronizationJob.perform_now(organization, {only_entities: %w(people price)}) }
+          let(:opts) { {only_entities: %w(people price)} }
 
           it 'calls sync entity on the specified entities' do
             expect_any_instance_of(Maestrano::Connector::Rails::SynchronizationJob).to receive(:sync_entity).twice

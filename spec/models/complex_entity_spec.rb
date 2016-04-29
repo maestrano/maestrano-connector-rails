@@ -80,6 +80,14 @@ describe Maestrano::Connector::Rails::ComplexEntity do
           expect(subject.map_to_external_with_idmap(entity, organization, external_name, sub_instance)).to be_nil
         end
       end
+
+      context 'when entity has an idmap with external_inactive set to true' do
+        let!(:idmap) { create(:idmap, organization: organization, connec_id: id, connec_entity: connec_name.downcase, external_inactive: true, external_entity: external_name.downcase) }
+
+        it 'discards the entity' do
+          expect(subject.map_to_external_with_idmap(entity, organization, external_name, sub_instance)).to be_nil
+        end
+      end
     end
 
   end
@@ -218,7 +226,7 @@ describe Maestrano::Connector::Rails::ComplexEntity do
             expect(mapped_entities).to eql(external_entities: {
               'sc_e1' => {'Connec1' => [{entity: mapped_entity1, idmap: Maestrano::Connector::Rails::IdMap.first}]},
               'ScE2' => {
-                'Connec1' => [{entity: mapped_entity1, idmap: Maestrano::Connector::Rails::IdMap.all[1]}],
+                'Connec1' => [{entity: mapped_entity1, idmap: Maestrano::Connector::Rails::IdMap.second}],
                 'connec2' => [{entity: mapped_entity2, idmap: Maestrano::Connector::Rails::IdMap.last}],
               }
             },
@@ -241,6 +249,75 @@ describe Maestrano::Connector::Rails::ComplexEntity do
               }
             },
             connec_entities: {})
+          end
+        end
+
+        describe 'external_inactive flagging' do
+
+          context 'idmaps external_inactive set to true' do
+            let!(:idmap1) { create(:idmap, organization: organization, external_id: id1, external_entity: 'sc_e1', connec_entity: 'connec1', external_inactive: true) }
+            let!(:idmap21) { create(:idmap, organization: organization, external_id: id1, external_entity: 'sce2', connec_entity: 'connec1', external_inactive: true) }
+            let!(:idmap22) { create(:idmap, organization: organization, external_id: id2, external_entity: 'sce2', connec_entity: 'connec2', external_inactive: true) }
+
+            context 'entities inactive' do
+              before {
+                allow(Entities::SubEntities::ScE2).to receive(:inactive_from_external_entity_hash?).and_return(true)
+                allow(Entities::SubEntities::ScE1).to receive(:inactive_from_external_entity_hash?).and_return(true)
+              }
+
+              it 'discards the entities' do
+                expect(subject.consolidate_and_map_data({}, external_hash, organization, opt)).to eql(external_entities: {
+                  'sc_e1' => {'Connec1' => []},
+                  'ScE2' => {
+                    'Connec1' => [],
+                    'connec2' => [],
+                  }
+                },
+                connec_entities: {})
+              end
+            end
+
+            context 'entities active' do
+              before {
+                allow(Entities::SubEntities::ScE2).to receive(:inactive_from_external_entity_hash?).and_return(false)
+                allow(Entities::SubEntities::ScE1).to receive(:inactive_from_external_entity_hash?).and_return(false)
+                [idmap1, idmap21, idmap22].each{|i| i.update(last_push_to_connec: 1.second.ago)} #Used only to simplify specing
+              }
+
+              it 'updates the idmaps' do
+                subject.consolidate_and_map_data({}, external_hash, organization, opt)
+                expect(idmap1.reload.external_inactive).to be false
+                expect(idmap21.reload.external_inactive).to be false
+                expect(idmap22.reload.external_inactive).to be false
+              end 
+            end
+          end
+
+          context 'idmaps external_inactive set to false' do
+            let!(:idmap1) { create(:idmap, organization: organization, external_id: id1, external_entity: 'sc_e1', connec_entity: 'connec1', external_inactive: false) }
+            let!(:idmap21) { create(:idmap, organization: organization, external_id: id1, external_entity: 'sce2', connec_entity: 'connec1', external_inactive: false) }
+            let!(:idmap22) { create(:idmap, organization: organization, external_id: id2, external_entity: 'sce2', connec_entity: 'connec2', external_inactive: false) }
+
+            context 'entities inactive' do
+              before {
+                allow(Entities::SubEntities::ScE2).to receive(:inactive_from_external_entity_hash?).and_return(true)
+                allow(Entities::SubEntities::ScE1).to receive(:inactive_from_external_entity_hash?).and_return(true)
+              }
+
+              it 'discards the entities and updates the idmaps' do
+                expect(subject.consolidate_and_map_data({}, external_hash, organization, opt)).to eql(external_entities: {
+                  'sc_e1' => {'Connec1' => []},
+                  'ScE2' => {
+                    'Connec1' => [],
+                    'connec2' => [],
+                  }
+                },
+                connec_entities: {})
+                expect(idmap1.reload.external_inactive).to be true
+                expect(idmap21.reload.external_inactive).to be true
+                expect(idmap22.reload.external_inactive).to be true
+              end
+            end
           end
         end
 

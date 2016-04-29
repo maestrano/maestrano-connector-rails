@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160215103120) do
+ActiveRecord::Schema.define(version: 20160427120963) do
 
   create_table "id_maps", force: :cascade do |t|
     t.string   "connec_id"
@@ -21,12 +21,13 @@ ActiveRecord::Schema.define(version: 20160215103120) do
     t.integer  "organization_id"
     t.datetime "last_push_to_connec"
     t.datetime "last_push_to_external"
-    t.datetime "created_at",                           null: false
-    t.datetime "updated_at",                           null: false
+    t.datetime "created_at",                            null: false
+    t.datetime "updated_at",                            null: false
     t.boolean  "to_connec",             default: true
     t.boolean  "to_external",           default: true
     t.string   "name"
     t.string   "message"
+    t.boolean  "external_inactive",     default: false
   end
 
   add_index "id_maps", ["connec_id", "connec_entity", "organization_id"], name: "idmap_connec_index"
@@ -40,6 +41,7 @@ ActiveRecord::Schema.define(version: 20160215103120) do
     t.string   "tenant"
     t.string   "oauth_provider"
     t.string   "oauth_uid"
+    t.string   "oauth_name"
     t.string   "oauth_token"
     t.string   "refresh_token"
     t.string   "instance_url"
@@ -78,6 +80,8 @@ ActiveRecord::Schema.define(version: 20160215103120) do
     t.string   "first_name"
     t.string   "last_name"
     t.string   "email"
+    t.string   "locale"
+    t.string   "timezone"
     t.string   "tenant"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false

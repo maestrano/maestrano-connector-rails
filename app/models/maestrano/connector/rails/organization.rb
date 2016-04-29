@@ -59,5 +59,14 @@ module Maestrano::Connector::Rails
       self.instance_url = auth.credentials.instance_url
       self.save!
     end
+
+    def last_three_synchronizations_failed?
+      arr = self.synchronizations.last(3).map(&:is_error?)
+      arr.count == 3 && arr.uniq == [true]
+    end
+
+    def last_successful_synchronization
+      self.synchronizations.where(status: 'SUCCESS', partial: false).order(updated_at: :desc).first
+    end
   end
 end

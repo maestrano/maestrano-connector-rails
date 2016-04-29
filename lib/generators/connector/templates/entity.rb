@@ -46,4 +46,10 @@ class Maestrano::Connector::Rails::Entity
     # e.g entity['last_update']
   end
 
+  def self.inactive_from_external_entity_hash?(entity)
+    # TODO
+    # This method return true is entity is inactive in the external application
+    # e.g entity['status'] == 'INACTIVE'
+  end
+
 end

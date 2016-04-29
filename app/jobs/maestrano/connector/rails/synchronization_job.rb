@@ -3,7 +3,7 @@ module Maestrano::Connector::Rails
     queue_as :default
 
     # Supported options:
-    #  * :forced => true  synchronization has been triggered manually (for logging purposes only)
+    #  * :forced => true  synchronization has been triggered manually
     #  * :only_entities => [person, tasks_list]
     #  * :full_sync => true  synchronization is performed without date filtering
     #  * :connec_preemption => true|false : preemption is always|never given to connec in case of conflict (if not set, the most recently updated entity is kept)
@@ -17,8 +17,8 @@ module Maestrano::Connector::Rails
       end
 
       # Check if recovery mode: last 3 synchronizations have failed
-      if Synchronization.where(organization_id: organization.id, status: 'ERROR').order(created_at: :desc).limit(3).count == 3 \
-          && Synchronization.where(organization_id: organization.id).order(created_at: :desc).limit(1).first.updated_at > 1.day.ago
+      if !opts[:forced] && organization.last_three_synchronizations_failed? \
+          && organization.synchronizations.order(created_at: :desc).limit(1).first.updated_at > 1.day.ago
         ConnectorLogger.log('info', organization, "Synchronization skipped: Recovery mode (three previous synchronizations have failed)")
         return
       end
@@ -28,7 +28,7 @@ module Maestrano::Connector::Rails
       current_synchronization = Synchronization.create_running(organization)
 
       begin
-        last_synchronization = Synchronization.where(organization_id: organization.id, status: 'SUCCESS', partial: false).order(updated_at: :desc).first
+        last_synchronization = organization.last_successful_synchronization
         connec_client = Maestrano::Connec::Client[organization.tenant].new(organization.uid)
         external_client = External.get_client(organization)
 
