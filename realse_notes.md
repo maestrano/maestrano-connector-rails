@@ -1,3 +1,9 @@
+## 0.4.3
+
+### Fixes
+* Add `forced` option in home_controller when requesting a manual synchronization.
+
+
 ## 0.4.2
 /!\ This release contains a new migration that you'll need to fetch and run
 
