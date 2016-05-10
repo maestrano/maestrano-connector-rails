@@ -353,6 +353,12 @@ module Maestrano::Connector::Rails::Concerns::Entity
     Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Sending update #{external_entity_name} (id=#{external_id}): #{mapped_connec_entity} to #{Maestrano::Connector::Rails::External.external_name}")
     raise "Not implemented"
   end
+
+  # This method is called during the webhook workflow only. It should return the array of filtered entities
+  # The aim is to have the same filtering as with the Connec! filters on API calls in the webhooks
+  def filter_connec_entities(entities, organization, opts={})
+    entities
+  end
   # ----------------------------------------------
   #                 General methods
   # ----------------------------------------------

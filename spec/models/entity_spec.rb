@@ -515,6 +515,10 @@ describe Maestrano::Connector::Rails::Entity do
           end
         end
       end
+
+      describe 'filter_connec_entities' do
+        it { expect(subject.filter_connec_entities([{a: 2}], organization)).to eql([{a: 2}]) }
+      end
     end
 
 

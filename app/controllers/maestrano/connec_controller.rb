@@ -4,7 +4,7 @@ class Maestrano::ConnecController < Maestrano::Rails::WebHookController
     Rails.logger.debug "Received notification from Connec!: #{params}"
 
     begin
-      params.except(:tenant, :controller, :action).each do |entity_name, entities|
+      params.except(:tenant, :controller, :action, :connec).each do |entity_name, entities|
 
         entity_instance_hash = find_entity_instance(entity_name)
         next Rails.logger.info "Received notification from Connec! for unknow entity: #{entity_name}" unless entity_instance_hash
@@ -23,11 +23,15 @@ class Maestrano::ConnecController < Maestrano::Rails::WebHookController
           last_synchronization = organization.last_successful_synchronization
 
           entity_instance.before_sync(connec_client, external_client, last_synchronization, organization, {})
+          
+
           # Build expected input for consolidate_and_map_data
           if entity_instance_hash[:is_complex]
-            mapped_entity = entity_instance.consolidate_and_map_data(Hash[ *entity_instance.class.connec_entities_names.collect{|name| name.parameterize('_').pluralize == entity_name ? [name, [entity]] : [ name, []]}.flatten(1) ], Hash[ *entity_instance.class.external_entities_names.collect{|name| [ name, []]}.flatten(1) ], organization, {})
+            filtered_entities = entity_instance.filter_connec_entities(Hash[ *entity_instance.class.connec_entities_names.collect{|name| name.parameterize('_').pluralize == entity_name ? [name, [entity]] : [ name, []]}.flatten(1) ], organization)
+            mapped_entity = entity_instance.consolidate_and_map_data(filtered_entities, Hash[ *entity_instance.class.external_entities_names.collect{|name| [ name, []]}.flatten(1) ], organization, {})
           else
-            mapped_entity = entity_instance.consolidate_and_map_data([entity], [], organization, {})
+            filtered_entities = entity_instance.filter_connec_entities([entity], organization)
+            mapped_entity = entity_instance.consolidate_and_map_data(filtered_entities, [], organization, {})
           end
           entity_instance.push_entities_to_external(external_client, mapped_entity[:connec_entities], organization)
 

@@ -21,9 +21,9 @@ describe Maestrano::Connector::Rails::ComplexEntity do
   end
 
   describe 'general methods' do
+    let(:organization) { create(:organization) }
 
     describe 'map_to_external_with_idmap' do
-      let(:organization) { create(:organization) }
       let(:id) { '322j-bbfg4' }
       let(:entity) { {'id' => id, 'name' => 'John', 'updated_at' => 2.day.ago} }
       let(:mapped_entity) { {'first_name' => 'John'} }
@@ -90,6 +90,9 @@ describe Maestrano::Connector::Rails::ComplexEntity do
       end
     end
 
+    describe 'filter_connec_entities' do
+      it { expect(subject.filter_connec_entities({'lead' => [{a: 2}]}, organization)).to eql({'lead' => [{a: 2}]}) }
+    end
   end
 
   describe 'methods with sub complex entities' do

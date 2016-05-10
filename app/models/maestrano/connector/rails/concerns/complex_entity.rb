@@ -176,4 +176,14 @@ module Maestrano::Connector::Rails::Concerns::ComplexEntity
   def after_sync(connec_client, external_client, last_synchronization, organization, opts)
     # Does nothing by default
   end
+
+  # This method is called during the webhook workflow only. It should return the hash of arrays of filtered entities
+  # The aim is to have the same filtering as with the Connec! filters on API calls in the webhooks
+  # input :  {
+  #             external_entities_names[0]: [unmapped_external_entity1}, unmapped_external_entity2],
+  #             external_entities_names[1]: [unmapped_external_entity3}, unmapped_external_entity4]
+  #          }
+  def filter_connec_entities(entities, organization, opts={})
+    entities
+  end
 end
