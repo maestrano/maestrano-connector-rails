@@ -267,7 +267,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
           batch_entities[index][:idmap].update_attributes(connec_id: result['body'][self.class.normalize_connec_entity_name(connec_entity_name)]['id'], last_push_to_connec: Time.now, message: nil)
         else
           Maestrano::Connector::Rails::ConnectorLogger.log('error', organization, "Error while pushing to Connec!: #{result['body']}")
-          batch_entities[index][:idmap].update_attributes(message: result['body'])
+          batch_entities[index][:idmap].update_attributes(message: result['body'].truncate(255))
         end
       end
       start += request_per_call
@@ -340,7 +340,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
     rescue => e
       # Store External error
       Maestrano::Connector::Rails::ConnectorLogger.log('error', organization, "Error while pushing to #{Maestrano::Connector::Rails::External.external_name}: #{e}")
-      idmap.update_attributes(message: e.message)
+      idmap.update_attributes(message: e.message.truncate(255))
     end
   end
 
