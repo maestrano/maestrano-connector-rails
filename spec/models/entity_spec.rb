@@ -420,7 +420,8 @@ describe Maestrano::Connector::Rails::Entity do
         end
 
         context 'with errors' do
-          let(:result400) { {status: 400, body: 'Not Found'} }
+          let(:err_msg) { 'Not Found' }
+          let(:result400) { {status: 400, body: err_msg} }
           before {
             allow(client).to receive(:batch).and_return(ActionDispatch::Response.new(200, {}, {results: [result400, result400]}.to_json, {}))
           }
@@ -429,6 +430,15 @@ describe Maestrano::Connector::Rails::Entity do
             subject.push_entities_to_connec_to(client, entities_with_idmaps, '', organization)
             idmap2.reload
             expect(idmap2.message).to eq result400[:body]
+          end
+
+          context 'with a long error message' do
+            let(:err_msg) { 'A very long sentence with a lot of error or more likely a badly designed API that return an html 404 page instead of a nice json answer an then the world is sad and the kitten are unhappy. So juste to be safe we are truncating the error message and I am running out of words to write I hope it is long enough' }
+            it 'truncates the error message' do
+              subject.push_entities_to_connec_to(client, entities_with_idmaps, '', organization)
+              idmap2.reload
+              expect(idmap2.message).to eq err_msg.truncate(255)
+            end
           end
         end
       end
@@ -504,6 +514,10 @@ describe Maestrano::Connector::Rails::Entity do
             expect(Maestrano::Connector::Rails::IdMap.last.name).to eql('human readable stuff')
           end
         end
+      end
+
+      describe 'filter_connec_entities' do
+        it { expect(subject.filter_connec_entities([{a: 2}], organization)).to eql([{a: 2}]) }
       end
     end
 

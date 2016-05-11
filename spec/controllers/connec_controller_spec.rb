@@ -71,6 +71,7 @@ describe Maestrano::ConnecController, type: :controller do
 
           it 'process the data and push them' do
             expect_any_instance_of(Entities::ContactAndLead).to receive(:before_sync)
+            expect_any_instance_of(Entities::ContactAndLead).to receive(:filter_connec_entities).and_return({"Lead"=>[entity]})
             expect_any_instance_of(Entities::ContactAndLead).to receive(:consolidate_and_map_data).with({"Lead"=>[entity]}, {}, organization, {}).and_return({})
             expect_any_instance_of(Entities::ContactAndLead).to receive(:push_entities_to_external)
             expect_any_instance_of(Entities::ContactAndLead).to receive(:after_sync)
@@ -138,6 +139,7 @@ describe Maestrano::ConnecController, type: :controller do
 
             it 'process the data and push them' do
               expect_any_instance_of(Entities::Person).to receive(:before_sync)
+              expect_any_instance_of(Entities::Person).to receive(:filter_connec_entities).and_return([entity])
               expect_any_instance_of(Entities::Person).to receive(:consolidate_and_map_data).with([entity], [], organization, {}).and_return({})
               expect_any_instance_of(Entities::Person).to receive(:push_entities_to_external)
               expect_any_instance_of(Entities::Person).to receive(:after_sync)
