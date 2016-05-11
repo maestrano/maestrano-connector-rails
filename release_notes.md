@@ -1,3 +1,11 @@
+## 0.4.4
+
+### Features
+* Add filter_connec_entities method to allow filtering in webhook workflow
+
+### Fixes
+* Truncate idmap message to avoid database errors
+
 ## 0.4.3
 
 ### Fixes
