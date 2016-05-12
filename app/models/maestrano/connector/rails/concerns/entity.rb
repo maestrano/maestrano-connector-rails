@@ -184,58 +184,44 @@ module Maestrano::Connector::Rails::Concerns::Entity
     query_params[:$orderby] = opts[:$orderby] if opts[:$orderby]
 
     # Fetch first page
+    page_number = 0
     if last_synchronization.blank? || opts[:full_sync]
       Maestrano::Connector::Rails::ConnectorLogger.log('debug', organization, "entity=#{self.class.connec_entity_name}, fetching all data")
       query_params[:$filter] = opts[:$filter] if opts[:$filter]
     else
       Maestrano::Connector::Rails::ConnectorLogger.log('debug', organization, "entity=#{self.class.connec_entity_name}, fetching data since #{last_synchronization.updated_at.iso8601}")
-      filter = "updated_at gt '#{last_synchronization.updated_at.iso8601}'"
-      filter += " and #{opts[:$filter]}" if opts[:$filter]
-      query_params[:$filter] = filter
+      query_params[:$filter] = "updated_at gt '#{last_synchronization.updated_at.iso8601}'" + (opts[:$filter] ? " and #{opts[:$filter]}" : '')
     end
-    response = client.get("/#{self.class.normalized_connec_entity_name}?#{query_params.to_query}")
-    raise "No data received from Connec! when trying to fetch #{self.class.normalized_connec_entity_name}" unless response && !response.body.blank?
 
-    response_hash = JSON.parse(response.body)
-    Maestrano::Connector::Rails::ConnectorLogger.log('debug', organization, "received first page entity=#{self.class.connec_entity_name}, response=#{response.body}")
-    if response_hash["#{self.class.normalized_connec_entity_name}"]
-      entities << response_hash["#{self.class.normalized_connec_entity_name}"]
-    else
-      raise "Received unrecognized Connec! data when trying to fetch #{self.class.normalized_connec_entity_name}"
-    end
+    uri = "/#{self.class.normalized_connec_entity_name}?#{query_params.to_query}"
+    response_hash = fetch_connec(client, uri, 0, organization)
+    entities = response_hash["#{self.class.normalized_connec_entity_name}"]
 
     # Fetch subsequent pages
     while response_hash['pagination'] && response_hash['pagination']['next']
+      page_number += 1
       # ugly way to convert https://api-connec/api/v2/group_id/organizations?next_page_params to /organizations?next_page_params
       next_page = response_hash['pagination']['next'].gsub(/^(.*)\/#{self.class.normalized_connec_entity_name}/, self.class.normalized_connec_entity_name)
-      response = client.get(next_page)
 
-      raise "No data received from Connec! when trying to fetch subsequent page of #{self.class.connec_entity_name.pluralize}" unless response && !response.body.blank?
-      Maestrano::Connector::Rails::ConnectorLogger.log('debug', organization, "received next page entity=#{self.class.connec_entity_name}, response=#{response.body}")
-
-      response_hash = JSON.parse(response.body)
-      if response_hash["#{self.class.normalized_connec_entity_name}"]
-        entities << response_hash["#{self.class.normalized_connec_entity_name}"]
-      else
-        raise "Received unrecognized Connec! data when trying to fetch subsequent page of #{self.class.connec_entity_name.pluralize}"
-      end
+      response_hash = fetch_connec(client, uri, page_number, organization)
+      entities << response_hash["#{self.class.normalized_connec_entity_name}"]
     end
 
-    entities = entities.flatten
+    entities.flatten!
     Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Received data: Source=Connec!, Entity=#{self.class.connec_entity_name}, Data=#{entities}")
     entities
   end
 
-  def push_entities_to_connec(connec_client, mapped_external_entities_with_idmaps, organization)
+  def push_entities_to_connec(connec_client, mapped_external_entities_with_idmaps, organization, opts={})
     push_entities_to_connec_to(connec_client, mapped_external_entities_with_idmaps, self.class.connec_entity_name, organization)
   end
 
-  def push_entities_to_connec_to(connec_client, mapped_external_entities_with_idmaps, connec_entity_name, organization)
+  def push_entities_to_connec_to(connec_client, mapped_external_entities_with_idmaps, connec_entity_name, organization, opts={})
     return unless self.class.can_write_connec?
 
     Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Sending #{Maestrano::Connector::Rails::External.external_name} #{self.class.external_entity_name.pluralize} to Connec! #{connec_entity_name.pluralize}")
     
-    request_per_call = 100
+    request_per_call = opts[:request_per_call] || 100
     start = 0
     while start < mapped_external_entities_with_idmaps.size
       # Prepare batch request
@@ -434,7 +420,6 @@ module Maestrano::Connector::Rails::Concerns::Entity
   def after_sync(connec_client, external_client, last_synchronization, organization, opts)
     # Does nothing by default
   end
-
   # ----------------------------------------------
   #             Internal helper methods
   # ----------------------------------------------
@@ -490,8 +475,22 @@ module Maestrano::Connector::Rails::Concerns::Entity
       end
     end
   end
+  
 
   def map_external_entity_with_idmap(external_entity, connec_entity_name, idmap, organization)
     {entity: map_to_connec(external_entity, organization), idmap: idmap}
   end
+
+  private
+    def fetch_connec(client, uri, page_number, organization)
+      response = client.get(uri)
+      raise "No data received from Connec! when trying to fetch page #{page_number} of #{self.class.normalized_connec_entity_name}" unless response && !response.body.blank?
+
+      response_hash = JSON.parse(response.body)
+      Maestrano::Connector::Rails::ConnectorLogger.log('debug', organization, "received first page entity=#{self.class.connec_entity_name}, response=#{response_hash}")
+      raise "Received unrecognized Connec! data when trying to fetch #{self.class.normalized_connec_entity_name}" unless response_hash["#{self.class.normalized_connec_entity_name}"]
+
+      response_hash
+    end
+
 end
