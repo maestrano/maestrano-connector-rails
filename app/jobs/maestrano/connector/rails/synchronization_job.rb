@@ -60,8 +60,8 @@ module Maestrano::Connector::Rails
       external_entities = entity_instance.get_external_entities(external_client, last_synchronization, organization, opts)
       connec_entities = entity_instance.get_connec_entities(connec_client, last_synchronization, organization, opts)
       mapped_entities = entity_instance.consolidate_and_map_data(connec_entities, external_entities, organization, opts)
-      entity_instance.push_entities_to_external(external_client, mapped_entities[:connec_entities], organization)
-      entity_instance.push_entities_to_connec(connec_client, mapped_entities[:external_entities], organization)
+      entity_instance.push_entities_to_external(external_client, mapped_entities[:connec_entities], organization, opts)
+      entity_instance.push_entities_to_connec(connec_client, mapped_entities[:external_entities], organization, opts)
       entity_instance.after_sync(connec_client, external_client, last_synchronization, organization, opts)
     end
   end

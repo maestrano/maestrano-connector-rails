@@ -311,8 +311,8 @@ describe Maestrano::Connector::Rails::Entity do
       describe 'push_entities_to_connec' do
         it 'calls push_entities_to_connec_to' do
           allow(subject).to receive(:connec_entity_name).and_return(connec_name)
-          expect(subject).to receive(:push_entities_to_connec_to).with(client, [{entity: {}, idmap: nil}], connec_name, nil)
-          subject.push_entities_to_connec(client, [{entity: {}, idmap: nil}], nil)
+          expect(subject).to receive(:push_entities_to_connec_to).with(client, [{entity: {}, idmap: nil}], connec_name, nil, {opts: 1})
+          subject.push_entities_to_connec(client, [{entity: {}, idmap: nil}], nil, {opts: 1})
         end
       end
 
@@ -565,8 +565,8 @@ describe Maestrano::Connector::Rails::Entity do
       describe 'push_entities_to_external' do
         it 'calls push_entities_to_external_to' do
           allow(subject.class).to receive(:external_entity_name).and_return(external_name)
-          expect(subject).to receive(:push_entities_to_external_to).with(nil, entities_with_idmaps, external_name, organization)
-          subject.push_entities_to_external(nil, entities_with_idmaps, organization)
+          expect(subject).to receive(:push_entities_to_external_to).with(nil, entities_with_idmaps, external_name, organization, {opts: 2})
+          subject.push_entities_to_external(nil, entities_with_idmaps, organization, {opts: 2})
         end
       end
 

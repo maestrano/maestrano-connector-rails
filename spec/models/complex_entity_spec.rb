@@ -454,9 +454,9 @@ describe Maestrano::Connector::Rails::ComplexEntity do
       }
 
       it 'calls push_entities_to_connec on each sub complex entity' do
-        expect_any_instance_of(Entities::SubEntities::ScE1).to receive(:push_entities_to_connec_to).once.with(nil, [mapped_entity_with_idmap], 'Connec1', nil)
+        expect_any_instance_of(Entities::SubEntities::ScE1).to receive(:push_entities_to_connec_to).once.with(nil, [mapped_entity_with_idmap], 'Connec1', nil, {opts: 1})
         expect_any_instance_of(Entities::SubEntities::ScE2).to receive(:push_entities_to_connec_to).twice
-        subject.push_entities_to_connec(nil, external_hash, nil)
+        subject.push_entities_to_connec(nil, external_hash, nil, {opts: 1})
       end
 
       describe 'full call' do
@@ -489,9 +489,9 @@ describe Maestrano::Connector::Rails::ComplexEntity do
       }
 
       it 'calls push_entities_to_connec on each sub complex entity' do
-        expect_any_instance_of(Entities::SubEntities::ScE1).to receive(:push_entities_to_external_to).once.with(nil, [mapped_entity_with_idmap], 'ext1', nil)
+        expect_any_instance_of(Entities::SubEntities::ScE1).to receive(:push_entities_to_external_to).once.with(nil, [mapped_entity_with_idmap], 'ext1', nil, {opts: 1})
         expect_any_instance_of(Entities::SubEntities::ScE2).to receive(:push_entities_to_external_to).twice
-        subject.push_entities_to_external(nil, connec_hash, nil)
+        subject.push_entities_to_external(nil, connec_hash, nil, {opts: 1})
       end
     end
   end

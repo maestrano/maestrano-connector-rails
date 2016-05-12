@@ -150,30 +150,30 @@ module Maestrano::Connector::Rails::Concerns::ComplexEntity
   #               connec_entities_names[0]: [mapped_external_entity3, mapped_external_entity4]
   #             }
   #          }
-  def push_entities_to_connec(connec_client, mapped_external_entities_with_idmaps, organization)
+  def push_entities_to_connec(connec_client, mapped_external_entities_with_idmaps, organization, opts={})
     mapped_external_entities_with_idmaps.each do |external_entity_name, entities_in_connec_model|
       sub_entity_instance = "Entities::SubEntities::#{external_entity_name.titleize.split.join}".constantize.new
       entities_in_connec_model.each do |connec_entity_name, mapped_entities_with_idmaps|
-        sub_entity_instance.push_entities_to_connec_to(connec_client, mapped_entities_with_idmaps, connec_entity_name, organization)
+        sub_entity_instance.push_entities_to_connec_to(connec_client, mapped_entities_with_idmaps, connec_entity_name, organization, opts)
       end
     end
   end
 
 
-  def push_entities_to_external(external_client, mapped_connec_entities_with_idmaps, organization)
+  def push_entities_to_external(external_client, mapped_connec_entities_with_idmaps, organization, opts={})
     mapped_connec_entities_with_idmaps.each do |connec_entity_name, entities_in_external_model|
       sub_entity_instance = "Entities::SubEntities::#{connec_entity_name.titleize.split.join}".constantize.new
       entities_in_external_model.each do |external_entity_name, mapped_entities_with_idmaps|
-        sub_entity_instance.push_entities_to_external_to(external_client, mapped_entities_with_idmaps, external_entity_name, organization)
+        sub_entity_instance.push_entities_to_external_to(external_client, mapped_entities_with_idmaps, external_entity_name, organization, opts)
       end
     end
   end
 
-  def before_sync(connec_client, external_client, last_synchronization, organization, opts)
+  def before_sync(connec_client, external_client, last_synchronization, organization, opts={})
     # Does nothing by default
   end
 
-  def after_sync(connec_client, external_client, last_synchronization, organization, opts)
+  def after_sync(connec_client, external_client, last_synchronization, organization, opts={})
     # Does nothing by default
   end
 

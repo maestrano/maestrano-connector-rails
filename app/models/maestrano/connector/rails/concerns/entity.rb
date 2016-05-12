@@ -177,6 +177,8 @@ module Maestrano::Connector::Rails::Concerns::Entity
   def get_connec_entities(client, last_synchronization, organization, opts={})
     return [] unless self.class.can_read_connec?
 
+    client.class.headers('CONNEC-EXTERNAL-IDS' => true)
+
     Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Fetching Connec! #{self.class.connec_entity_name}")
 
     entities = []
@@ -213,7 +215,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
   end
 
   def push_entities_to_connec(connec_client, mapped_external_entities_with_idmaps, organization, opts={})
-    push_entities_to_connec_to(connec_client, mapped_external_entities_with_idmaps, self.class.connec_entity_name, organization)
+    push_entities_to_connec_to(connec_client, mapped_external_entities_with_idmaps, self.class.connec_entity_name, organization, opts)
   end
 
   def push_entities_to_connec_to(connec_client, mapped_external_entities_with_idmaps, connec_entity_name, organization, opts={})
@@ -298,11 +300,11 @@ module Maestrano::Connector::Rails::Concerns::Entity
     raise "Not implemented"
   end
 
-  def push_entities_to_external(external_client, mapped_connec_entities_with_idmaps, organization)
-    push_entities_to_external_to(external_client, mapped_connec_entities_with_idmaps, self.class.external_entity_name, organization)
+  def push_entities_to_external(external_client, mapped_connec_entities_with_idmaps, organization, opts={})
+    push_entities_to_external_to(external_client, mapped_connec_entities_with_idmaps, self.class.external_entity_name, organization, opts)
   end
 
-  def push_entities_to_external_to(external_client, mapped_connec_entities_with_idmaps, external_entity_name, organization)
+  def push_entities_to_external_to(external_client, mapped_connec_entities_with_idmaps, external_entity_name, organization, opts={})
     return unless self.class.can_write_external?
     Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Sending Connec! #{self.class.connec_entity_name.pluralize} to #{Maestrano::Connector::Rails::External.external_name} #{external_entity_name.pluralize}")
     mapped_connec_entities_with_idmaps.each do |mapped_connec_entity_with_idmap|
@@ -413,11 +415,11 @@ module Maestrano::Connector::Rails::Concerns::Entity
   # ----------------------------------------------
   #             After and before sync
   # ----------------------------------------------
-  def before_sync(connec_client, external_client, last_synchronization, organization, opts)
+  def before_sync(connec_client, external_client, last_synchronization, organization, opts={})
     # Does nothing by default
   end
 
-  def after_sync(connec_client, external_client, last_synchronization, organization, opts)
+  def after_sync(connec_client, external_client, last_synchronization, organization, opts={})
     # Does nothing by default
   end
   # ----------------------------------------------
