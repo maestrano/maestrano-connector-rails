@@ -277,11 +277,34 @@ describe Maestrano::Connector::Rails::Entity do
           end
         end
 
-        describe 'without response' do
-          before {
-            allow(client).to receive(:get).and_return(ActionDispatch::Response.new(200, {}, nil, {}))
-          }
-          it { expect{ subject.get_connec_entities(client, nil, organization) }.to raise_error("No data received from Connec! when trying to fetch #{connec_name.pluralize.downcase}") }
+        describe 'failures' do
+          context 'when no response' do
+            before {
+              allow(client).to receive(:get).and_return(ActionDispatch::Response.new(200, {}, nil, {}))
+            }
+            it { expect{ subject.get_connec_entities(client, nil, organization) }.to raise_error(RuntimeError) }
+          end
+
+          context 'when invalid response' do
+            before {
+              allow(client).to receive(:get).and_return(ActionDispatch::Response.new(200, {}, {not_an_entity: []}.to_json, {}))
+            }
+            it { expect{ subject.get_connec_entities(client, nil, organization) }.to raise_error(RuntimeError) }
+          end
+
+          context 'when no response in pagination' do
+            before {
+              allow(client).to receive(:get).and_return(ActionDispatch::Response.new(200, {}, {people: [], pagination: {next: "https://api-connec.maestrano.com/api/v2/cld-dkg601/people?%24skip=10&%24top=10"}}.to_json, {}), ActionDispatch::Response.new(200, {}, nil, {}))
+            }
+            it { expect{ subject.get_connec_entities(client, nil, organization) }.to raise_error(RuntimeError) }
+          end
+
+          context 'when invalid response in pagination' do
+            before {
+              allow(client).to receive(:get).and_return(ActionDispatch::Response.new(200, {}, {people: [], pagination: {next: "https://api-connec.maestrano.com/api/v2/cld-dkg601/people?%24skip=10&%24top=10"}}.to_json, {}), ActionDispatch::Response.new(200, {}, {not_an_entity: []}.to_json, {}))
+            }
+            it { expect{ subject.get_connec_entities(client, nil, organization) }.to raise_error(RuntimeError) }
+          end
         end
       end
 
