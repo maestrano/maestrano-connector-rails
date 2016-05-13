@@ -196,36 +196,8 @@ module Maestrano::Connector::Rails::Concerns::Entity
 
     Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, "Sending #{Maestrano::Connector::Rails::External.external_name} #{self.class.external_entity_name.pluralize} to Connec! #{connec_entity_name.pluralize}")
     
-    request_per_call = @opts[:request_per_batch_call] || 100
-    start = 0
-    while start < mapped_external_entities_with_idmaps.size
-      # Prepare batch request
-      batch_entities = mapped_external_entities_with_idmaps.slice(start, request_per_call)
-      batch_request = {sequential: true, ops: []}
-
-      batch_entities.each do |mapped_external_entity_with_idmap|
-        mapped_external_entity = mapped_external_entity_with_idmap[:entity]
-        batch_request[:ops] << batch_op('post', mapped_external_entity, nil, self.class.normalize_connec_entity_name(connec_entity_name))
-      end
-
-      # Batch call
-      Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, "Sending batch request to Connec! for #{self.class.normalize_connec_entity_name(connec_entity_name)}. Batch_request_size: #{batch_request[:ops].size}. Call_number: #{(start/request_per_call) + 1}")
-      response = @connec_client.batch(batch_request)
-      Maestrano::Connector::Rails::ConnectorLogger.log('debug', @organization, "Received batch response from Connec! for #{self.class.normalize_connec_entity_name(connec_entity_name)}: #{response}")
-      raise "No data received from Connec! when trying to send batch request for #{self.class.connec_entity_name.pluralize}" unless response && !response.body.blank?
-      response = JSON.parse(response.body)
-
-      # Parse barch response
-      response['results'].each_with_index do |result, index|
-        if [200, 201].include?(result['status'])
-          batch_entities[index][:idmap].update_attributes(last_push_to_connec: Time.now, message: nil)
-        else
-          Maestrano::Connector::Rails::ConnectorLogger.log('error', @organization, "Error while pushing to Connec!: #{result['body']}")
-          batch_entities[index][:idmap].update_attributes(message: result['body'].truncate(255))
-        end
-      end
-      start += request_per_call
-    end
+    proc = lambda{|mapped_external_entity_with_idmap| batch_op('post', mapped_external_entity_with_idmap[:entity], nil, self.class.normalize_connec_entity_name(connec_entity_name))}
+    batch_calls(mapped_external_entities_with_idmaps, proc, connec_entity_name)
   end
 
   def batch_op(method, mapped_external_entity, id, connec_entity_name)
@@ -254,41 +226,17 @@ module Maestrano::Connector::Rails::Concerns::Entity
 
   def push_entities_to_external_to(mapped_connec_entities_with_idmaps, external_entity_name)
     return unless self.class.can_write_external?
+
     Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, "Sending Connec! #{self.class.connec_entity_name.pluralize} to #{Maestrano::Connector::Rails::External.external_name} #{external_entity_name.pluralize}")
     ids_to_send_to_connec = []
     mapped_connec_entities_with_idmaps.each do |mapped_connec_entity_with_idmap|
       push_entity_to_external(mapped_connec_entity_with_idmap, external_entity_name, ids_to_send_to_connec)
     end
 
-    request_per_call = @opts[:request_per_batch_call] || 100
-    start = 0
-    while start < ids_to_send_to_connec.size
-      # Prepare batch request
-      batch_entities = ids_to_send_to_connec.slice(start, request_per_call)
-      batch_request = {sequential: true, ops: []}
-
-      batch_entities.each do |id|
-        data = Maestrano::Connector::Rails::ConnecHelper.id_hash(id[:external_id], @organization)
-        batch_request[:ops] << batch_op('put', data, id[:connec_id], self.class.normalize_connec_entity_name(self.class.connec_entity_name))
-      end
-
-      # Batch call
-      # Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, "Sending batch request to Connec! for #{self.class.normalize_connec_entity_name(connec_entity_name)}. Batch_request_size: #{batch_request[:ops].size}. Call_number: #{(start/request_per_call) + 1}")
-      response = @connec_client.batch(batch_request)
-      # Maestrano::Connector::Rails::ConnectorLogger.log('debug', @organization, "Received batch response from Connec! for #{self.class.normalize_connec_entity_name(connec_entity_name)}: #{response}")
-      raise "No data received from Connec! when trying to send batch request for #{self.class.connec_entity_name.pluralize}" unless response && !response.body.blank?
-      response = JSON.parse(response.body)
-
-      # Parse barch response
-      response['results'].each_with_index do |result, index|
-        if ![200, 201].include?(result['status'])
-          # raise
-          Maestrano::Connector::Rails::ConnectorLogger.log('error', @organization, "Error while pushing to Connec!: #{result['body']}")
-        end
-      end
-      start += request_per_call
-    end
+    proc = lambda{|id| batch_op('put', Maestrano::Connector::Rails::ConnecHelper.id_hash(id[:external_id], @organization), id[:connec_id], self.class.normalize_connec_entity_name(self.class.connec_entity_name)) }
+    batch_calls(ids_to_send_to_connec, proc, self.class.connec_entity_name, true)
   end
+
 
   def push_entity_to_external(mapped_connec_entity_with_idmap, external_entity_name, ids_to_send_to_connec)
     idmap = mapped_connec_entity_with_idmap[:idmap]
@@ -299,7 +247,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
         connec_id = mapped_connec_entity.delete(:__connec_id)
         external_id = create_external_entity(mapped_connec_entity, external_entity_name)
         idmap.update(external_id: external_id, last_push_to_external: Time.now, message: nil)
-        ids_to_send_to_connec << {connec_id: connec_id, external_id: external_id}
+        ids_to_send_to_connec << {connec_id: connec_id, external_id: external_id, idmap: idmap}
       else
         return unless self.class.can_update_external?
         update_external_entity(mapped_connec_entity, idmap.external_id, external_entity_name)
@@ -427,11 +375,46 @@ module Maestrano::Connector::Rails::Concerns::Entity
     # Does nothing by default
   end
 
-  
+
   # ----------------------------------------------
   #             Internal helper methods
   # ----------------------------------------------
   private
+    def batch_calls(array_with_idmap, proc, connec_entity_name, id_update_only=false)
+      request_per_call = @opts[:request_per_batch_call] || 100
+      start = 0
+      while start < array_with_idmap.size
+        # Prepare batch request
+        batch_entities = array_with_idmap.slice(start, request_per_call)
+        batch_request = {sequential: true, ops: []}
+
+        batch_entities.each do |id|
+          # data = Maestrano::Connector::Rails::ConnecHelper.id_hash(id[:external_id], @organization)
+          # batch_request[:ops] << batch_op('put', data, id[:connec_id], self.class.normalize_connec_entity_name(self.class.connec_entity_name))
+          batch_request[:ops] << proc.call(id)
+        end
+
+        # Batch call
+        log_info = id_update_only ? 'with only ids' : ''
+        Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, "Sending batch request to Connec! #{log_info} for #{self.class.normalize_connec_entity_name(connec_entity_name)}. Batch_request_size: #{batch_request[:ops].size}. Call_number: #{(start/request_per_call) + 1}")
+        response = @connec_client.batch(batch_request)
+        Maestrano::Connector::Rails::ConnectorLogger.log('debug', @organization, "Received batch response from Connec! for #{self.class.normalize_connec_entity_name(connec_entity_name)}: #{response}")
+        raise "No data received from Connec! when trying to send batch request #{log_info} for #{self.class.connec_entity_name.pluralize}" unless response && !response.body.blank?
+        response = JSON.parse(response.body)
+
+        # Parse batch response
+        response['results'].each_with_index do |result, index|
+          if [200, 201].include?(result['status'])
+            batch_entities[index][:idmap].update(last_push_to_connec: Time.now, message: nil) unless id_update_only
+          else
+            Maestrano::Connector::Rails::ConnectorLogger.log('error', @organization, "Error while pushing to Connec!: #{result['body']}")
+            batch_entities[index][:idmap].update(message: result['body'].truncate(255))
+          end
+        end
+        start += request_per_call
+      end
+    end
+    
     def not_modified_since_last_push_to_connec?(idmap, entity)
       not_modified = idmap.last_push_to_connec && idmap.last_push_to_connec > self.class.last_update_date_from_external_entity_hash(entity)
       Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, "Discard #{Maestrano::Connector::Rails::External::external_name} #{self.class.external_entity_name} : #{entity}") if not_modified

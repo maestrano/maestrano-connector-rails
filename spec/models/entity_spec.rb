@@ -586,7 +586,7 @@ describe Maestrano::Connector::Rails::Entity do
           let(:connec_entity) { {'id' => connec_id, 'updated_at' => updated} }
 
           context 'with options' do
-            it 'keep the external one is connec_preemption is false' do
+            it 'keep the external one if connec_preemption is false' do
               subject.instance_variable_set(:@opts, {connec_preemption: false})
               expect(subject.consolidate_and_map_singleton([connec_entity], [{}])).to eql({connec_entities: [], external_entities: [{entity: {map: 'connec'}, idmap: idmap}]})
             end
@@ -594,7 +594,7 @@ describe Maestrano::Connector::Rails::Entity do
             context 'when connec preemption is true' do
               let(:opts) { {connec_preemption: true} }
 
-              it 'keep the connec one is connec_preemption is true' do
+              it 'keep the connec one' do
                 expect(subject.consolidate_and_map_singleton([connec_entity], [{}])).to eql({connec_entities: [{entity: {map: 'external'}, idmap: idmap}], external_entities: []})
               end
 
