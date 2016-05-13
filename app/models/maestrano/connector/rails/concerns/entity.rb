@@ -303,6 +303,10 @@ module Maestrano::Connector::Rails::Concerns::Entity
       else
         return unless self.class.can_update_external?
         update_external_entity(mapped_connec_entity, idmap.external_id, external_entity_name)
+        if self.class.singleton? && idmap.last_push_to_external.nil?
+          connec_id = mapped_connec_entity.delete(:__connec_id)
+          ids_to_send_to_connec << {connec_id: connec_id, external_id: idmap.external_id}
+        end
         idmap.update(last_push_to_external: Time.now, message: nil)
       end
     rescue => e
@@ -408,6 +412,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
     else
       entity = Maestrano::Connector::Rails::ConnecHelper.unfold_references(connec_entities.first, self.class.references, @organization)
       idmap.update(name: self.class.object_name_from_connec_entity_hash(entity))
+      idmap.update(external_id: self.class.id_from_external_entity_hash(external_entities.first)) unless external_entities.empty?
       return {connec_entities: [{entity: map_to_external(entity), idmap: idmap}], external_entities: []}
     end
   end
