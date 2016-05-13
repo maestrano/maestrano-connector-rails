@@ -67,4 +67,8 @@ module Maestrano::Connector::Rails::Concerns::SubEntityBase
   def map_connec_entity_with_idmap(connec_entity, external_entity_name, idmap)
     {entity: map_to(external_entity_name, connec_entity), idmap: idmap}
   end
+
+  def map_external_entity_with_idmap(external_entity, connec_entity_name, idmap)
+    {entity: map_to(connec_entity_name, external_entity), idmap: idmap}
+  end
 end

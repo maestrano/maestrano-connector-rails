@@ -57,27 +57,6 @@ module Maestrano::Connector::Rails::Concerns::ComplexEntity
   end
 
   # -------------------------------------------------------------
-  #          General methods
-  # -------------------------------------------------------------
-  # def map_to_external_with_idmap(entity, organization, external_entity_name, sub_entity_instance)
-  #   idmap = sub_entity_instance.class.find_idmap({connec_id: entity['id'], external_entity: external_entity_name.downcase, organization_id: organization.id})
-
-  #   if idmap
-  #     return nil if idmap.external_inactive || !idmap.to_external
-
-  #     if idmap.last_push_to_external && idmap.last_push_to_external > entity['updated_at']
-  #       Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Discard Connec! #{sub_entity_instance.class.entity_name} : #{entity}")
-  #       nil
-  #     else
-  #       idmap.update(name: sub_entity_instance.class.object_name_from_connec_entity_hash(entity))
-  #       {entity: sub_entity_instance.map_to(external_entity_name, entity, organization), idmap: idmap}
-  #     end
-  #   else
-  #     {entity: sub_entity_instance.map_to(external_entity_name, entity, organization), idmap: sub_entity_instance.class.create_idmap_from_connec_entity(entity, external_entity_name, organization)}
-  #   end
-  # end
-
-  # -------------------------------------------------------------
   #          Entity equivalent methods
   # -------------------------------------------------------------
   def get_connec_entities(last_synchronization)
@@ -113,25 +92,11 @@ module Maestrano::Connector::Rails::Concerns::ComplexEntity
   def consolidate_and_map_connec_entities(modeled_connec_entities, modeled_external_entities)
     modeled_connec_entities.each do |connec_entity_name, entities_in_external_model|
       entities_in_external_model.each do |external_entity_name, entities|
+
         sub_entity_instance = "Entities::SubEntities::#{connec_entity_name.titleize.split.join}".constantize.new(@organization, @connec_client, @external_client, @opts)
         equivalent_external_entities = (modeled_external_entities[external_entity_name] && modeled_external_entities[external_entity_name][connec_entity_name]) || []
 
-        entities.map!{|entity|
-          entity = Maestrano::Connector::Rails::ConnecHelper.unfold_references(entity, sub_entity_instance.class.references[external_entity_name] || [], @organization)
-          next nil unless entity
-          
-          if entity['id'].blank?
-            idmap = sub_entity_instance.class.create_idmap(organization_id: @organization.id, name: sub_entity_instance.class.object_name_from_connec_entity_hash(entity), external_entity: external_entity_name.downcase)
-            next sub_entity_instance.map_connec_entity_with_idmap(entity, external_entity_name, idmap)
-          end
-
-          idmap = sub_entity_instance.class.find_or_create_idmap(external_id: entity['id'], organization_id: @organization.id, external_entity: external_entity_name.downcase)
-          idmap.update(name: sub_entity_instance.class.object_name_from_connec_entity_hash(entity))
-
-          next nil if idmap.external_inactive || !idmap.to_external || sub_entity_instance.class.not_modified_since_last_push_to_external?(idmap, entity, sub_entity_instance, @organization)
-
-          sub_entity_instance.class.solve_conflict(entity, sub_entity_instance, equivalent_external_entities, external_entity_name, idmap, @organization, @opts)
-        }.compact!
+        entities_in_external_model[external_entity_name] = sub_entity_instance.consolidate_and_map_connec_entities(entities, equivalent_external_entities, sub_entity_instance.class.references[external_entity_name] || [], external_entity_name)
       end
     end
     modeled_connec_entities
@@ -142,23 +107,7 @@ module Maestrano::Connector::Rails::Concerns::ComplexEntity
       entities_in_connec_model.each do |connec_entity_name, entities|
         sub_entity_instance = "Entities::SubEntities::#{external_entity_name.titleize.split.join}".constantize.new(@organization, @connec_client, @external_client, @opts)
 
-        entities.map!{|entity|
-          entity_id = sub_entity_instance.class.id_from_external_entity_hash(entity)
-          idmap = sub_entity_instance.class.find_or_create_idmap(external_id: entity_id, organization_id: @organization.id, connec_entity: connec_entity_name.downcase)
-
-          # Not pushing entity to Connec!
-          next nil unless idmap.to_connec
-
-          # Not pushing to Connec! and flagging as inactive if inactive in external application
-          inactive = sub_entity_instance.class.inactive_from_external_entity_hash?(entity)
-          idmap.update(external_inactive: inactive, name: sub_entity_instance.class.object_name_from_external_entity_hash(entity))
-          next nil if inactive
-
-          # Entity has not been modified since its last push to connec!
-          next nil if sub_entity_instance.class.not_modified_since_last_push_to_connec?(idmap, entity, sub_entity_instance, @organization)
-
-          {entity: sub_entity_instance.map_to(connec_entity_name, entity), idmap: idmap}
-        }.compact!
+        entities_in_connec_model[connec_entity_name] = sub_entity_instance.consolidate_and_map_external_entities(entities, connec_entity_name)
       end
     end
     modeled_external_entities
