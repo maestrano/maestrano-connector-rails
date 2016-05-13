@@ -66,7 +66,7 @@ describe Maestrano::Connector::Rails::PushToConnecJob do
         before { organization.update(synchronized_entities: {:"#{entity_name1}" => false, :"#{entity_name2}" => true})}
 
         it 'calls consolidate and map data on the complex entity with the right arguments' do
-          expect_any_instance_of(Entities::Entity2).to receive(:consolidate_and_map_data).with({}, {"Subs"=>[entity21], "ll"=>[]}, organization, {})
+          expect_any_instance_of(Entities::Entity2).to receive(:consolidate_and_map_data).with({}, {"Subs"=>[entity21], "ll"=>[]})
           expect_any_instance_of(Entities::Entity2).to receive(:push_entities_to_connec)
           subject
         end
@@ -87,7 +87,7 @@ describe Maestrano::Connector::Rails::PushToConnecJob do
         before { organization.update(synchronized_entities: {:"#{entity_name1}" => true, :"#{entity_name2}" => false})}
 
         it 'calls consolidate_and_map_data on the non complex entity with the right arguments' do
-          expect_any_instance_of(Entities::Entity1).to receive(:consolidate_and_map_data).with([], [entity11, entity12], organization, {}).and_return({})
+          expect_any_instance_of(Entities::Entity1).to receive(:consolidate_and_map_data).with([], [entity11, entity12]).and_return({})
           expect_any_instance_of(Entities::Entity1).to receive(:push_entities_to_connec)
           subject
         end

@@ -13,7 +13,7 @@ module Maestrano::Connector::Rails
     def initialize
       super
       self.synchronized_entities = {}
-      Entity.entities_list.each do |entity|
+      External.entities_list.each do |entity|
         self.synchronized_entities[entity.to_sym] = true
       end
     end

@@ -1,17 +1,6 @@
 class Maestrano::Connector::Rails::Entity
   include Maestrano::Connector::Rails::Concerns::Entity
 
-  # Return an array of all the entities that the connector can synchronize
-  # If you add new entities, you need to generate
-  # a migration to add them to existing organizations
-  def self.entities_list
-    # TODO
-    # The names in this list should match the names of your entities class
-    # e.g %w(person, tasks_list)
-    #  will synchronized Entities::Person and Entities::TasksList
-    []
-  end
-
   # Return an array of entities from the external app
   def get_external_entities(client, last_synchronization, organization, opts={})
     return [] unless self.class.can_read_external?

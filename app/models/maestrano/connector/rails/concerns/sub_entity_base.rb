@@ -34,34 +34,6 @@ module Maestrano::Connector::Rails::Concerns::SubEntityBase
       end
     end
 
-    def create_idmap_from_external_entity(entity, connec_entity_name, organization)
-      if external?
-        h = names_hash.merge({
-          external_id: id_from_external_entity_hash(entity),
-          name: object_name_from_external_entity_hash(entity),
-          connec_entity: connec_entity_name.downcase,
-          organization_id: organization.id
-        })
-        Maestrano::Connector::Rails::IdMap.create(h)
-      else
-        raise 'Forbidden call: cannot call create_idmap_from_external_entity for a connec entity'
-      end
-    end
-
-    def create_idmap_from_connec_entity(entity, external_entity_name, organization)
-      if external?
-        raise 'Forbidden call: cannot call create_idmap_from_connec_entity for an external entity'
-      else
-        h = names_hash.merge({
-          connec_id: entity['id'],
-          name: object_name_from_connec_entity_hash(entity),
-          external_entity: external_entity_name.downcase,
-          organization_id: organization.id
-        })
-        Maestrano::Connector::Rails::IdMap.create(h)
-      end
-    end
-
     # { 'External Entity'  => LalaMapper, 'Other external entity' => LiliMapper }
     # or { 'Connec Entity'  => LalaMapper, 'Other connec entity' => LiliMapper }
     def mapper_classes
@@ -69,8 +41,8 @@ module Maestrano::Connector::Rails::Concerns::SubEntityBase
     end
 
     # {
-    #   'External Entity' => [{reference_class: Entities::.., connec_field: '', external_field: ''}],
-    #   'Other external entity' => [{reference_class: Entities::.., connec_field: '', external_field: ''}]
+    #   'External Entity' => ['organization_id'],
+    #   'Other external entity' => ['an array of the connec reference fields']
     # }
     def references
       {}
@@ -78,28 +50,21 @@ module Maestrano::Connector::Rails::Concerns::SubEntityBase
   end
 
 
-  def map_to(name, entity, organization)
+  def map_to(name, entity)
     mapper = self.class.mapper_classes[name]
     raise "Impossible mapping from #{self.class.entity_name} to #{name}" unless mapper
 
-    ref_hash = {}
-    if self.class.references[name]
-      self.class.references[name].each do |ref|
-        field = self.class.external? ? ref[:connec_field] : ref[:external_field]
-        ref_hash.merge! field.split('/').reverse.inject(Maestrano::Connector::Rails::Entity.id_from_ref(entity, ref, self.class.external?, organization)) { |a, n| { n.to_sym => a } }
-      end
-    end
-
     if self.class.external?
       mapped_entity = mapper.denormalize(entity)
+      Maestrano::Connector::Rails::ConnecHelper.fold_references(mapped_entity, self.class.references[name] || [], @organization)
     else
+      connec_id = entity[:__connec_id]
       mapped_entity = mapper.normalize(entity)
+      connec_id ? mapped_entity.merge(__connec_id: connec_id) : mapped_entity
     end
-    mapped_entity.merge(ref_hash)
   end
 
-
-  def map_external_entity_with_idmap(external_entity, connec_entity_name, idmap, organization)
-    {entity: map_to(connec_entity_name, external_entity, organization), idmap: idmap}
+  def map_connec_entity_with_idmap(connec_entity, external_entity_name, idmap)
+    {entity: map_to(external_entity_name, connec_entity), idmap: idmap}
   end
 end
