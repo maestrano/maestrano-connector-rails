@@ -121,11 +121,11 @@ module Maestrano::Connector::Rails::Concerns::ComplexEntity
           next nil unless entity
           
           if entity['id'].blank?
-            idmap = sub_entity_instance.class.create_idmap(organization_id: @organization.id, name: sub_entity_instance.class.object_name_from_connec_entity_hash(entity))
-            next sub_entity_instance.map_connec_entity_with_idmap(entity, sub_entity_instance.class.external_entity_name, idmap)
+            idmap = sub_entity_instance.class.create_idmap(organization_id: @organization.id, name: sub_entity_instance.class.object_name_from_connec_entity_hash(entity), external_entity: external_entity_name.downcase)
+            next sub_entity_instance.map_connec_entity_with_idmap(entity, external_entity_name, idmap)
           end
 
-          idmap = sub_entity_instance.class.find_or_create_idmap(external_id: entity['id'], organization_id: @organization.id)
+          idmap = sub_entity_instance.class.find_or_create_idmap(external_id: entity['id'], organization_id: @organization.id, external_entity: external_entity_name.downcase)
           idmap.update(name: sub_entity_instance.class.object_name_from_connec_entity_hash(entity))
 
           next nil if idmap.external_inactive || !idmap.to_external || sub_entity_instance.class.not_modified_since_last_push_to_external?(idmap, entity, sub_entity_instance, @organization)
@@ -144,7 +144,7 @@ module Maestrano::Connector::Rails::Concerns::ComplexEntity
 
         entities.map!{|entity|
           entity_id = sub_entity_instance.class.id_from_external_entity_hash(entity)
-          idmap = sub_entity_instance.class.find_or_create_idmap({external_id: entity_id, organization_id: @organization.id})
+          idmap = sub_entity_instance.class.find_or_create_idmap(external_id: entity_id, organization_id: @organization.id, connec_entity: connec_entity_name.downcase)
 
           # Not pushing entity to Connec!
           next nil unless idmap.to_connec

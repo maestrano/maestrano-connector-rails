@@ -483,7 +483,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
 
       response_hash = JSON.parse(response.body)
       Maestrano::Connector::Rails::ConnectorLogger.log('debug', @organization, "received first page entity=#{self.class.connec_entity_name}, response=#{response_hash}")
-      raise "Received unrecognized Connec! data when trying to fetch #{self.class.normalized_connec_entity_name}" unless response_hash["#{self.class.normalized_connec_entity_name}"]
+      raise "Received unrecognized Connec! data when trying to fetch page #{page_number} of #{self.class.normalized_connec_entity_name}: #{response_hash}" unless response_hash["#{self.class.normalized_connec_entity_name}"]
 
       response_hash
     end
