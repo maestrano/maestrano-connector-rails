@@ -429,8 +429,9 @@ describe Maestrano::Connector::Rails::Entity do
       let(:idmap1) { create(:idmap, organization: organization) }
       let(:idmap2) { create(:idmap, organization: organization, external_id: nil, external_entity: nil, last_push_to_external: nil) }
       let(:entity1) { {name: 'John'} }
-      let(:entity2) { {name: 'Jane'} }
+      let(:entity2) { {name: 'Jane', __connec_id: connec_id2} }
       let(:entity_with_idmap1) { {entity: entity1, idmap: idmap1} }
+      let(:connec_id2) { 'connec_id2' }
       let(:entity_with_idmap2) { {entity: entity2, idmap: idmap2} }
       let(:entities_with_idmaps) { [entity_with_idmap1, entity_with_idmap2] }
 
@@ -458,6 +459,35 @@ describe Maestrano::Connector::Rails::Entity do
           expect(subject).to receive(:push_entity_to_external).twice
           subject.push_entities_to_external_to(entities_with_idmaps, external_name)
         end
+
+        describe 'ids' do
+          before {
+            allow(subject).to receive(:create_external_entity).and_return('id')
+            allow(subject).to receive(:update_external_entity).and_return(nil)
+          }
+
+          context 'when ids to send to connec' do
+            let(:batch_param) {
+              {:sequential=>true, :ops=>[{:method=>"put", :url=>"/api/v2/cld-123/people/#{connec_id2}", :params=>{:people=>{:id=>"id", :provider=>organization.oauth_provider, :realm=>organization.oauth_uid}}}]}
+            }
+
+            it 'does a batch call on connec' do
+              expect(connec_client).to receive(:batch).with(batch_param).and_return(ActionDispatch::Response.new(200, {}, {results: []}.to_json, {}))
+              subject.push_entities_to_external_to(entities_with_idmaps, external_name)
+            end
+          end
+
+          context 'when no id to send to connec' do
+            before {
+              idmap2.update(external_id: 'id')
+            }
+
+            it 'does not do a call on connec' do
+              expect(connec_client).to_not receive(:batch)
+              subject.push_entities_to_external_to(entities_with_idmaps, external_name)
+            end
+          end
+        end
       end
 
       describe 'push_entity_to_external' do
@@ -465,18 +495,18 @@ describe Maestrano::Connector::Rails::Entity do
           it 'does not calls update if create_only' do
             allow(subject.class).to receive(:can_update_external?).and_return(false)
             expect(subject).to_not receive(:update_external_entity)
-            subject.push_entity_to_external(entity_with_idmap1, external_name, {})
+            expect(subject.push_entity_to_external(entity_with_idmap1, external_name)).to be_nil
           end
 
           it 'calls update_external_entity' do
             expect(subject).to receive(:update_external_entity).with(entity1, idmap1.external_id, external_name)
-            subject.push_entity_to_external(entity_with_idmap1, external_name, {})
+            subject.push_entity_to_external(entity_with_idmap1, external_name)
           end
 
           it 'updates the idmap last push to external' do
             allow(subject).to receive(:update_external_entity)
             time_before = idmap1.last_push_to_external
-            subject.push_entity_to_external(entity_with_idmap1, external_name, {})
+            expect(subject.push_entity_to_external(entity_with_idmap1, external_name)).to be_nil
             idmap1.reload
             expect(idmap1.last_push_to_external).to_not eql(time_before)
           end
@@ -485,15 +515,20 @@ describe Maestrano::Connector::Rails::Entity do
         context 'when the entity idmap does not have an external id' do
           it 'calls create_external_entity' do
             expect(subject).to receive(:create_external_entity).with(entity2, external_name)
-            subject.push_entity_to_external(entity_with_idmap2, external_name, {})
+            subject.push_entity_to_external(entity_with_idmap2, external_name)
           end
 
           it 'updates the idmap external id, entity and last push' do
             allow(subject).to receive(:create_external_entity).and_return('999111')
-            subject.push_entity_to_external(entity_with_idmap2, external_name, {})
+            subject.push_entity_to_external(entity_with_idmap2, external_name)
             idmap2.reload
             expect(idmap2.external_id).to eql('999111')
             expect(idmap2.last_push_to_external).to_not be_nil
+          end
+
+          it 'returns an hash with the external_id' do
+            allow(subject).to receive(:create_external_entity).and_return('999111')
+            expect(subject.push_entity_to_external(entity_with_idmap2, external_name)).to eql({connec_id: connec_id2, external_id: '999111', idmap: idmap2})
           end
         end
       end

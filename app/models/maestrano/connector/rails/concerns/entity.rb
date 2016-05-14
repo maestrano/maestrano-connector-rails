@@ -228,40 +228,51 @@ module Maestrano::Connector::Rails::Concerns::Entity
     return unless self.class.can_write_external?
 
     Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, "Sending Connec! #{self.class.connec_entity_name.pluralize} to #{Maestrano::Connector::Rails::External.external_name} #{external_entity_name.pluralize}")
-    ids_to_send_to_connec = []
-    mapped_connec_entities_with_idmaps.each do |mapped_connec_entity_with_idmap|
-      push_entity_to_external(mapped_connec_entity_with_idmap, external_entity_name, ids_to_send_to_connec)
-    end
+    ids_to_send_to_connec = mapped_connec_entities_with_idmaps.map{ |mapped_connec_entity_with_idmap|
+      push_entity_to_external(mapped_connec_entity_with_idmap, external_entity_name)
+    }.compact
 
-    proc = lambda{|id| batch_op('put', Maestrano::Connector::Rails::ConnecHelper.id_hash(id[:external_id], @organization), id[:connec_id], self.class.normalize_connec_entity_name(self.class.connec_entity_name)) }
-    batch_calls(ids_to_send_to_connec, proc, self.class.connec_entity_name, true)
+    unless ids_to_send_to_connec.empty?
+      # Send the external ids to connec if it was a creation
+      proc = lambda{|id| batch_op('put', Maestrano::Connector::Rails::ConnecHelper.id_hash(id[:external_id], @organization), id[:connec_id], self.class.normalize_connec_entity_name(self.class.connec_entity_name)) }
+      batch_calls(ids_to_send_to_connec, proc, self.class.connec_entity_name, true)
+    end
   end
 
 
-  def push_entity_to_external(mapped_connec_entity_with_idmap, external_entity_name, ids_to_send_to_connec)
+  def push_entity_to_external(mapped_connec_entity_with_idmap, external_entity_name)
     idmap = mapped_connec_entity_with_idmap[:idmap]
     mapped_connec_entity = mapped_connec_entity_with_idmap[:entity]
 
     begin
+      # Create and return id to send to connec!
       if idmap.external_id.blank?
         connec_id = mapped_connec_entity.delete(:__connec_id)
         external_id = create_external_entity(mapped_connec_entity, external_entity_name)
         idmap.update(external_id: external_id, last_push_to_external: Time.now, message: nil)
-        ids_to_send_to_connec << {connec_id: connec_id, external_id: external_id, idmap: idmap}
+        return {connec_id: connec_id, external_id: external_id, idmap: idmap}
+
+      # Update
       else
         return unless self.class.can_update_external?
         update_external_entity(mapped_connec_entity, idmap.external_id, external_entity_name)
+
+        # Return the id to send it to connec! if the first push of a singleton
         if self.class.singleton? && idmap.last_push_to_external.nil?
           connec_id = mapped_connec_entity.delete(:__connec_id)
-          ids_to_send_to_connec << {connec_id: connec_id, external_id: idmap.external_id}
+          idmap.update(last_push_to_external: Time.now, message: nil)
+          return {connec_id: connec_id, external_id: idmap.external_id}
+        else
+          idmap.update(last_push_to_external: Time.now, message: nil)
         end
-        idmap.update(last_push_to_external: Time.now, message: nil)
+        
       end
     rescue => e
       # Store External error
       Maestrano::Connector::Rails::ConnectorLogger.log('error', @organization, "Error while pushing to #{Maestrano::Connector::Rails::External.external_name}: #{e}")
       idmap.update(message: e.message.truncate(255))
     end
+    nil
   end
 
   def create_external_entity(mapped_connec_entity, external_entity_name)
@@ -380,6 +391,8 @@ module Maestrano::Connector::Rails::Concerns::Entity
   #             Internal helper methods
   # ----------------------------------------------
   private
+    # array_with_idmap must be an array of hash with a key idmap
+    # proc is a lambda to create a batch_op from an element of the array
     def batch_calls(array_with_idmap, proc, connec_entity_name, id_update_only=false)
       request_per_call = @opts[:request_per_batch_call] || 100
       start = 0
@@ -389,8 +402,6 @@ module Maestrano::Connector::Rails::Concerns::Entity
         batch_request = {sequential: true, ops: []}
 
         batch_entities.each do |id|
-          # data = Maestrano::Connector::Rails::ConnecHelper.id_hash(id[:external_id], @organization)
-          # batch_request[:ops] << batch_op('put', data, id[:connec_id], self.class.normalize_connec_entity_name(self.class.connec_entity_name))
           batch_request[:ops] << proc.call(id)
         end
 
