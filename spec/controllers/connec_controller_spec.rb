@@ -31,6 +31,15 @@ describe Maestrano::ConnecController, type: :controller do
         expect(response.status).to eq(200)
       end
 
+      context 'with an unexpected error' do
+        let(:notifications) { {'people' => [entity]} }
+        it 'logs a warning' do
+          allow(controller).to receive(:find_entity_class).and_raise('Bruno c\'est peter')
+          expect(Rails.logger).to receive(:warn)
+          subject
+        end
+      end
+
       context "with an unknown entity" do
         let(:notifications) { {'people' => [entity]} }
         before {

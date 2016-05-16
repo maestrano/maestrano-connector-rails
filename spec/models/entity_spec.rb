@@ -166,6 +166,12 @@ describe Maestrano::Connector::Rails::Entity do
     describe 'connec_methods' do
       let(:sync) { create(:synchronization) }
 
+      describe 'filter_connec_entities' do
+        it 'does nothing by default' do
+          expect(subject.filter_connec_entities({a: 2})).to eql({a: 2})
+        end
+      end
+
       describe 'get_connec_entities' do
         describe 'when write only' do
           before {
@@ -539,6 +545,25 @@ describe Maestrano::Connector::Rails::Entity do
           it 'returns an hash with the external_id' do
             allow(subject).to receive(:create_external_entity).and_return('999111')
             expect(subject.push_entity_to_external(entity_with_idmap2, external_name)).to eql({connec_id: connec_id2, external_id: '999111', idmap: idmap2})
+          end
+        end
+
+        describe 'failures' do
+
+          it 'stores the error in the idmap' do
+            allow(subject).to receive(:create_external_entity).and_raise('Kabooooom')
+            allow(subject).to receive(:update_external_entity).and_raise('Kabooooom')
+            subject.push_entity_to_external(entity_with_idmap1, external_name)
+            subject.push_entity_to_external(entity_with_idmap2, external_name)
+            expect(idmap1.reload.message).to include('Kabooooom')
+            expect(idmap2.reload.message).to include('Kabooooom')
+          end
+
+          it 'truncates the message' do
+            msg = 'Large corporations use our integrated platform to provide a fully customized environment to their clients, increasing revenue, engagement and gaining insight on client behavior through our Big Data technology. Large corporations use our integrated platform to provide a fully customized environment to their clients, increasing revenue, engagement and gaining insight on client behavior through our Big Data technology.'
+            allow(subject).to receive(:create_external_entity).and_raise(msg)
+            subject.push_entity_to_external(entity_with_idmap2, external_name)
+            expect(idmap2.reload.message).to include(msg.truncate(255))
           end
         end
       end

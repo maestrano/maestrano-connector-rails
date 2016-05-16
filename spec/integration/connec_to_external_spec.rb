@@ -23,14 +23,6 @@ describe 'connec to the external application' do
       entity['first_name']
     end
 
-    def self.object_name_from_external_entity_hash(entity)
-      entity['FirstName']
-    end
-
-    def self.id_from_external_entity_hash(entity)
-      entity['Id']
-    end
-
     class PersonMapper
       extend HashMapper
       map from('id'), to('Id')

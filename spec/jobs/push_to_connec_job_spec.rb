@@ -6,9 +6,6 @@ describe Maestrano::Connector::Rails::PushToConnecJob do
   let(:entity_name2) { 'entity2' }
   before {
     class Entities::Entity1 < Maestrano::Connector::Rails::Entity
-      def map_to_connec(entity, organization)
-        entity
-      end
     end
     allow_any_instance_of(Entities::Entity1).to receive(:push_entities_to_connec)
     allow(Entities::Entity1).to receive(:external_entity_name).and_return('ext_entity1')

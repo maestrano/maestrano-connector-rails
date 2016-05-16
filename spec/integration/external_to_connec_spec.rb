@@ -19,10 +19,6 @@ describe 'external application to connec' do
       ['organization_id']
     end
 
-    def self.object_name_from_connec_entity_hash(entity)
-      entity['first_name']
-    end
-
     def self.object_name_from_external_entity_hash(entity)
       entity['FirstName']
     end
