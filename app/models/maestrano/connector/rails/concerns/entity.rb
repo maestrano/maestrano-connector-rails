@@ -103,6 +103,11 @@ module Maestrano::Connector::Rails::Concerns::Entity
       []
     end
 
+    # An array of fields for smart merging. See connec! documentation
+    def connec_matching_fields
+      nil
+    end
+
     def can_read_connec?
       can_write_external?
     end
@@ -137,7 +142,9 @@ module Maestrano::Connector::Rails::Concerns::Entity
   # Map an external entity to Connec! model
   def map_to_connec(entity)
     mapped_entity = self.class.mapper_class.denormalize(entity)
-    Maestrano::Connector::Rails::ConnecHelper.fold_references(mapped_entity, self.class.references, @organization)
+    folded_entity = Maestrano::Connector::Rails::ConnecHelper.fold_references(mapped_entity, self.class.references, @organization)
+    folded_entity.merge!(opts: (mapped_entity[:opts] || {}).merge(matching_fields: self.class.connec_matching_fields)) if self.class.connec_matching_fields
+    folded_entity
   end
 
   # ----------------------------------------------

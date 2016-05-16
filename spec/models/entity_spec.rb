@@ -102,6 +102,10 @@ describe Maestrano::Connector::Rails::Entity do
     describe 'object_name_from_external_entity_hash' do
       it { expect{ subject.object_name_from_external_entity_hash({}) }.to raise_error('Not implemented') }
     end
+
+    describe 'connec_matching_fields' do
+      it { expect(subject.connec_matching_fields).to be_nil }
+    end
   end
 
   describe 'instance methods' do
@@ -148,6 +152,12 @@ describe Maestrano::Connector::Rails::Entity do
           allow(subject.class).to receive(:references).and_return(refs)
           expect(Maestrano::Connector::Rails::ConnecHelper).to receive(:fold_references).with({id: 'abcd'}, refs, organization)
           subject.map_to_connec({'id' => 'abcd'})
+        end
+
+        it 'merges the smart merging options' do
+          allow(AMapper).to receive(:denormalize).and_return({opts: {some_opt: 4}})
+          allow(subject.class).to receive(:connec_matching_fields).and_return([['first_name'], ['last_name']])
+          expect(subject.map_to_connec({})).to eql({opts: {some_opt: 4, matching_fields: [['first_name'], ['last_name']]}}.with_indifferent_access)
         end
       end
     end
