@@ -4,8 +4,9 @@ module Maestrano::Connector::Rails
     # Replace the ids arrays by the external id
     # If a reference has no id for this oauth_provider and oauth_uid, does smart suff and respond nil
     def self.unfold_references(connec_entity, references, organization)
-      return_nil = false
+      connec_entity = connec_entity.with_indifferent_access
 
+      # Id
       id = connec_entity['id'].find{|id| id['provider'] == organization.oauth_provider && id['realm'] == organization.oauth_uid}
       if id
         connec_entity['id'] = id['id']
@@ -14,31 +15,17 @@ module Maestrano::Connector::Rails
         connec_entity['id'] = nil
       end
 
+      # Other refs
       references.each do |reference|
-        if connec_entity[reference] && connec_entity[reference].kind_of?(Array) && !connec_entity[reference].empty?
-          id = connec_entity[reference].find{|id| id['provider'] == organization.oauth_provider && id['realm'] == organization.oauth_uid}
-
-          if id
-            connec_entity[reference] = id['id']
-          else
-            return_nil = true
-            # Do something smart
-          end
-        end
+        unfold_references_helper(connec_entity, reference.split('/'), organization)
       end
-
-      return_nil ? nil : connec_entity
+      connec_entity
     end
 
     def self.fold_references(mapped_external_entity, references, organization)
+      mapped_external_entity = mapped_external_entity.with_indifferent_access
       (references + ['id']).each do |reference|
-        reference = reference.to_sym
-        unless mapped_external_entity[reference].blank?
-          id = mapped_external_entity[reference]
-          mapped_external_entity[reference] = [
-            id_hash(id, organization)
-          ]
-        end
+        fold_references_helper(mapped_external_entity, reference.split('/'), organization)
       end
       mapped_external_entity
     end
@@ -51,6 +38,52 @@ module Maestrano::Connector::Rails
       }
     end
 
+    private
+      def self.fold_references_helper(entity, array_of_refs, organization)
+        ref = array_of_refs.shift
+        field = entity[ref]
+
+        unless field.blank?
+          case field
+          when Array
+            field.each do |f|
+              fold_references_helper(f, array_of_refs.dup, organization)
+            end
+          when HashWithIndifferentAccess
+            fold_references_helper(entity[ref], array_of_refs, organization)
+          when String
+            id = field
+            entity[ref] = [id_hash(id, organization)]
+          end
+        end
+      end
+
+      def self.unfold_references_helper(entity, array_of_refs, organization)
+        # return_nil = false
+        ref = array_of_refs.shift
+        field = entity[ref]
+        if array_of_refs.empty?
+          id = entity[ref].find{|id| id[:provider] == organization.oauth_provider && id[:realm] == organization.oauth_uid}
+          if id
+            entity[ref] = id['id']
+          else
+            # return_nil = true
+            # Do something smart
+          end
+        else
+
+          unless field.blank?
+            case field
+            when Array
+              field.each do |f|
+                unfold_references_helper(f, array_of_refs.dup, organization)
+              end
+            when HashWithIndifferentAccess
+              unfold_references_helper(entity[ref], array_of_refs, organization)
+            end
+          end
+        end
+      end
 
   end
 end
