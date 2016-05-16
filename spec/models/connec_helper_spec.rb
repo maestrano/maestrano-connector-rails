@@ -43,16 +43,16 @@ describe Maestrano::Connector::Rails::ConnecHelper do
         ]
       }
     }
+    let(:lt1_id_id) { 'lt1_id' }
+    let(:lt2_id_id) { 'lt2_id' }
+    let(:lt1_id) { [subject.id_hash(lt1_id_id, organization)] }
+    let(:lt2_id) { [subject.id_hash(lt2_id_id, organization)] }
 
     context 'when all ids are here' do
       let(:id_id) { 'id' }
       let(:org_id_id) { 'org_id' }
-      let(:lt1_id_id) { 'lt1_id' }
-      let(:lt2_id_id) { 'lt2_id' }
       let(:id) { [subject.id_hash(id_id, organization)] }
       let(:org_id) { [subject.id_hash(org_id_id, organization)] }
-      let(:lt1_id) { [subject.id_hash(lt1_id_id, organization)] }
-      let(:lt2_id) { [subject.id_hash(lt2_id_id, organization)] }
 
       it 'unfolds everything' do
         expect(subject.unfold_references(connec_hash, ['organization_id', 'lines/linked_transaction/id'], organization)).to eql(output_hash.with_indifferent_access)
@@ -62,21 +62,33 @@ describe Maestrano::Connector::Rails::ConnecHelper do
     context 'when only id is missing' do
       let(:id_id) { nil }
       let(:org_id_id) { 'org_id' }
-      let(:lt1_id_id) { 'lt1_id' }
-      let(:lt2_id_id) { 'lt2_id' }
       let(:id) { [{'provider' => 'connec', 'realm' => 'some realm', 'id' => 'id'}] }
       let(:org_id) { [subject.id_hash(org_id_id, organization)] }
-      let(:lt1_id) { [subject.id_hash(lt1_id_id, organization)] }
-      let(:lt2_id) { [subject.id_hash(lt2_id_id, organization)] }
 
       it 'unfolds the other refs and keep the connec_id' do
         expect(subject.unfold_references(connec_hash, ['organization_id', 'lines/linked_transaction/id'], organization)).to eql(output_hash.merge(__connec_id: 'id').with_indifferent_access)
       end
     end
 
-    context 'when refs are missing' do
-      # only if ref has a connec id but no ext id AND it is in the ref list
-      xit 'todo'
+    context 'when at least one ref is missing and there is a connec id' do
+      let(:id_id) { nil }
+      let(:org_id_id) { 'org_id' }
+      let(:id) { [{'provider' => 'connec', 'realm' => 'some realm', 'id' => 'id'}] }
+      let(:org_id) { [{'provider' => 'connec', 'realm' => 'some realm', 'id' => org_id_id}] }
+
+      it 'returns nil' do
+        expect(subject.unfold_references(connec_hash, ['organization_id', 'lines/linked_transaction/id'], organization)).to be_nil
+      end
+    end
+    context 'when at least one ref is missing but there is no connec id' do
+      let(:id_id) { 'id' }
+      let(:id) { [subject.id_hash(id_id, organization)] }
+      let(:org_id_id) { nil }
+      let(:org_id) { nil }
+
+      it 'unfold the others refs' do
+        expect(subject.unfold_references(connec_hash, ['organization_id', 'lines/linked_transaction/id'], organization)).to eql(output_hash.merge(organization_id: nil).with_indifferent_access)
+      end
     end
   end
 

@@ -7,7 +7,7 @@ module Maestrano::Connector::Rails
     #  * :only_entities => [person, tasks_list]
     #  * :full_sync => true  synchronization is performed without date filtering
     #  * :connec_preemption => true|false : preemption is always|never given to connec in case of conflict (if not set, the most recently updated entity is kept)
-    def perform(organization, opts)
+    def perform(organization, opts={})
       return unless organization.sync_enabled
 
       # Check if previous synchronization is still running

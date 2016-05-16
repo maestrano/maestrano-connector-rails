@@ -179,4 +179,16 @@ describe 'connec to the external application' do
     end
 
   end
+
+  describe 'a creation from connec with references missing' do
+    let(:person) { person1.merge("organization_id" => [{"realm"=>"org-fg4a", "provider"=>"connec", "id"=>"2305c5e0-e18e-0133-890f-07d4de9f9781"}]) }
+    
+    it 'pushes nothing and creates no idmap' do
+      expect_any_instance_of(Entities::ConnecToExternal).to_not receive(:create_external_entity)
+      expect_any_instance_of(Entities::ConnecToExternal).to_not receive(:update_external_entity)
+      expect{
+        subject
+      }.to_not change{ Maestrano::Connector::Rails::IdMap.count }
+    end
+  end
 end

@@ -4,9 +4,10 @@ module Maestrano::Connector::Rails::Concerns::ConnecHelper
   module ClassMethods
     
     # Replace the ids arrays by the external id
-    # If a reference has no id for this oauth_provider and oauth_uid, does smart suff and respond nil
+    # If a reference has no id for this oauth_provider and oauth_uid but has one for connec returns nil
     def unfold_references(connec_entity, references, organization)
       connec_entity = connec_entity.with_indifferent_access
+      not_nil = true
 
       # Id
       id = connec_entity['id'].find{|id| id['provider'] == organization.oauth_provider && id['realm'] == organization.oauth_uid}
@@ -19,9 +20,9 @@ module Maestrano::Connector::Rails::Concerns::ConnecHelper
 
       # Other refs
       references.each do |reference|
-        unfold_references_helper(connec_entity, reference.split('/'), organization)
+        not_nil &&= unfold_references_helper(connec_entity, reference.split('/'), organization)
       end
-      connec_entity
+      not_nil ? connec_entity : nil
     end
 
     def fold_references(mapped_external_entity, references, organization)
@@ -44,6 +45,7 @@ module Maestrano::Connector::Rails::Concerns::ConnecHelper
       ref = array_of_refs.shift
       field = entity[ref]
 
+      # Follow embedment path, remplace if it's a string
       unless field.blank?
         case field
         when Array
@@ -60,19 +62,22 @@ module Maestrano::Connector::Rails::Concerns::ConnecHelper
     end
 
     def unfold_references_helper(entity, array_of_refs, organization)
-      # return_nil = false
       ref = array_of_refs.shift
       field = entity[ref]
-      if array_of_refs.empty?
-        id = entity[ref].find{|id| id[:provider] == organization.oauth_provider && id[:realm] == organization.oauth_uid}
-        if id
-          entity[ref] = id['id']
-        else
-          # return_nil = true
-          # Do something smart
-        end
-      else
 
+      # Unfold the id
+      if array_of_refs.empty?
+        if id = field && field.find{|id| id[:provider] == organization.oauth_provider && id[:realm] == organization.oauth_uid}
+          entity[ref] = id['id']
+        elsif field && field.find{|id| id[:provider] == 'connec'}
+          # We may enqueue a fetch on the endpoint of the missing association, followed by a re-fetch on this one.
+          # However it's expected to be an edge case, so for now we rely on the fact that the webhooks should be relativly in order.
+          # Worst case it'll be done on following sync
+          return nil
+        end
+
+      # Follow embedment path
+      else
         unless field.blank?
           case field
           when Array
@@ -84,6 +89,7 @@ module Maestrano::Connector::Rails::Concerns::ConnecHelper
           end
         end
       end
+      true
     end
 
   end
