@@ -327,7 +327,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
       idmap = self.class.find_or_create_idmap(external_id: entity['id'], organization_id: @organization.id, external_entity: external_entity_name.downcase)
       idmap.update(name: self.class.object_name_from_connec_entity_hash(entity))
 
-      next nil if idmap.external_inactive || !idmap.to_external || not_modified_since_last_push_to_external?(idmap, entity)
+      next nil if idmap.external_inactive || !idmap.to_external || (!@opts[:full_sync] && not_modified_since_last_push_to_external?(idmap, entity))
 
       # Check for conflict with entities from external
       solve_conflict(entity, external_entities, external_entity_name, idmap)
@@ -348,7 +348,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
       next nil if inactive
 
       # Entity has not been modified since its last push to connec!
-      next nil if not_modified_since_last_push_to_connec?(idmap, entity)
+      next nil if !@opts[:full_sync] && not_modified_since_last_push_to_connec?(idmap, entity)
 
 
       map_external_entity_with_idmap(entity, connec_entity_name, idmap)

@@ -745,7 +745,16 @@ describe Maestrano::Connector::Rails::Entity do
             it 'discards the entity' do
               expect(subject.consolidate_and_map_connec_entities(entities, [], [], external_name)).to eql([])
             end
+
+            context 'with full synchronization opts' do
+              let(:opts) { {full_sync: true} }
+
+              it 'keeps the entity' do
+                expect(subject.consolidate_and_map_connec_entities(entities, [], [], external_name)).to eql([{entity: {mapped: 'entity'}, idmap: idmap1}])
+              end
+            end
           end
+
         end
 
         context 'when conflict' do
@@ -850,6 +859,14 @@ describe Maestrano::Connector::Rails::Entity do
 
             it 'discards the entity' do
               expect(subject.consolidate_and_map_external_entities([entity], connec_name)).to eql([])
+            end
+
+            context 'with full synchronization opts' do
+              let(:opts) { {full_sync: true} }
+
+              it 'keeps the entity' do
+                expect(subject.consolidate_and_map_external_entities([entity], connec_name)).to eql([{entity: {mapped: 'ext_entity'}, idmap: idmap}])
+              end
             end
           end
 
