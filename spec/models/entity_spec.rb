@@ -136,7 +136,7 @@ describe Maestrano::Connector::Rails::Entity do
         end
 
         it 'preserve the __connec_id' do
-          expect(subject.map_to_external({__connec_id: 'connec id'})).to eql({__connec_id: 'connec id'})
+          expect(subject.map_to_external({__connec_id: 'connec id'})).to eql({__connec_id: 'connec id'}.with_indifferent_access)
         end
       end
 
