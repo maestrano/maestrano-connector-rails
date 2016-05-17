@@ -13,7 +13,6 @@
           %table.table.table-condensed
             %th Entity name
             %th Internal entity
-            %th Internal id
             %th ApplicationName entity
             %th ApplicationName id
             %th Message
@@ -22,7 +21,6 @@
               %tr
                 %td= idmap.name
                 %td= idmap.connec_entity ? idmap.connec_entity.humanize : nil
-                %td= idmap.connec_id
                 %td= idmap.external_entity ? idmap.external_entity.humanize : nil
                 %td= idmap.external_id
                 %td= idmap.message

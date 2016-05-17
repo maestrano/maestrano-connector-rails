@@ -1,6 +1,6 @@
 # TODO
 # This file is provided as an example and should be removed
-# See README for explanation
+# See doc for explanation
 # class Entities::SubEntities::Contact < Maestrano::Connector::Rails::SubEntityBase
 
 #   def self.external?

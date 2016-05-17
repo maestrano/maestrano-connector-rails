@@ -130,6 +130,8 @@
 
     config.webhook.connec.notifications_path = Settings[tenant][:webhook][:connec][:notifications_path]
 
+    config.api.host = Settings[tenant][:api_host]
+    config.connec.host = Settings[tenant][:connec_host]
     #
     # == Subscriptions
     # This is the list of entities (organizations,people,invoices etc.) for which you want to be

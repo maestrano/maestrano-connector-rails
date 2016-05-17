@@ -6,6 +6,8 @@ default:
   api_key: 'connec_api_key'
   sso_init_path: '/maestrano/auth/saml/init/default'
   sso_consume_path: '/maestrano/auth/saml/consume/default'
+  api_host: 'https://maestrano.com'
+  connec_host: 'https://api-connec.maestrano.com'
   webhook:
     account:
       groups_path: '/maestrano/account/groups/:id/default'
@@ -20,6 +22,8 @@ maestrano-uat:
   api_key: 'maestrano_uat_connec_api_key'
   sso_consume_path: '/maestrano/auth/saml/consume/maestrano-uat'
   sso_init_path: '/maestrano/auth/saml/init/maestrano-uat'
+  api_host: 'https://uat.maestrano.io'
+  connec_host: 'https://api-connec-uat.maestrano.io'
   webhook:
     account:
       groups_path: '/maestrano/account/groups/:id/maestrano-uat'
