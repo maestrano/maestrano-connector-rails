@@ -157,7 +157,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
   def get_connec_entities(last_synchronization)
     return [] unless self.class.can_read_connec?
 
-    @connec_client.class.headers('CONNEC-EXTERNAL-IDS' => true)
+    @connec_client.class.headers('CONNEC-EXTERNAL-IDS' => 'true')
 
     Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, "Fetching Connec! #{self.class.connec_entity_name}")
 
@@ -426,7 +426,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
             batch_entities[index][:idmap].update(last_push_to_connec: Time.now, message: nil) unless id_update_only
           else
             Maestrano::Connector::Rails::ConnectorLogger.log('error', @organization, "Error while pushing to Connec!: #{result['body']}")
-            batch_entities[index][:idmap].update(message: result['body'].truncate(255))
+            batch_entities[index][:idmap].update(message: result['body'].to_s.truncate(255))
           end
         end
         start += request_per_call

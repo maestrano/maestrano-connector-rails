@@ -83,7 +83,6 @@ describe Maestrano::Connector::Rails::SubEntityBase do
       before {
         class AMapper
           extend HashMapper
-          map from('id'), to('id')
         end
         allow(subject.class).to receive(:mapper_classes).and_return('Name' => AMapper)
       }
@@ -95,6 +94,7 @@ describe Maestrano::Connector::Rails::SubEntityBase do
       context 'when external' do
         before {
           allow(subject.class).to receive(:external?).and_return(true)
+          allow(subject.class).to receive(:id_from_external_entity_hash).and_return('this id')
         }
 
         it 'calls the mapper denormalize' do
@@ -105,15 +105,15 @@ describe Maestrano::Connector::Rails::SubEntityBase do
         it 'calls for reference folding' do
           refs = %w(organization_id person_id)
           allow(subject.class).to receive(:references).and_return({'Name' => refs})
-          expect(Maestrano::Connector::Rails::ConnecHelper).to receive(:fold_references).with({id: 'abcd'}, refs, organization)
-          subject.map_to('Name', {'id' => 'abcd'})
+          expect(Maestrano::Connector::Rails::ConnecHelper).to receive(:fold_references).with({id: 'this id'}, refs, organization)
+          subject.map_to('Name', {})
         end
 
         context 'when no refs' do
           it 'calls for reference folding' do
             allow(subject.class).to receive(:references).and_return({})
-            expect(Maestrano::Connector::Rails::ConnecHelper).to receive(:fold_references).with({id: 'abcd'}, [], organization)
-            subject.map_to('Name', {'id' => 'abcd'})
+            expect(Maestrano::Connector::Rails::ConnecHelper).to receive(:fold_references).with({id: 'this id'}, [], organization)
+            subject.map_to('Name', {})
           end
         end
       end
@@ -129,7 +129,7 @@ describe Maestrano::Connector::Rails::SubEntityBase do
         end
 
         it 'preserve the __connec_id' do
-          expect(subject.map_to('Name', {__connec_id: 'connec id'})).to eql({__connec_id: 'connec id'})
+          expect(subject.map_to('Name', {__connec_id: 'connec id'})).to eql({__connec_id: 'connec id'}.with_indifferent_access)
         end
       end
     end
