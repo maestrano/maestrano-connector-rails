@@ -29,7 +29,6 @@ describe 'external application to connec' do
 
     class PersonMapper
       extend HashMapper
-      map from('id'), to('Id')
       map from('organization_id'), to('AccountId')
       map from('first_name'), to('FirstName')
     end

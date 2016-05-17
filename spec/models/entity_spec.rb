@@ -125,7 +125,6 @@ describe Maestrano::Connector::Rails::Entity do
       before(:each) {
         class AMapper
           extend HashMapper
-          map from('id'), to('id')
         end
         allow(subject.class).to receive(:mapper_class).and_return(AMapper)
       }
@@ -142,6 +141,9 @@ describe Maestrano::Connector::Rails::Entity do
       end
 
       describe 'map_to_connec' do
+        before {
+          allow(subject.class).to receive(:id_from_external_entity_hash).and_return('this id')
+        }
         it 'calls the mapper denormalize' do
           expect(AMapper).to receive(:denormalize).with({}).and_return({})
           subject.map_to_connec({})
@@ -150,14 +152,14 @@ describe Maestrano::Connector::Rails::Entity do
         it 'calls for reference folding' do
           refs = %w(organization_id person_id)
           allow(subject.class).to receive(:references).and_return(refs)
-          expect(Maestrano::Connector::Rails::ConnecHelper).to receive(:fold_references).with({id: 'abcd'}, refs, organization)
-          subject.map_to_connec({'id' => 'abcd'})
+          expect(Maestrano::Connector::Rails::ConnecHelper).to receive(:fold_references).with({id: 'this id'}, refs, organization)
+          subject.map_to_connec({})
         end
 
         it 'merges the smart merging options' do
           allow(AMapper).to receive(:denormalize).and_return({opts: {some_opt: 4}})
           allow(subject.class).to receive(:connec_matching_fields).and_return([['first_name'], ['last_name']])
-          expect(subject.map_to_connec({})).to eql({opts: {some_opt: 4, matching_fields: [['first_name'], ['last_name']]}}.with_indifferent_access)
+          expect(subject.map_to_connec({})).to eql({id: [{id: 'this id', provider: organization.oauth_provider, realm: organization.oauth_uid}], opts: {some_opt: 4, matching_fields: [['first_name'], ['last_name']]}}.with_indifferent_access)
         end
       end
     end

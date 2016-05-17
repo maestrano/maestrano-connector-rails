@@ -25,7 +25,6 @@ describe 'connec to the external application' do
 
     class PersonMapper
       extend HashMapper
-      map from('id'), to('Id')
       map from('organization_id'), to('AccountId')
       map from('first_name'), to('FirstName')
     end
@@ -147,7 +146,6 @@ describe 'connec to the external application' do
 
     let(:mapped_entity) {
       {
-        Id: ext_contact_id,
         AccountId: ext_org_id,
         FirstName: 'Jane'
       }

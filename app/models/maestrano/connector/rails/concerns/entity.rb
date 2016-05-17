@@ -136,12 +136,12 @@ module Maestrano::Connector::Rails::Concerns::Entity
   def map_to_external(entity)
     connec_id = entity[:__connec_id]
     mapped_entity = self.class.mapper_class.normalize(entity)
-    connec_id ? mapped_entity.merge(__connec_id: connec_id) : mapped_entity
+    (connec_id ? mapped_entity.merge(__connec_id: connec_id) : mapped_entity).with_indifferent_access
   end
 
   # Map an external entity to Connec! model
   def map_to_connec(entity)
-    mapped_entity = self.class.mapper_class.denormalize(entity)
+    mapped_entity = self.class.mapper_class.denormalize(entity).merge(id: self.class.id_from_external_entity_hash(entity))
     folded_entity = Maestrano::Connector::Rails::ConnecHelper.fold_references(mapped_entity, self.class.references, @organization)
     folded_entity.merge!(opts: (mapped_entity[:opts] || {}).merge(matching_fields: self.class.connec_matching_fields)) if self.class.connec_matching_fields
     folded_entity
