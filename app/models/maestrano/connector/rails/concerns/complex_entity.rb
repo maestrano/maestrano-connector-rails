@@ -63,7 +63,7 @@ module Maestrano::Connector::Rails::Concerns::ComplexEntity
     entities = ActiveSupport::HashWithIndifferentAccess.new
 
     self.class.connec_entities_names.each do |connec_entity_name|
-      sub_entity_instance = "Entities::SubEntities::#{connec_entity_name.titleize.split.join}".constantize.new(@organization, @connec_client, @external_client, @opts)
+      sub_entity_instance = instantiate_sub_entity_instance(connec_entity_name)
       entities[connec_entity_name] = sub_entity_instance.get_connec_entities(last_synchronization)
     end
     entities
@@ -73,7 +73,7 @@ module Maestrano::Connector::Rails::Concerns::ComplexEntity
     entities = ActiveSupport::HashWithIndifferentAccess.new
 
     self.class.external_entities_names.each do |external_entity_name|
-      sub_entity_instance = "Entities::SubEntities::#{external_entity_name.titleize.split.join}".constantize.new(@organization, @connec_client, @external_client, @opts)
+      sub_entity_instance = instantiate_sub_entity_instance(external_entity_name)
       entities[external_entity_name] = sub_entity_instance.get_external_entities(last_synchronization)
     end
     entities
@@ -93,7 +93,7 @@ module Maestrano::Connector::Rails::Concerns::ComplexEntity
     modeled_connec_entities.each do |connec_entity_name, entities_in_external_model|
       entities_in_external_model.each do |external_entity_name, entities|
 
-        sub_entity_instance = "Entities::SubEntities::#{connec_entity_name.titleize.split.join}".constantize.new(@organization, @connec_client, @external_client, @opts)
+        sub_entity_instance = instantiate_sub_entity_instance(connec_entity_name)
         equivalent_external_entities = (modeled_external_entities[external_entity_name] && modeled_external_entities[external_entity_name][connec_entity_name]) || []
 
         entities_in_external_model[external_entity_name] = sub_entity_instance.consolidate_and_map_connec_entities(entities, equivalent_external_entities, sub_entity_instance.class.references[external_entity_name] || [], external_entity_name)
@@ -105,7 +105,7 @@ module Maestrano::Connector::Rails::Concerns::ComplexEntity
   def consolidate_and_map_external_entities(modeled_external_entities)
     modeled_external_entities.each do |external_entity_name, entities_in_connec_model|
       entities_in_connec_model.each do |connec_entity_name, entities|
-        sub_entity_instance = "Entities::SubEntities::#{external_entity_name.titleize.split.join}".constantize.new(@organization, @connec_client, @external_client, @opts)
+        sub_entity_instance = instantiate_sub_entity_instance(external_entity_name)
 
         entities_in_connec_model[connec_entity_name] = sub_entity_instance.consolidate_and_map_external_entities(entities, connec_entity_name)
       end
@@ -124,7 +124,7 @@ module Maestrano::Connector::Rails::Concerns::ComplexEntity
   #          }
   def push_entities_to_connec(mapped_external_entities_with_idmaps)
     mapped_external_entities_with_idmaps.each do |external_entity_name, entities_in_connec_model|
-      sub_entity_instance = "Entities::SubEntities::#{external_entity_name.titleize.split.join}".constantize.new(@organization, @connec_client, @external_client, @opts)
+      sub_entity_instance = instantiate_sub_entity_instance(external_entity_name)
       entities_in_connec_model.each do |connec_entity_name, mapped_entities_with_idmaps|
         sub_entity_instance.push_entities_to_connec_to(mapped_entities_with_idmaps, connec_entity_name)
       end
@@ -134,7 +134,7 @@ module Maestrano::Connector::Rails::Concerns::ComplexEntity
 
   def push_entities_to_external(mapped_connec_entities_with_idmaps)
     mapped_connec_entities_with_idmaps.each do |connec_entity_name, entities_in_external_model|
-      sub_entity_instance = "Entities::SubEntities::#{connec_entity_name.titleize.split.join}".constantize.new(@organization, @connec_client, @external_client, @opts)
+      sub_entity_instance = instantiate_sub_entity_instance(connec_entity_name)
       entities_in_external_model.each do |external_entity_name, mapped_entities_with_idmaps|
         sub_entity_instance.push_entities_to_external_to(mapped_entities_with_idmaps, external_entity_name)
       end
@@ -157,5 +157,25 @@ module Maestrano::Connector::Rails::Concerns::ComplexEntity
   #          }
   def filter_connec_entities(entities)
     entities
+  end
+
+  def instantiate_sub_entity_instance(entity_name)
+    "Entities::SubEntities::#{entity_name.titleize.split.join}".constantize.new(@organization, @connec_client, @external_client, @opts)
+  end
+
+  # -------------------------------------------------------------
+  #                      Helper methods
+  # -------------------------------------------------------------
+  module ClassMethods
+    # output : {entities_names[0] => [], entities_names[1] => []}
+    def build_empty_hash(entities_names)
+      Hash[ *entities_names.collect{|name| [ name, []]}.flatten(1) ]
+    end
+
+    # output: {entities_name[0] => [], entities_name[1] => entities}
+    # with proc.call(entities_name[1] == entity_name)
+    def build_hash_with_entities(entities_name, entity_name, proc, entities)
+      Hash[ *entities_name.collect{|name| proc.call(name) == entity_name ? [name, entities] : [ name, []]}.flatten(1) ]
+    end
   end
 end

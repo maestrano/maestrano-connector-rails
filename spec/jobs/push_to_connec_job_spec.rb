@@ -13,7 +13,7 @@ describe Maestrano::Connector::Rails::PushToConnecJob do
     end
     allow_any_instance_of(Entities::Entity2).to receive(:consolidate_and_map_data).and_return({})
     allow_any_instance_of(Entities::Entity2).to receive(:push_entities_to_connec)
-    allow(Entities::Entity2).to receive(:connec_entities_names).and_return(%w())
+    allow(Entities::Entity2).to receive(:connec_entities_names).and_return(['Connec name'])
     allow(Entities::Entity2).to receive(:external_entities_names).and_return(%w(Subs ll))
     module Entities::SubEntities end;
     class Entities::SubEntities::Sub < Maestrano::Connector::Rails::SubEntityBase
@@ -63,7 +63,7 @@ describe Maestrano::Connector::Rails::PushToConnecJob do
         before { organization.update(synchronized_entities: {:"#{entity_name1}" => false, :"#{entity_name2}" => true})}
 
         it 'calls consolidate and map data on the complex entity with the right arguments' do
-          expect_any_instance_of(Entities::Entity2).to receive(:consolidate_and_map_data).with({}, {"Subs"=>[entity21], "ll"=>[]})
+          expect_any_instance_of(Entities::Entity2).to receive(:consolidate_and_map_data).with({"Connec name" => []}, {"Subs"=>[entity21], "ll"=>[]})
           expect_any_instance_of(Entities::Entity2).to receive(:push_entities_to_connec)
           subject
         end

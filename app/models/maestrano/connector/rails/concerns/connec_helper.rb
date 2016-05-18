@@ -6,23 +6,23 @@ module Maestrano::Connector::Rails::Concerns::ConnecHelper
     # Replace the ids arrays by the external id
     # If a reference has no id for this oauth_provider and oauth_uid but has one for connec returns nil
     def unfold_references(connec_entity, references, organization)
-      connec_entity = connec_entity.with_indifferent_access
+      unfolded_connec_entity = connec_entity.with_indifferent_access
       not_nil = true
 
       # Id
-      id = connec_entity['id'].find{|id| id['provider'] == organization.oauth_provider && id['realm'] == organization.oauth_uid}
+      id = unfolded_connec_entity['id'].find{|id| id['provider'] == organization.oauth_provider && id['realm'] == organization.oauth_uid}
       if id
-        connec_entity['id'] = id['id']
+        unfolded_connec_entity['id'] = id['id']
       else
-        connec_entity[:__connec_id] = connec_entity['id'].find{|id| id['provider'] == 'connec'}['id']
-        connec_entity['id'] = nil
+        unfolded_connec_entity[:__connec_id] = unfolded_connec_entity['id'].find{|id| id['provider'] == 'connec'}['id']
+        unfolded_connec_entity['id'] = nil
       end
 
       # Other refs
       references.each do |reference|
-        not_nil &&= unfold_references_helper(connec_entity, reference.split('/'), organization)
+        not_nil &&= unfold_references_helper(unfolded_connec_entity, reference.split('/'), organization)
       end
-      not_nil ? connec_entity : nil
+      not_nil ? unfolded_connec_entity : nil
     end
 
     def fold_references(mapped_external_entity, references, organization)

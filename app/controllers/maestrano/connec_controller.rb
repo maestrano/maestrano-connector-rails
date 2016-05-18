@@ -6,13 +6,13 @@ class Maestrano::ConnecController < Maestrano::Rails::WebHookController
     begin
       params.except(:tenant, :controller, :action, :connec).each do |entity_name, entities|
 
-        entity_instance_hash = find_entity_class(entity_name)
-        next Rails.logger.info "Received notification from Connec! for unknow entity: #{entity_name}" unless entity_instance_hash
+        entity_class_hash = find_entity_class(entity_name)
+        next Rails.logger.info "Received notification from Connec! for unknow entity: #{entity_name}" unless entity_class_hash
 
         entities.each do |entity|
           organization = Maestrano::Connector::Rails::Organization.find_by_uid_and_tenant(entity[:group_id], params[:tenant])
           next Rails.logger.warn "Received notification from Connec! for unknown group or group without oauth: #{entity['group_id']} (tenant: #{params[:tenant]})" unless organization && organization.oauth_uid
-          next unless organization.sync_enabled && organization.synchronized_entities[entity_instance_hash[:name].to_sym]
+          next unless organization.sync_enabled && organization.synchronized_entities[entity_class_hash[:name].to_sym]
 
 
           Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Received entity from Connec! webhook: Entity=#{entity_name}, Data=#{entity}")
@@ -20,13 +20,13 @@ class Maestrano::ConnecController < Maestrano::Rails::WebHookController
           external_client = Maestrano::Connector::Rails::External.get_client(organization)
           last_synchronization = organization.last_successful_synchronization
 
-          entity_instance = entity_instance_hash[:class].new(organization, connec_client, external_client, {})
+          entity_instance = entity_class_hash[:class].new(organization, connec_client, external_client, {})
           entity_instance.before_sync(last_synchronization)
           
           # Build expected input for consolidate_and_map_data
-          if entity_instance_hash[:is_complex]
-            filtered_entities = entity_instance.filter_connec_entities(Hash[ *entity_instance.class.connec_entities_names.collect{|name| name.parameterize('_').pluralize == entity_name ? [name, [entity]] : [ name, []]}.flatten(1) ])
-            mapped_entity = entity_instance.consolidate_and_map_data(filtered_entities, Hash[ *entity_instance.class.external_entities_names.collect{|name| [ name, []]}.flatten(1) ])
+          if entity_class_hash[:is_complex]
+            filtered_entities = entity_instance.filter_connec_entities(Maestrano::Connector::Rails::ComplexEntity.build_hash_with_entities(entity_instance.class.connec_entities_names, entity_name, lambda{|name| name.parameterize('_').pluralize}, [entity]))
+            mapped_entity = entity_instance.consolidate_and_map_data(filtered_entities, Maestrano::Connector::Rails::ComplexEntity.build_empty_hash(entity_instance.class.external_entities_names))
           else
             filtered_entities = entity_instance.filter_connec_entities([entity])
             mapped_entity = entity_instance.consolidate_and_map_data(filtered_entities, [])
