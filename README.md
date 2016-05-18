@@ -10,4 +10,4 @@
 Maestrano Connector is a Rails Engine that bootstraps the implementation of data syncrhonization between an external application API and the Maestrano ecosystem.
 Maestrano Connector Integration is currently in closed beta. Want to know more? Send us an email to <contact@maestrano.com>.
 
-You can find the documentation [here](https://maestrano.atlassian.net/wiki/display/CONNECAPIV2/Maestrano+connector+framework+-+rails). See also some generic documentation about integration with Maestrano [here](https://maestrano.atlassian.net/wiki/display/CONNECAPIV2/Maestrano+Developers).
+You can find the documentation [here](https://maestrano.atlassian.net/wiki/display/DEV/Create+a+connector+using+our+framework+-+Ruby+on+Rails). See also some generic documentation about integration with Maestrano [here](https://maestrano.atlassian.net/wiki/display/DEV/Maestrano+Developers).
