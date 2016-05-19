@@ -1,0 +1,34 @@
+require: rubocop-rspec
+inherit_from: .rubocop_todo.yml
+
+Rails:
+  Enabled: true
+
+AllCops:
+  TargetRubyVersion: 2.3
+  Exclude:
+    - 'db/schema.rb'
+    - 'db/migrate/*'
+    - 'bin/*'
+    - 'spec/'
+    - 'template/maestrano.rb'
+
+# Enabled disabled Cops
+Style/CollectionMethods:
+  Enabled: true
+
+# Missing top-level class documentation comment
+Style/Documentation:
+  Enabled: false
+
+Style/ClassAndModuleChildren:
+  Enabled: false
+
+Style/SpaceInsideHashLiteralBraces:
+  EnforcedStyle: no_space
+
+RSpec/FilePath:
+  Exclude:
+    # - 'spec/routing/**/*_routing_spec.rb'
+
+# Space inside braces => only for blocks (not for literal)

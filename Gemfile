@@ -19,4 +19,5 @@ group :development do
   gem 'factory_girl_rails'
   gem 'sqlite3'
   gem 'shoulda-matchers'
+  gem 'rubocop'
 end
