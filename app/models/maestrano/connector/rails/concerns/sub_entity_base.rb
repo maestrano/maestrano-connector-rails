@@ -57,7 +57,7 @@ module Maestrano::Connector::Rails::Concerns::SubEntityBase
     if self.class.external?
       mapped_entity = mapper.denormalize(entity).merge(id: self.class.id_from_external_entity_hash(entity))
       folded_entity = Maestrano::Connector::Rails::ConnecHelper.fold_references(mapped_entity, self.class.references[name] || [], @organization)
-      folded_entity.merge!(opts: (mapped_entity[:opts] || {}).merge(matching_fields: self.class.connec_matching_fields)) if self.class.connec_matching_fields
+      folded_entity.merge!(opts: (folded_entity[:opts] || {}).merge(matching_fields: self.class.connec_matching_fields)) if self.class.connec_matching_fields
       folded_entity
     else
       connec_id = entity[:__connec_id]
