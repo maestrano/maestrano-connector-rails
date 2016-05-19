@@ -129,6 +129,7 @@
     config.webhook.account.group_users_path = Settings[tenant][:webhook][:account][:group_users_path]
 
     config.webhook.connec.notifications_path = Settings[tenant][:webhook][:connec][:notifications_path]
+    config.webhook.connec.external_ids = true
 
     config.api.host = Settings[tenant][:api_host]
     config.connec.host = Settings[tenant][:connec_host]
