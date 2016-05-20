@@ -110,7 +110,7 @@ describe 'singleton workflow' do
             :ops => [
               {
                 :method => "put",
-                :url => "/api/v2//company/some connec id",
+                :url => "/api/v2/#{organization.uid}/company/some connec id",
                 :params => {
                   :company => {
                     :id => "ext comp id",

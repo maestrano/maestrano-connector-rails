@@ -5,6 +5,7 @@ describe Maestrano::Connector::Rails::Organization do
   # Attributes
   it { should validate_presence_of(:name) }
   it { should validate_presence_of(:tenant) }
+  it { should validate_uniqueness_of(:uid) }
   it { should serialize(:synchronized_entities) }
 
   # Indexes

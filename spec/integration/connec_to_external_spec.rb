@@ -98,7 +98,7 @@ describe 'connec to the external application' do
         :ops=> [
           {
             :method=>"put", 
-            :url=>"/api/v2//people/23daf041-e18e-0133-7b6a-15461b913fab", 
+            :url=>"/api/v2/#{organization.uid}/people/23daf041-e18e-0133-7b6a-15461b913fab", 
             :params=>
             {
               :people=>{

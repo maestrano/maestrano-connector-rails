@@ -79,7 +79,7 @@ describe 'external application to connec' do
       :ops => [
         {
           :method => "post",
-          :url => "/api/v2//people/",
+          :url => "/api/v2/#{organization.uid}/people/",
           :params => {
             :people => mapped_entity
           }

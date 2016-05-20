@@ -31,6 +31,7 @@ module Maestrano::Connector::Rails
     #===================================
     validates :name, presence: true
     validates :tenant, presence: true
+    validates :uid, uniqueness: true
 
     #===================================
     # Serialized field
