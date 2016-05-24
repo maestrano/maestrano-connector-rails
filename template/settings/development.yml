@@ -1,9 +1,9 @@
 app_host: 'http://localhost:3001/'
 
 default:
-  environment: 'production'
   api_host: 'https://maestrano.com'
+  connec_host: 'https://api-connec.maestrano.com'
 
 maestrano-uat:
-  environment: 'uat'
   api_host: 'https://uat.maestrano.io'
+  connec_host: 'https://api-connec-uat.maestrano.io'
