@@ -1,5 +1,7 @@
 app_host: 'http://localhost:3001/'
 
+encryption_key: 'Not a secure key'
+
 default:
   environment: 'local'
   api_host: 'http://localhost:3000'

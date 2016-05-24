@@ -1,3 +1,5 @@
+encryption_key: <%= ENV['encryption_key'] %>
+
 # tenant config
 default:
   environment: 'production'

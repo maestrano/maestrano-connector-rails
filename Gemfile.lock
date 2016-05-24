@@ -38,6 +38,8 @@ GEM
       tzinfo (~> 1.1)
     addressable (2.4.0)
     arel (6.0.3)
+    attr_encrypted (3.0.1)
+      encryptor (~> 3.0.0)
     autoprefixer-rails (6.3.6)
       execjs
     bootstrap-sass (3.3.6)
@@ -45,13 +47,18 @@ GEM
       sass (>= 3.3.4)
     builder (3.2.2)
     concurrent-ruby (1.0.2)
+    config (1.2.0)
+      activesupport (>= 3.0)
+      deep_merge (~> 1.0, >= 1.0.1)
     connection_pool (2.2.0)
+    deep_merge (1.0.1)
     descendants_tracker (0.0.4)
       thread_safe (~> 0.3, >= 0.3.1)
     diff-lcs (1.2.5)
     docile (1.1.5)
     domain_name (0.5.20160310)
       unf (>= 0.0.5, < 1.0.0)
+    encryptor (3.0.0)
     erubis (2.7.0)
     execjs (2.6.0)
     factory_girl (4.7.0)
@@ -236,9 +243,11 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  attr_encrypted (~> 3.0.0)
   autoprefixer-rails
   bootstrap-sass
   bundler (~> 1.0)
+  config
   factory_girl_rails
   haml-rails
   hash_mapper
