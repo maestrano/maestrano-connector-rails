@@ -184,6 +184,11 @@ describe Maestrano::Connector::Rails::Entity do
           it { expect(subject.get_connec_entities(nil)).to eql([]) }
         end
 
+        describe 'when skip_connec' do
+          let(:opts) { {skip_connec: true} }
+          it { expect(subject.get_connec_entities(nil)).to eql([]) }
+        end
+
         describe 'with response' do
           context 'for a singleton resource' do
             before {
@@ -452,6 +457,31 @@ describe Maestrano::Connector::Rails::Entity do
       let(:connec_id2) { 'connec_id2' }
       let(:entity_with_idmap2) { {entity: entity2, idmap: idmap2} }
       let(:entities_with_idmaps) { [entity_with_idmap1, entity_with_idmap2] }
+
+      describe 'get_external_entities_wrapper' do
+        context 'when write only' do
+          before { allow(subject.class).to receive(:can_read_external?).and_return(false) }
+
+          it 'returns an empty array and does not call get_external_entities' do
+            expect(subject).to_not receive(:get_connec_entities)
+            expect(subject.get_external_entities_wrapper(nil)).to eql([])
+          end
+        end
+
+        context 'when skip external' do
+          let(:opts) { {skip_external: true} }
+
+          it 'returns an empty array and does not call get_external_entities' do
+            expect(subject).to_not receive(:get_connec_entities)
+            expect(subject.get_external_entities_wrapper(nil)).to eql([])
+          end
+        end
+
+        it 'calls get_external_entities' do
+          expect(subject).to receive(:get_external_entities).and_return([])
+          subject.get_external_entities_wrapper(nil)
+        end
+      end
 
       describe 'get_external_entities' do
         it { expect{ subject.get_external_entities(nil) }.to raise_error('Not implemented') }

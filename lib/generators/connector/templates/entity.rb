@@ -9,7 +9,6 @@ class Maestrano::Connector::Rails::Entity
 
   # Return an array of entities from the external app
   def get_external_entities(last_synchronization)
-    return [] unless self.class.can_read_external?
     Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, "Fetching #{Maestrano::Connector::Rails::External.external_name} #{self.class.external_entity_name.pluralize}")
     # TODO
     # This method should return only entities that have been updated since the last_synchronization

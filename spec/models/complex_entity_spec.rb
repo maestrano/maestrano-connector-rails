@@ -70,17 +70,17 @@ describe Maestrano::Connector::Rails::ComplexEntity do
         }
 
         it 'calls get_external_entities on each connec sub complex entities' do
-          expect_any_instance_of(Entities::SubEntities::ScE1).to receive(:get_external_entities).with(nil)
-          expect_any_instance_of(Entities::SubEntities::ScE2).to receive(:get_external_entities).with(nil)
-          subject.get_external_entities(nil)
+          expect_any_instance_of(Entities::SubEntities::ScE1).to receive(:get_external_entities_wrapper).with(nil)
+          expect_any_instance_of(Entities::SubEntities::ScE2).to receive(:get_external_entities_wrapper).with(nil)
+          subject.get_external_entities_wrapper(nil)
         end
 
         let(:arr1) { [{'name' => 'Water'}, {'name' => 'Sugar'}] }
         let(:arr2) { [{'price' => 92}, {'price' => 300}] }
         it 'returns an hash of the external_entities keyed by external_entity_name' do
-          allow_any_instance_of(Entities::SubEntities::ScE1).to receive(:get_external_entities).and_return(arr1)
-          allow_any_instance_of(Entities::SubEntities::ScE2).to receive(:get_external_entities).and_return(arr2)
-          expect(subject.get_external_entities(nil)).to eql({'sc_e1' => arr1, 'ScE2' => arr2})
+          allow_any_instance_of(Entities::SubEntities::ScE1).to receive(:get_external_entities_wrapper).and_return(arr1)
+          allow_any_instance_of(Entities::SubEntities::ScE2).to receive(:get_external_entities_wrapper).and_return(arr2)
+          expect(subject.get_external_entities_wrapper(nil)).to eql({'sc_e1' => arr1, 'ScE2' => arr2})
         end
       end
 

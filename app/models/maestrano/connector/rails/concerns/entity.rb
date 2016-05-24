@@ -155,7 +155,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
   # * $filter (see Connec! documentation)
   # * $orderby (see Connec! documentation)
   def get_connec_entities(last_synchronization)
-    return [] unless self.class.can_read_connec?
+    return [] if @opts[:skip_connec] || !self.class.can_read_connec?
 
     @connec_client.class.headers('CONNEC-EXTERNAL-IDS' => 'true')
 
@@ -221,8 +221,12 @@ module Maestrano::Connector::Rails::Concerns::Entity
   # ----------------------------------------------
   #                 External methods
   # ----------------------------------------------
+  def get_external_entities_wrapper(last_synchronization)
+    return [] if @opts[:skip_external] || !self.class.can_read_external?
+    get_external_entities(last_synchronization)
+  end
+  
   def get_external_entities(last_synchronization)
-    return [] unless self.class.can_read_external?
     Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, "Fetching #{Maestrano::Connector::Rails::External.external_name} #{self.class.external_entity_name.pluralize}")
     raise "Not implemented"
   end

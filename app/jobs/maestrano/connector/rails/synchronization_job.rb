@@ -32,7 +32,15 @@ module Maestrano::Connector::Rails
         connec_client = Maestrano::Connec::Client[organization.tenant].new(organization.uid)
         external_client = External.get_client(organization)
 
-        if opts[:only_entities]
+        # First synchronization should be from external to Connec! only to let the smart merging works
+        # We do a doube sync: only from external, then only from connec!
+        if last_synchronization.nil?
+          [{skip_connec: true}, {skip_external: true}].each do |opt|
+            organization.synchronized_entities.select{|k, v| v}.keys.each do |entity|
+              sync_entity(entity.to_s, organization, connec_client, external_client, last_synchronization, opts.merge(opt))
+            end
+          end
+        elsif opts[:only_entities]
           ConnectorLogger.log('info', organization, "Synchronization is partial and will synchronize only #{opts[:only_entities].join(' ')}")
           # The synchronization is marked as partial and will not be considered as the last-synchronization for the next sync
           current_synchronization.set_partial
@@ -57,7 +65,7 @@ module Maestrano::Connector::Rails
       entity_instance = "Entities::#{entity_name.titleize.split.join}".constantize.new(organization, connec_client, external_client, opts)
 
       entity_instance.before_sync(last_synchronization)
-      external_entities = entity_instance.get_external_entities(last_synchronization)
+      external_entities = entity_instance.get_external_entities_wrapper(last_synchronization)
       connec_entities = entity_instance.get_connec_entities(last_synchronization)
       mapped_entities = entity_instance.consolidate_and_map_data(connec_entities, external_entities)
       entity_instance.push_entities_to_external(mapped_entities[:connec_entities])
