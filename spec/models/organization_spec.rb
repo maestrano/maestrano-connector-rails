@@ -5,6 +5,7 @@ describe Maestrano::Connector::Rails::Organization do
   # Attributes
   it { should validate_presence_of(:name) }
   it { should validate_presence_of(:tenant) }
+  it { should validate_uniqueness_of(:uid) }
   it { should serialize(:synchronized_entities) }
 
   # Indexes
@@ -20,7 +21,7 @@ describe Maestrano::Connector::Rails::Organization do
     subject { Maestrano::Connector::Rails::Organization.new }
 
     it 'initializes the synchronized entities' do
-      entities_list = Maestrano::Connector::Rails::Entity.entities_list
+      entities_list = Maestrano::Connector::Rails::External.entities_list
       expect(subject.synchronized_entities).to include(entities_list.first.to_sym)
       expect(subject.synchronized_entities).to include(entities_list.last.to_sym)
     end

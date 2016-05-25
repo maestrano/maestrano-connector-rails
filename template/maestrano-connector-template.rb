@@ -31,19 +31,6 @@ add_source 'https://rubygems.org'
 
 if yes?("Use JRuby? [y/n]")
   run 'echo "ruby \'2.2.3\', :engine => \'jruby\', :engine_version => \'9.0.5.0\'" | cat - Gemfile > temp && mv temp Gemfile'
-  gem_group :production, :uat do
-    gem 'activerecord-jdbcpostgresql-adapter'
-    gem 'rails_12factor'
-  end
-  gem_group :test, :develpment do
-    gem 'activerecord-jdbcsqlite3-adapter'
-  end
-else
-  gem 'sqlite3'
-
-  gem_group :production, :uat do
-    gem 'rails_12factor'
-  end
 end
 
 gem 'haml-rails'
@@ -60,6 +47,7 @@ gem 'uglifier', '>= 1.3.0'
 
 gem 'maestrano-connector-rails'
 gem 'config'
+# gem 'attr_encrypted', '~> 3.0.0'
 
 # Background jobs
 gem 'sinatra', :require => nil
@@ -67,6 +55,16 @@ gem 'sidekiq'
 gem 'sidekiq-cron'
 gem 'slim'
 
+gem_group :production, :uat do
+  gem 'activerecord-jdbcpostgresql-adapter', :platforms => :jruby
+  gem 'pg', :platforms => :ruby
+  gem 'rails_12factor'
+end
+
+gem_group :test, :develpment do
+  gem 'activerecord-jdbcsqlite3-adapter', :platforms => :jruby
+  gem 'sqlite3', :platforms => :ruby
+end
 
 gem_group :test do
   gem 'simplecov'

@@ -1,6 +1,5 @@
 module Maestrano::Connector::Rails
   class Organization < ActiveRecord::Base
-
     # Enable Maestrano for this group
     maestrano_group_via :provider, :uid, :tenant do |group, maestrano|
       group.name = (maestrano.name.blank? ? "Default Group name" : maestrano.name)
@@ -13,10 +12,16 @@ module Maestrano::Connector::Rails
     def initialize
       super
       self.synchronized_entities = {}
-      Entity.entities_list.each do |entity|
+      External.entities_list.each do |entity|
         self.synchronized_entities[entity.to_sym] = true
       end
     end
+
+    #===================================
+    # Encryptions
+    #===================================
+    # attr_encrypted :oauth_token, key: ::Settings.encryption_key
+    # attr_encrypted :refresh_token, key: ::Settings.encryption_key
 
     #===================================
     # Associations
@@ -31,6 +36,7 @@ module Maestrano::Connector::Rails
     #===================================
     validates :name, presence: true
     validates :tenant, presence: true
+    validates :uid, uniqueness: true
 
     #===================================
     # Serialized field

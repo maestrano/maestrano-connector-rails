@@ -24,6 +24,7 @@
     # on http://api-sandbox.maestrano.io
     #
     config.api.host = Settings[tenant][:api_host]
+    config.connec.host = Settings[tenant][:connec_host]
     config.api.id = ENV[Settings[tenant][:api_id]]
     config.api.key = ENV[Settings[tenant][:api_key]]
 
@@ -129,7 +130,7 @@
     config.webhook.account.group_users_path = Settings[tenant][:webhook][:account][:group_users_path]
 
     config.webhook.connec.notifications_path = Settings[tenant][:webhook][:connec][:notifications_path]
-
+    config.webhook.connec.external_ids = true
     #
     # == Subscriptions
     # This is the list of entities (organizations,people,invoices etc.) for which you want to be

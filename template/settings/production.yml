@@ -1,11 +1,1 @@
 app_host: 'https://connector-xxx.herokuapp.com/'
-
-
-default:
-  environment: 'production'
-  api_host: 'https://maestrano.com'
-
-maestrano-uat:
-  environment: 'uat'
-  api_host: 'https://uat.maestrano.io'
-

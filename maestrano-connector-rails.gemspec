@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.require_paths = ["lib"]
   s.authors = ["Pierre Berard"]
-  s.date = "2016-05-11"
+  s.date = "2016-05-25"
   s.description = "Maestrano is the next generation marketplace for SME applications. See https://maestrano.com for details."
   s.email = "pierre.berard@maestrano.com"
   s.executables = ["rails"]
@@ -23,7 +23,6 @@ Gem::Specification.new do |s|
     ".rspec",
     "DEVELOPER.md",
     "Gemfile",
-    "Gemfile.lock",
     "LICENSE",
     "README.md",
     "Rakefile",
@@ -40,10 +39,12 @@ Gem::Specification.new do |s|
     "app/jobs/maestrano/connector/rails/synchronization_job.rb",
     "app/models/maestrano/connector/rails/complex_entity.rb",
     "app/models/maestrano/connector/rails/concerns/complex_entity.rb",
+    "app/models/maestrano/connector/rails/concerns/connec_helper.rb",
     "app/models/maestrano/connector/rails/concerns/connector_logger.rb",
     "app/models/maestrano/connector/rails/concerns/entity.rb",
     "app/models/maestrano/connector/rails/concerns/external.rb",
     "app/models/maestrano/connector/rails/concerns/sub_entity_base.rb",
+    "app/models/maestrano/connector/rails/connec_helper.rb",
     "app/models/maestrano/connector/rails/connector_logger.rb",
     "app/models/maestrano/connector/rails/entity.rb",
     "app/models/maestrano/connector/rails/external.rb",
@@ -63,6 +64,7 @@ Gem::Specification.new do |s|
     "db/migrate/20160205132857_add_sync_enabled_to_organizations.rb",
     "db/migrate/20160215103120_add_name_to_id_map.rb",
     "db/migrate/20160427112250_add_inactive_to_idmaps.rb",
+    "db/migrate/20160524112054_add_encryption_on_oauth_keys.rb",
     "lib/generators/connector/USAGE",
     "lib/generators/connector/complex_entity_generator.rb",
     "lib/generators/connector/install_generator.rb",
@@ -74,6 +76,7 @@ Gem::Specification.new do |s|
     "lib/generators/connector/templates/complex_entity_example/person.rb",
     "lib/generators/connector/templates/entity.rb",
     "lib/generators/connector/templates/example_entity.rb",
+    "lib/generators/connector/templates/example_entity_spec.rb",
     "lib/generators/connector/templates/external.rb",
     "lib/generators/connector/templates/home_controller.rb",
     "lib/generators/connector/templates/home_controller_spec.rb",
@@ -95,7 +98,7 @@ Gem::Specification.new do |s|
     "lib/maestrano/connector/rails.rb",
     "maestrano-connector-rails.gemspec",
     "maestrano.png",
-    "realse_notes.md",
+    "release_notes.md",
     "spec/controllers/connec_controller_spec.rb",
     "spec/controllers/group_users_controller_spec.rb",
     "spec/controllers/groups_controller_spec.rb",
@@ -143,9 +146,7 @@ Gem::Specification.new do |s|
     "spec/dummy/config/locales/en.yml",
     "spec/dummy/config/routes.rb",
     "spec/dummy/config/secrets.yml",
-    "spec/dummy/db/development.sqlite3",
     "spec/dummy/db/schema.rb",
-    "spec/dummy/db/test.sqlite3",
     "spec/dummy/lib/assets/.keep",
     "spec/dummy/log/.keep",
     "spec/dummy/public/404.html",
@@ -153,10 +154,15 @@ Gem::Specification.new do |s|
     "spec/dummy/public/500.html",
     "spec/dummy/public/favicon.ico",
     "spec/factories.rb",
+    "spec/integration/connec_to_external_spec.rb",
+    "spec/integration/external_to_connec_spec.rb",
+    "spec/integration/integration_complex_spec.rb",
+    "spec/integration/singleton_spec.rb",
     "spec/jobs/all_synchronizations_job_spec.rb",
     "spec/jobs/push_to_connec_job_spec.rb",
     "spec/jobs/synchronization_job_spec.rb",
     "spec/models/complex_entity_spec.rb",
+    "spec/models/connec_helper_spec.rb",
     "spec/models/connector_logger_spec.rb",
     "spec/models/entity_spec.rb",
     "spec/models/external_spec.rb",
@@ -199,6 +205,8 @@ Gem::Specification.new do |s|
       s.add_runtime_dependency(%q<haml-rails>, [">= 0"])
       s.add_runtime_dependency(%q<bootstrap-sass>, [">= 0"])
       s.add_runtime_dependency(%q<autoprefixer-rails>, [">= 0"])
+      s.add_runtime_dependency(%q<attr_encrypted>, ["~> 3.0.0"])
+      s.add_runtime_dependency(%q<config>, [">= 0"])
       s.add_development_dependency(%q<shoulda>, [">= 0"])
       s.add_development_dependency(%q<rdoc>, ["~> 3.12"])
       s.add_development_dependency(%q<bundler>, ["~> 1.0"])
@@ -215,6 +223,8 @@ Gem::Specification.new do |s|
       s.add_dependency(%q<haml-rails>, [">= 0"])
       s.add_dependency(%q<bootstrap-sass>, [">= 0"])
       s.add_dependency(%q<autoprefixer-rails>, [">= 0"])
+      s.add_dependency(%q<attr_encrypted>, ["~> 3.0.0"])
+      s.add_dependency(%q<config>, [">= 0"])
       s.add_dependency(%q<shoulda>, [">= 0"])
       s.add_dependency(%q<rdoc>, ["~> 3.12"])
       s.add_dependency(%q<bundler>, ["~> 1.0"])
@@ -232,6 +242,8 @@ Gem::Specification.new do |s|
     s.add_dependency(%q<haml-rails>, [">= 0"])
     s.add_dependency(%q<bootstrap-sass>, [">= 0"])
     s.add_dependency(%q<autoprefixer-rails>, [">= 0"])
+    s.add_dependency(%q<attr_encrypted>, ["~> 3.0.0"])
+    s.add_dependency(%q<config>, [">= 0"])
     s.add_dependency(%q<shoulda>, [">= 0"])
     s.add_dependency(%q<rdoc>, ["~> 3.12"])
     s.add_dependency(%q<bundler>, ["~> 1.0"])
