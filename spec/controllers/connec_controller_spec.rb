@@ -31,10 +31,19 @@ describe Maestrano::ConnecController, type: :controller do
         expect(response.status).to eq(200)
       end
 
+      context 'with an unexpected error' do
+        let(:notifications) { {'people' => [entity]} }
+        it 'logs a warning' do
+          allow(controller).to receive(:find_entity_class).and_raise('Bruno c\'est peter')
+          expect(Rails.logger).to receive(:warn)
+          subject
+        end
+      end
+
       context "with an unknown entity" do
         let(:notifications) { {'people' => [entity]} }
         before {
-          allow(Maestrano::Connector::Rails::Entity).to receive(:entities_list).and_return(%w())
+          allow(Maestrano::Connector::Rails::External).to receive(:entities_list).and_return(%w())
         }
 
         it 'logs a warning' do
@@ -47,7 +56,7 @@ describe Maestrano::ConnecController, type: :controller do
         let(:notifications) { {'leads' => [entity]} }
 
         before {
-          allow(Maestrano::Connector::Rails::Entity).to receive(:entities_list).and_return(%w(contact_and_lead))
+          allow(Maestrano::Connector::Rails::External).to receive(:entities_list).and_return(%w(contact_and_lead))
           class Entities::ContactAndLead < Maestrano::Connector::Rails::ComplexEntity
             def self.connec_entities_names
               %w(Lead)
@@ -71,11 +80,15 @@ describe Maestrano::ConnecController, type: :controller do
 
           it 'process the data and push them' do
             expect_any_instance_of(Entities::ContactAndLead).to receive(:before_sync)
-            expect_any_instance_of(Entities::ContactAndLead).to receive(:filter_connec_entities).and_return({"Lead"=>[entity]})
-            expect_any_instance_of(Entities::ContactAndLead).to receive(:consolidate_and_map_data).with({"Lead"=>[entity]}, {}, organization, {}).and_return({})
+            expect_any_instance_of(Entities::ContactAndLead).to receive(:filter_connec_entities).with({"Lead"=>[entity]}).and_return({"Lead"=>[entity]})
+            expect_any_instance_of(Entities::ContactAndLead).to receive(:consolidate_and_map_data).with({"Lead"=>[entity]}, {}).and_return({})
             expect_any_instance_of(Entities::ContactAndLead).to receive(:push_entities_to_external)
             expect_any_instance_of(Entities::ContactAndLead).to receive(:after_sync)
+            begin
             subject
+          rescue => e
+            puts e
+          end
           end
         end
       end
@@ -84,7 +97,7 @@ describe Maestrano::ConnecController, type: :controller do
         let(:notifications) { {'people' => [entity]} }
 
         before {
-          allow(Maestrano::Connector::Rails::Entity).to receive(:entities_list).and_return(%w(person))
+          allow(Maestrano::Connector::Rails::External).to receive(:entities_list).and_return(%w(person))
           class Entities::Person < Maestrano::Connector::Rails::Entity
             def self.connec_entity_name
               'People'
@@ -140,7 +153,7 @@ describe Maestrano::ConnecController, type: :controller do
             it 'process the data and push them' do
               expect_any_instance_of(Entities::Person).to receive(:before_sync)
               expect_any_instance_of(Entities::Person).to receive(:filter_connec_entities).and_return([entity])
-              expect_any_instance_of(Entities::Person).to receive(:consolidate_and_map_data).with([entity], [], organization, {}).and_return({})
+              expect_any_instance_of(Entities::Person).to receive(:consolidate_and_map_data).with([entity], []).and_return({})
               expect_any_instance_of(Entities::Person).to receive(:push_entities_to_external)
               expect_any_instance_of(Entities::Person).to receive(:after_sync)
               subject

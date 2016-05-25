@@ -68,54 +68,16 @@ describe Maestrano::Connector::Rails::SubEntityBase do
       end
     end
 
-    describe 'create_idmap_from_external_entity' do
-      let(:organization) { create(:organization) }
-      let(:bool) { true }
-      before {
-        allow(Maestrano::Connector::Rails::SubEntityBase).to receive(:external?).and_return(bool)
-        allow(Maestrano::Connector::Rails::SubEntityBase).to receive(:entity_name).and_return('Name')
-        allow(Maestrano::Connector::Rails::SubEntityBase).to receive(:id_from_external_entity_hash).and_return('id')
-        allow(Maestrano::Connector::Rails::SubEntityBase).to receive(:object_name_from_external_entity_hash).and_return('object name')
-      }
-
-      context 'when external' do
-        it {
-          expect(Maestrano::Connector::Rails::IdMap).to receive(:create).with({:external_entity=>"name", :external_id=>"id", :name=>"object name", :connec_entity=>"lala", :organization_id=>1})
-          subject.create_idmap_from_external_entity({}, 'lala', organization)
-        }
-      end
-      context 'when not external' do
-        let(:bool) { false }
-        it { expect{ subject.create_idmap_from_external_entity({}, '', organization) }.to raise_error('Forbidden call: cannot call create_idmap_from_external_entity for a connec entity') }
-      end
-    end
-
-    describe 'create_idmap_from_connec_entity' do
-      let(:organization) { create(:organization) }
-      let(:bool) { true }
-      before {
-        allow(Maestrano::Connector::Rails::SubEntityBase).to receive(:external?).and_return(bool)
-        allow(Maestrano::Connector::Rails::SubEntityBase).to receive(:entity_name).and_return('Name')
-        allow(Maestrano::Connector::Rails::SubEntityBase).to receive(:object_name_from_connec_entity_hash).and_return('object name')
-      }
-
-      context 'when external' do
-        it { expect{ subject.create_idmap_from_connec_entity({}, '', organization) }.to raise_error('Forbidden call: cannot call create_idmap_from_connec_entity for an external entity') }
-      end
-      context 'when not external' do
-        let(:bool) { false }
-        it {
-          expect(Maestrano::Connector::Rails::IdMap).to receive(:create).with({:connec_entity=>"name", :connec_id=>"lili", :name=>"object name", :external_entity=>"lala", :organization_id=>1})
-          subject.create_idmap_from_connec_entity({'id' => 'lili'}, 'lala', organization)
-        }
-      end
-    end
-
     it { expect(subject.mapper_classes).to eql({}) }
   end
 
   describe 'instance methods' do
-    subject { Maestrano::Connector::Rails::SubEntityBase.new }
+    let!(:organization) { create(:organization, uid: 'cld-123') }
+    let!(:connec_client) { Maestrano::Connec::Client[organization.tenant].new(organization.uid) }
+    let!(:external_client) { Object.new }
+    let(:opts) { {} }
+    subject { Maestrano::Connector::Rails::Entity.new(organization, connec_client, external_client, opts) }
+    subject { Maestrano::Connector::Rails::SubEntityBase.new(organization, connec_client, external_client, opts) }
 
     describe 'map_to' do
       before {
@@ -125,30 +87,37 @@ describe Maestrano::Connector::Rails::SubEntityBase do
         allow(subject.class).to receive(:mapper_classes).and_return('Name' => AMapper)
       }
 
+      describe 'failure' do
+        it { expect{ subject.map_to('Not an entity', {}) }.to raise_error(RuntimeError) }
+      end
+
       context 'when external' do
         before {
           allow(subject.class).to receive(:external?).and_return(true)
+          allow(subject.class).to receive(:id_from_external_entity_hash).and_return('this id')
         }
 
         it 'calls the mapper denormalize' do
           expect(AMapper).to receive(:denormalize).and_return({})
-          subject.map_to('Name', {}, nil)
+          subject.map_to('Name', {})
         end
 
-        context 'with references' do
-          let!(:organization) { create(:organization) }
-          let!(:idmap) { create(:idmap, organization: organization) }
-          before {
-            clazz = Maestrano::Connector::Rails::Entity
-            allow(clazz).to receive(:find_idmap).and_return(idmap)
-            allow(subject.class).to receive(:references).and_return({'Name' => [{reference_class: clazz, connec_field: 'organization_id', external_field: 'contact_id'}]})
-          }
+        it 'calls for reference folding' do
+          refs = %w(organization_id person_id)
+          allow(subject.class).to receive(:references).and_return({'Name' => refs})
+          expect(Maestrano::Connector::Rails::ConnecHelper).to receive(:fold_references).with({id: 'this id'}, refs, organization)
+          subject.map_to('Name', {})
+        end
 
-          it 'returns the mapped entity with its references' do
-            expect(subject.map_to('Name', {'contact_id' => idmap.external_id}, organization)).to eql({organization_id: idmap.connec_id})
+        context 'when no refs' do
+          it 'calls for reference folding' do
+            allow(subject.class).to receive(:references).and_return({})
+            expect(Maestrano::Connector::Rails::ConnecHelper).to receive(:fold_references).with({id: 'this id'}, [], organization)
+            subject.map_to('Name', {})
           end
         end
       end
+
       context 'when not external' do
         before {
           allow(subject.class).to receive(:external?).and_return(false)
@@ -156,21 +125,11 @@ describe Maestrano::Connector::Rails::SubEntityBase do
 
         it 'calls the mapper normalize' do
           expect(AMapper).to receive(:normalize).and_return({})
-          subject.map_to('Name', {}, nil)
+          subject.map_to('Name', {})
         end
 
-        context 'with references' do
-          let!(:organization) { create(:organization) }
-          let!(:idmap) { create(:idmap, organization: organization) }
-          before {
-            clazz = Maestrano::Connector::Rails::Entity
-            allow(clazz).to receive(:find_idmap).and_return(idmap)
-            allow(subject.class).to receive(:references).and_return({'Name' => [{reference_class: clazz, connec_field: 'organization_id', external_field: 'contact_id'}]})
-          }
-
-          it 'returns the mapped entity with its references' do
-            expect(subject.map_to('Name', {'organization_id' => idmap.connec_id}, organization)).to eql({contact_id: idmap.external_id})
-          end
+        it 'preserve the __connec_id' do
+          expect(subject.map_to('Name', {__connec_id: 'connec id'})).to eql({__connec_id: 'connec id'}.with_indifferent_access)
         end
       end
     end
