@@ -176,6 +176,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
     uri = "/#{self.class.normalized_connec_entity_name}?#{query_params.to_query}"
     response_hash = fetch_connec(uri, 0)
     entities = response_hash["#{self.class.normalized_connec_entity_name}"]
+    entities = [entities] if self.class.singleton?
 
     # Fetch subsequent pages
     while response_hash['pagination'] && response_hash['pagination']['next']

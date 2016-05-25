@@ -43,6 +43,7 @@ A major refactoring as lead to some breaking changes:
 `not_modified_since_last_push_to_connec?`
 `is_external_more_recent?`
 `solve_conflict`
+* Organization.uid is now enforced as an uniq attributes
 
 * The following methods have been removed
 `map_to_external_with_idmap`
