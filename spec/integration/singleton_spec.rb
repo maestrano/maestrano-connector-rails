@@ -136,9 +136,9 @@ describe 'singleton workflow' do
         end
 
         it 'does the mapping correctly' do
-          idmap = Entities::SingletonIntegration.create_idmap(organization_id: organization.id, external_id: ext_comp_id)
+          idmap = Entities::SingletonIntegration.create_idmap(organization_id: organization.id, external_id: ext_comp_id, connec_id: 'some connec id')
           allow(Entities::SingletonIntegration).to receive(:create_idmap).and_return(idmap)
-          expect_any_instance_of(Entities::SingletonIntegration).to receive(:push_entities_to_external).with([{entity: {name: 'My awesome company', __connec_id: 'some connec id'}, idmap: idmap}])
+          expect_any_instance_of(Entities::SingletonIntegration).to receive(:push_entities_to_external).with([{entity: {name: 'My awesome company'}, idmap: idmap}])
           subject
         end
 
@@ -177,7 +177,7 @@ describe 'singleton workflow' do
 
   describe 'when idmap exists' do
     describe 'when received both' do
-      let(:company) { [company_base.merge('id' => [{'id' => ext_comp_id, 'provider' => provider, 'realm' => oauth_uid}])] }
+      let(:company) { [company_base.merge('id' => [{'id' => ext_comp_id, 'provider' => provider, 'realm' => oauth_uid}, {'id' => 'connec-id', 'provider' => 'connec', 'realm' => 'some-realm'}])] }
       let(:ext_company) { [ext_company_base] }
       let!(:idmap) { Entities::SingletonIntegration.create_idmap(organization_id: organization.id, external_id: ext_comp_id) }
 
@@ -236,7 +236,7 @@ describe 'singleton workflow' do
   end
 
   describe 'when received only connec one' do
-    let(:company) { [company_base.merge('id' => [{'id' => ext_comp_id, 'provider' => provider, 'realm' => oauth_uid}])] }
+    let(:company) { [company_base.merge('id' => [{'id' => ext_comp_id, 'provider' => provider, 'realm' => oauth_uid}, {'id' => 'connec-id', 'provider' => 'connec', 'realm' => 'some-realm'}])] }
     let(:ext_company) { [] }
     let!(:idmap) { Entities::SingletonIntegration.create_idmap(organization_id: organization.id, external_id: ext_comp_id) }
 

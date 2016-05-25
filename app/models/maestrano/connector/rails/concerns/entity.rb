@@ -256,7 +256,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
     begin
       # Create and return id to send to connec!
       if idmap.external_id.blank?
-        connec_id = mapped_connec_entity.delete(:__connec_id)
+        connec_id = mapped_connec_entity_with_idmap[:idmap].connec_id
         external_id = create_external_entity(mapped_connec_entity, external_entity_name)
         idmap.update(external_id: external_id, last_push_to_external: Time.now, message: nil)
         return {connec_id: connec_id, external_id: external_id, idmap: idmap}
@@ -268,7 +268,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
 
         # Return the id to send it to connec! if the first push of a singleton
         if self.class.singleton? && idmap.last_push_to_external.nil?
-          connec_id = mapped_connec_entity.delete(:__connec_id)
+          connec_id = mapped_connec_entity_with_idmap[:idmap].connec_id
           idmap.update(last_push_to_external: Time.now, message: nil)
           return {connec_id: connec_id, external_id: idmap.external_id}
         else
@@ -320,13 +320,14 @@ module Maestrano::Connector::Rails::Concerns::Entity
     connec_entities.map{|entity|
       entity = Maestrano::Connector::Rails::ConnecHelper.unfold_references(entity, references, @organization)
       next nil unless entity
+      connec_id = entity.delete(:__connec_id)
 
       if entity['id'].blank?
-        idmap = self.class.create_idmap(organization_id: @organization.id, name: self.class.object_name_from_connec_entity_hash(entity), external_entity: external_entity_name.downcase)
+        idmap = self.class.create_idmap(organization_id: @organization.id, name: self.class.object_name_from_connec_entity_hash(entity), external_entity: external_entity_name.downcase, connec_id: connec_id)
         next map_connec_entity_with_idmap(entity, external_entity_name, idmap)
       end
 
-      idmap = self.class.find_or_create_idmap(external_id: entity['id'], organization_id: @organization.id, external_entity: external_entity_name.downcase)
+      idmap = self.class.find_or_create_idmap(external_id: entity['id'], organization_id: @organization.id, external_entity: external_entity_name.downcase, connec_id: connec_id)
       idmap.update(name: self.class.object_name_from_connec_entity_hash(entity))
 
       next nil if idmap.external_inactive || !idmap.to_external || (!@opts[:full_sync] && not_modified_since_last_push_to_external?(idmap, entity))
@@ -378,7 +379,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
       return {connec_entities: [], external_entities: [{entity: map_to_connec(external_entities.first), idmap: idmap}]}
     else
       entity = Maestrano::Connector::Rails::ConnecHelper.unfold_references(connec_entities.first, self.class.references, @organization)
-      idmap.update(name: self.class.object_name_from_connec_entity_hash(entity))
+      idmap.update(name: self.class.object_name_from_connec_entity_hash(entity), connec_id: entity.delete(:__connec_id))
       idmap.update(external_id: self.class.id_from_external_entity_hash(external_entities.first)) unless external_entities.empty?
       return {connec_entities: [{entity: map_to_external(entity), idmap: idmap}], external_entities: []}
     end
@@ -400,7 +401,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
   #             Internal helper methods
   # ----------------------------------------------
   private
-    # array_with_idmap must be an array of hash with a key idmap
+    # array_with_idmap must be an array of hashes with a key idmap
     # proc is a lambda to create a batch_op from an element of the array
     def batch_calls(array_with_idmap, proc, connec_entity_name, id_update_only=false)
       request_per_call = @opts[:request_per_batch_call] || 100
@@ -424,8 +425,10 @@ module Maestrano::Connector::Rails::Concerns::Entity
 
         # Parse batch response
         response['results'].each_with_index do |result, index|
-          if [200, 201].include?(result['status'])
-            batch_entities[index][:idmap].update(last_push_to_connec: Time.now, message: nil) unless id_update_only
+          if result['status'] == 200
+            batch_entities[index][:idmap].update(last_push_to_connec: Time.now, message: nil) unless id_update_only # id_update_only only apply for 200 as it's doing PUTs
+          elsif result['status'] == 201
+            batch_entities[index][:idmap].update(connec_id: result['body'][self.class.normalize_connec_entity_name(connec_entity_name)]['id'], last_push_to_connec: Time.now, message: nil)
           else
             Maestrano::Connector::Rails::ConnectorLogger.log('error', @organization, "Error while pushing to Connec!: #{result['body']}")
             batch_entities[index][:idmap].update(message: result['body'].to_s.truncate(255))

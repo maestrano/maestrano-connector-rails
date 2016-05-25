@@ -35,6 +35,7 @@ module Maestrano::Connector::Rails
         # First synchronization should be from external to Connec! only to let the smart merging works
         # We do a doube sync: only from external, then only from connec!
         if last_synchronization.nil?
+          ConnectorLogger.log('info', organization, "First synchronization ever. Doing two half syncs to allow smart merging to work its magic.")
           [{skip_connec: true}, {skip_external: true}].each do |opt|
             organization.synchronized_entities.select{|k, v| v}.keys.each do |entity|
               sync_entity(entity.to_s, organization, connec_client, external_client, last_synchronization, opts.merge(opt))

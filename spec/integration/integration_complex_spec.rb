@@ -130,12 +130,11 @@ describe 'complex entities workflow' do
     {
       ref_id: connec_org1_ext_ref_id,
       name: connec_org1_name,
-      __connec_id: connec_org1_id
     }
   }
   let(:connec_org2) {
     {
-      'id' => [{'provider' => provider, 'id' => connec_org2_ext_id, 'realm' => oauth_uid}],
+      'id' => [{'provider' => provider, 'id' => connec_org2_ext_id, 'realm' => oauth_uid}, {'id' => connec_org2_id, 'provider' => 'connec', 'realm' => organization.uid}],
       'name' => connec_org2_name,
       'is_supplier' => false,
       'ref_id' => [{'provider' => provider, 'id' => connec_org2_ext_ref_id, 'realm' => oauth_uid}]

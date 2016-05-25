@@ -452,7 +452,7 @@ describe Maestrano::Connector::Rails::Entity do
       let(:idmap1) { create(:idmap, organization: organization) }
       let(:idmap2) { create(:idmap, organization: organization, external_id: nil, external_entity: nil, last_push_to_external: nil) }
       let(:entity1) { {name: 'John'} }
-      let(:entity2) { {name: 'Jane', __connec_id: connec_id2} }
+      let(:entity2) { {name: 'Jane'} }
       let(:entity_with_idmap1) { {entity: entity1, idmap: idmap1} }
       let(:connec_id2) { 'connec_id2' }
       let(:entity_with_idmap2) { {entity: entity2, idmap: idmap2} }
@@ -516,7 +516,7 @@ describe Maestrano::Connector::Rails::Entity do
 
           context 'when ids to send to connec' do
             let(:batch_param) {
-              {:sequential=>true, :ops=>[{:method=>"put", :url=>"/api/v2/cld-123/people/#{connec_id2}", :params=>{:people=>{:id=>"id", :provider=>organization.oauth_provider, :realm=>organization.oauth_uid}}}]}
+              {:sequential=>true, :ops=>[{:method=>"put", :url=>"/api/v2/cld-123/people/#{idmap2.connec_id}", :params=>{:people=>{:id=>"id", :provider=>organization.oauth_provider, :realm=>organization.oauth_uid}}}]}
             }
 
             it 'does a batch call on connec' do
@@ -576,7 +576,7 @@ describe Maestrano::Connector::Rails::Entity do
 
           it 'returns an hash with the external_id' do
             allow(subject).to receive(:create_external_entity).and_return('999111')
-            expect(subject.push_entity_to_external(entity_with_idmap2, external_name)).to eql({connec_id: connec_id2, external_id: '999111', idmap: idmap2})
+            expect(subject.push_entity_to_external(entity_with_idmap2, external_name)).to eql({connec_id: idmap2.connec_id, external_id: '999111', idmap: idmap2})
           end
         end
 
@@ -701,7 +701,7 @@ describe Maestrano::Connector::Rails::Entity do
               end
 
               it 'map with the unfolded references' do
-                expect(subject).to receive(:map_to_external).with('id' => nil, 'updated_at' => updated, __connec_id: 'lala')
+                expect(subject).to receive(:map_to_external).with('id' => nil, 'updated_at' => updated)
                 subject.consolidate_and_map_singleton([connec_entity], [{}])
               end
             end
@@ -723,6 +723,8 @@ describe Maestrano::Connector::Rails::Entity do
         let(:connec_human_name) { 'connec human name' }
         let(:id1) { 'external-unfolded-id' }
         let(:id2) { nil }
+        let(:connec_id1) { 'connec-id-1' }
+        let(:connec_id2) { 'connec-id-2' }
         let(:entity1) { {'id' => id1, 'name' => 'John', 'updated_at' => date} }
         let(:entity2) { {'id' => id2, 'name' => 'Jane', 'updated_at' => date} }
         let(:entity_without_refs) { {} }
@@ -730,7 +732,7 @@ describe Maestrano::Connector::Rails::Entity do
         before {
           allow(subject.class).to receive(:object_name_from_connec_entity_hash).and_return(connec_human_name)
           allow(subject).to receive(:map_to_external).and_return({mapped: 'entity'})
-          allow(Maestrano::Connector::Rails::ConnecHelper).to receive(:unfold_references).and_return(entity1, entity2, nil)
+          allow(Maestrano::Connector::Rails::ConnecHelper).to receive(:unfold_references).and_return(entity1.merge(__connec_id: connec_id1), entity2.merge(__connec_id: connec_id2), nil)
         }
 
         context 'when idmaps do not exist' do
@@ -744,7 +746,7 @@ describe Maestrano::Connector::Rails::Entity do
 
         context 'when idmap exists' do
           let(:entities) { [entity1] }
-          let!(:idmap1) { create(:idmap, organization: organization, connec_entity: connec_name.downcase, external_entity: external_name.downcase, external_id: id1) }
+          let!(:idmap1) { create(:idmap, organization: organization, connec_entity: connec_name.downcase, external_entity: external_name.downcase, external_id: id1, connec_id: connec_id1) }
 
           it 'does not create an idmap' do
             expect{

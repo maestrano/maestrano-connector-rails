@@ -177,6 +177,7 @@ describe Maestrano::Connector::Rails::ComplexEntity do
 
         describe 'consolidate_and_map_connec_entities' do
           let(:id) { 'external-unfolded-id' }
+          let(:connec_id) { 'connec-id' }
           let(:entity) { {'id' => id, 'name' => 'John', 'updated_at' => date} }
           let(:modeled_connec_entities) { {connec_name => {external_name => [entity]}} }
           let(:modeled_external_entities) { {} }
@@ -187,7 +188,7 @@ describe Maestrano::Connector::Rails::ComplexEntity do
             allow(Entities::SubEntities::ScE1).to receive(:entity_name).and_return(connec_name)
             allow_any_instance_of(Entities::SubEntities::ScE1).to receive(:map_to).with(external_name, entity).and_return(mapped_entity)
             allow(Entities::SubEntities::ScE1).to receive(:object_name_from_connec_entity_hash).and_return(human_name)
-            allow(Maestrano::Connector::Rails::ConnecHelper).to receive(:unfold_references).and_return(entity)
+            allow(Maestrano::Connector::Rails::ConnecHelper).to receive(:unfold_references).and_return(entity.merge(__connec_id: connec_id))
           }
 
           context 'when idmaps do not exist' do
@@ -200,7 +201,7 @@ describe Maestrano::Connector::Rails::ComplexEntity do
           end
 
           context 'when idmap exists' do
-            let!(:idmap1) { create(:idmap, organization: organization, connec_entity: connec_name.downcase, external_entity: external_name.downcase, external_id: id) }
+            let!(:idmap1) { create(:idmap, organization: organization, connec_entity: connec_name.downcase, external_entity: external_name.downcase, external_id: id, connec_id: connec_id) }
 
             it 'does not create an idmap' do
               expect{

@@ -86,7 +86,6 @@ describe 'connec to the external application' do
 
     let(:mapped_entity) {
       {
-        __connec_id: "23daf041-e18e-0133-7b6a-15461b913fab",
         AccountId: ext_org_id,
         FirstName: 'John'
       }
@@ -122,10 +121,11 @@ describe 'connec to the external application' do
       expect(idmap.external_entity).to eql('contact')
       expect(idmap.message).to be_nil
       expect(idmap.external_id).to eql(ext_contact_id)
+      expect(idmap.connec_id).to eql("23daf041-e18e-0133-7b6a-15461b913fab")
     end
 
     it 'does the mapping correctly' do
-      idmap = Entities::ConnecToExternal.create_idmap(organization_id: organization.id, external_id: ext_contact_id)
+      idmap = Entities::ConnecToExternal.create_idmap(organization_id: organization.id, external_id: ext_contact_id, connec_id: "23daf041-e18e-0133-7b6a-15461b913fab")
       allow(Entities::ConnecToExternal).to receive(:create_idmap).and_return(idmap)
       expect_any_instance_of(Entities::ConnecToExternal).to receive(:push_entities_to_external).with([{entity: mapped_entity, idmap: idmap}])
       subject
@@ -142,7 +142,7 @@ describe 'connec to the external application' do
       allow_any_instance_of(Entities::ConnecToExternal).to receive(:update_external_entity).and_return(nil)
     }
     let(:person) { person1.merge('first_name' => 'Jane', 'id' => person1['id'] << {'id' => ext_contact_id, 'provider' => provider, 'realm' => oauth_uid}) }
-    let!(:idmap) { Entities::ConnecToExternal.create_idmap(organization_id: organization.id, external_id: ext_contact_id) }
+    let!(:idmap) { Entities::ConnecToExternal.create_idmap(organization_id: organization.id, external_id: ext_contact_id, connec_id: "23daf041-e18e-0133-7b6a-15461b913fab") }
 
     let(:mapped_entity) {
       {
