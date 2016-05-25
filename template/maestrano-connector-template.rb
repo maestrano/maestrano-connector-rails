@@ -47,7 +47,7 @@ gem 'uglifier', '>= 1.3.0'
 
 gem 'maestrano-connector-rails'
 gem 'config'
-gem 'attr_encrypted', '~> 3.0.0'
+# gem 'attr_encrypted', '~> 3.0.0'
 
 # Background jobs
 gem 'sinatra', :require => nil

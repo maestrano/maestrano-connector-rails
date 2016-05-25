@@ -1,4 +1,4 @@
-encryption_key: <%= ENV['encryption_key'] %>
+# encryption_key: <%= ENV['encryption_key'] %>
 
 # tenant config
 default:
