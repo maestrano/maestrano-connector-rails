@@ -12,4 +12,8 @@ describe Maestrano::Connector::Rails::External do
 
     it { expect(subject.get_client(organization)).to eql(nil) }
   end
+
+  describe 'entities_list' do
+    it { expect(subject.entities_list).to eql(%w(entity1 entity2))}
+  end
 end

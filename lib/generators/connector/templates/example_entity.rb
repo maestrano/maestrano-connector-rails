@@ -29,7 +29,7 @@
 # class ExampleEntityMapper
 #   extend HashMapper
 
-#   map from('/title'), to('/Salutation')
-#   map from('/first_name'), to('/FirstName')
+#   map from('title'), to('Salutation')
+#   map from('first_name'), to('FirstName')
 #   map from('address_work/billing2/city'), to('City')
 # end

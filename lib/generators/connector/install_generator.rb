@@ -31,6 +31,7 @@ module Connector
 
       def copy_example_entity
         copy_file 'example_entity.rb', 'app/models/entities/example_entitiy.rb'
+        copy_file 'example_entity_spec.rb', 'spec/models/entities/example_entitiy.rb'
       end
 
       def copy_controllers_and_views

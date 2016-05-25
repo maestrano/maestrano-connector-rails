@@ -8,6 +8,9 @@ FactoryGirl.define do
   factory :organization, class: Maestrano::Connector::Rails::Organization do
     name "My company"
     tenant "default"
+    sequence(:uid) { |n| "cld-11#{n}" }
+    oauth_uid 'sfuiy765'
+    oauth_provider 'this_app'
   end
 
   factory :user_organization_rel, class: Maestrano::Connector::Rails::UserOrganizationRel do

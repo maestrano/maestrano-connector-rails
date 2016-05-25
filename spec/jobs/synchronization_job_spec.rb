@@ -69,29 +69,41 @@ describe Maestrano::Connector::Rails::SynchronizationJob do
 
       it { performes }
 
-      it 'calls sync entity on all the organization synchronized entities set to true' do
-        organization.synchronized_entities[organization.synchronized_entities.keys.first] = false
-        expect_any_instance_of(Maestrano::Connector::Rails::SynchronizationJob).to receive(:sync_entity).exactly(organization.synchronized_entities.count - 1).times
-
-        subject
+      context 'first sync' do
+        it 'does two half syncs' do
+          expect_any_instance_of(Maestrano::Connector::Rails::SynchronizationJob).to receive(:sync_entity).exactly(2 * organization.synchronized_entities.count).times
+          subject
+        end
       end
 
-      context 'with options' do
-        context 'with only_entities' do
-          let(:opts) { {only_entities: %w(people price)} }
+      context 'subsequent sync' do
+        let!(:old_sync) { create(:synchronization, partial: false, status: 'SUCCESS', organization: organization) }
 
-          it 'calls sync entity on the specified entities' do
-            expect_any_instance_of(Maestrano::Connector::Rails::SynchronizationJob).to receive(:sync_entity).twice
+        it 'calls sync entity on all the organization synchronized entities set to true' do
+          organization.synchronized_entities[organization.synchronized_entities.keys.first] = false
+          expect_any_instance_of(Maestrano::Connector::Rails::SynchronizationJob).to receive(:sync_entity).exactly(organization.synchronized_entities.count - 1).times
 
-            subject
-          end
+          subject
+        end
 
-          it 'set the current syncrhonization as partial' do
-            subject
-            expect(Maestrano::Connector::Rails::Synchronization.last.partial).to be(true)
+        context 'with options' do
+          context 'with only_entities' do
+            let(:opts) { {only_entities: %w(people price)} }
+
+            it 'calls sync entity on the specified entities' do
+              expect_any_instance_of(Maestrano::Connector::Rails::SynchronizationJob).to receive(:sync_entity).twice
+
+              subject
+            end
+
+            it 'set the current syncrhonization as partial' do
+              subject
+              expect(Maestrano::Connector::Rails::Synchronization.last.partial).to be(true)
+            end
           end
         end
       end
+
     end
   end
 
@@ -107,7 +119,7 @@ describe Maestrano::Connector::Rails::SynchronizationJob do
       it 'calls the seven methods' do
         expect_any_instance_of(Entities::Person).to receive(:before_sync)
         expect_any_instance_of(Entities::Person).to receive(:get_connec_entities)
-        expect_any_instance_of(Entities::Person).to receive(:get_external_entities)
+        expect_any_instance_of(Entities::Person).to receive(:get_external_entities_wrapper)
         expect_any_instance_of(Entities::Person).to receive(:consolidate_and_map_data).and_return({})
         expect_any_instance_of(Entities::Person).to receive(:push_entities_to_external)
         expect_any_instance_of(Entities::Person).to receive(:push_entities_to_connec)
@@ -125,7 +137,7 @@ describe Maestrano::Connector::Rails::SynchronizationJob do
       it 'calls the seven methods' do
         expect_any_instance_of(Entities::SomeStuff).to receive(:before_sync)
         expect_any_instance_of(Entities::SomeStuff).to receive(:get_connec_entities)
-        expect_any_instance_of(Entities::SomeStuff).to receive(:get_external_entities)
+        expect_any_instance_of(Entities::SomeStuff).to receive(:get_external_entities_wrapper)
         expect_any_instance_of(Entities::SomeStuff).to receive(:consolidate_and_map_data).and_return({})
         expect_any_instance_of(Entities::SomeStuff).to receive(:push_entities_to_external)
         expect_any_instance_of(Entities::SomeStuff).to receive(:push_entities_to_connec)
