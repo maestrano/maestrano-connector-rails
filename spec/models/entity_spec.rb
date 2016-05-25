@@ -793,6 +793,9 @@ describe Maestrano::Connector::Rails::Entity do
           let(:entities) { [entity1] }
           let(:external_entity_1) { {'id' => id1} }
           let(:external_entities) { [external_entity_1] }
+          before {
+            allow(subject.class).to receive(:id_from_external_entity_hash).and_return(id1)
+          }
 
           context 'with opts' do
             context 'with connec preemption false' do

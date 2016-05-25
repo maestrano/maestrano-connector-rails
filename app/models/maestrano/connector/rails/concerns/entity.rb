@@ -455,7 +455,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
     end
 
     def solve_conflict(connec_entity, external_entities, external_entity_name, idmap)
-      if external_entity = external_entities.find{|external_entity| connec_entity['id'] == external_entity['id']}
+      if external_entity = external_entities.find{|external_entity| connec_entity['id'] == self.class.id_from_external_entity_hash(external_entity)}
         # We keep the most recently updated entity
         if @opts.has_key?(:connec_preemption)
           keep_connec = @opts[:connec_preemption]

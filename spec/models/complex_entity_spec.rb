@@ -237,6 +237,9 @@ describe Maestrano::Connector::Rails::ComplexEntity do
             context 'when conflict' do
               let(:external_entity_1) { {'id' => id} }
               let(:modeled_external_entities) { {external_name => {connec_name => [external_entity_1]}} }
+              before {
+                allow(Entities::SubEntities::ScE1).to receive(:id_from_external_entity_hash).and_return(id)
+              }
 
               context 'with opts' do
                 context 'with connec preemption false' do

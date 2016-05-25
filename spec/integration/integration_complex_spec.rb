@@ -47,6 +47,9 @@ describe 'complex entities workflow' do
     def self.references
       {'CompCustomer' => ['ref_id'], 'CompSupplier' => ['ref_id']}
     end
+    def self.id_from_external_entity_hash(entity)
+      entity['id']
+    end
   end
 
   class Entities::SubEntities::CompCustomer < Maestrano::Connector::Rails::SubEntityBase
