@@ -334,8 +334,8 @@ describe Maestrano::Connector::Rails::Entity do
         end
 
         context 'without errors' do
-          let(:result200) { {status: 200, body: {connec_name.downcase.pluralize.to_sym => {}}} }
-          let(:result201) { {status: 201, body: {connec_name.downcase.pluralize.to_sym => {}}} }
+          let(:result200) { {status: 200, body: {connec_name.downcase.pluralize.to_sym => {id: [{provider: 'connec', id: 'id1'}]}}} }
+          let(:result201) { {status: 201, body: {connec_name.downcase.pluralize.to_sym => {id: [{provider: 'connec', id: 'id2'}]}}} }
           before {
             allow(connec_client).to receive(:batch).and_return(ActionDispatch::Response.new(200, {}, {results: [result200, result201]}.to_json, {}))
           }

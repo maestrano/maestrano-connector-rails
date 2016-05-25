@@ -426,9 +426,9 @@ module Maestrano::Connector::Rails::Concerns::Entity
         # Parse batch response
         response['results'].each_with_index do |result, index|
           if result['status'] == 200
-            batch_entities[index][:idmap].update(last_push_to_connec: Time.now, message: nil) unless id_update_only # id_update_only only apply for 200 as it's doing PUTs
+            batch_entities[index][:idmap].update(connec_id: result['body'][self.class.normalize_connec_entity_name(connec_entity_name)]['id'].find{|id| id['provider'] == 'connec'}['id'], last_push_to_connec: Time.now, message: nil) unless id_update_only # id_update_only only apply for 200 as it's doing PUTs
           elsif result['status'] == 201
-            batch_entities[index][:idmap].update(connec_id: result['body'][self.class.normalize_connec_entity_name(connec_entity_name)]['id'], last_push_to_connec: Time.now, message: nil)
+            batch_entities[index][:idmap].update(connec_id: result['body'][self.class.normalize_connec_entity_name(connec_entity_name)]['id'].find{|id| id['provider'] == 'connec'}['id'], last_push_to_connec: Time.now, message: nil)
           else
             Maestrano::Connector::Rails::ConnectorLogger.log('error', @organization, "Error while pushing to Connec!: #{result['body']}")
             batch_entities[index][:idmap].update(message: result['body'].to_s.truncate(255))

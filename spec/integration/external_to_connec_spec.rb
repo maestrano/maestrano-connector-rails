@@ -97,7 +97,7 @@ describe 'external application to connec' do
 
   describe 'creating an record in connec' do
     before {
-      allow(connec_client).to receive(:batch).and_return(ActionDispatch::Response.new(201, {}, {results: [{status: 201, body: {people: {}}}]}.to_json, {}))
+      allow(connec_client).to receive(:batch).and_return(ActionDispatch::Response.new(201, {}, {results: [{status: 201, body: {people: {id: [{provider: 'connec', id: 'connec-id'}]}}}]}.to_json, {}))
     }
 
     it 'handles the idmap correctly' do
@@ -122,16 +122,17 @@ describe 'external application to connec' do
     it 'does the right call to connec' do
       expect(connec_client).to receive(:batch).with(batch_call)
       subject
+      expect(Maestrano::Connector::Rails::IdMap.last.connec_id).to eql('connec-id')
     end
   end
 
   describe 'updating an record in connec' do
     before {
-      allow(connec_client).to receive(:batch).and_return(ActionDispatch::Response.new(201, {}, {results: [{status: 201, body: {people: {}}}]}.to_json, {}))
+      allow(connec_client).to receive(:batch).and_return(ActionDispatch::Response.new(201, {}, {results: [{status: 201, body: {people: {id: [{provider: 'connec', id: 'connec-id'}]}}}]}.to_json, {}))
     }
     let(:contact) { contact1.merge('FirstName' => 'Jacky') }
     let(:mapped_entity) { mapped_entity1.merge(first_name: 'Jacky') }
-    let!(:idmap) { Entities::ExternalToConnec.create_idmap(organization_id: organization.id, external_id: ext_contact_id) }
+    let!(:idmap) { Entities::ExternalToConnec.create_idmap(organization_id: organization.id, external_id: ext_contact_id, connec_id: 'connec-id') }
 
     it 'handles the idmap correctly' do
       expect{

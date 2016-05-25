@@ -310,7 +310,7 @@ describe Maestrano::Connector::Rails::ComplexEntity do
               allow(klass).to receive(:external?).and_return(true)
               allow(klass).to receive(:entity_name).and_return('n')
             end
-            allow(connec_client).to receive(:batch).and_return(ActionDispatch::Response.new(200, {}, {results: [{status: 200, body: {connec1s: {}}}]}.to_json, {}))
+            allow(connec_client).to receive(:batch).and_return(ActionDispatch::Response.new(200, {}, {results: [{status: 200, body: {connec1s: {id: [{provider: 'connec', id: 'connec-id'}]}}}]}.to_json, {}), ActionDispatch::Response.new(200, {}, {results: [{status: 200, body: {connec1s: {id: [{provider: 'connec', id: 'connec-id'}]}}}]}.to_json, {}), ActionDispatch::Response.new(200, {}, {results: [{status: 200, body: {connec2s: {id: [{provider: 'connec', id: 'connec-id'}]}}}]}.to_json, {}))
           }
           it 'is successful' do
             subject.push_entities_to_connec(external_hash)

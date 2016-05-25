@@ -90,7 +90,7 @@ describe 'singleton workflow' do
     allow(connec_client).to receive(:get).and_return(ActionDispatch::Response.new(200, {}, {company: company}.to_json, {}))
     allow_any_instance_of(Entities::SingletonIntegration).to receive(:get_external_entities).and_return(ext_company)
     allow_any_instance_of(Entities::SingletonIntegration).to receive(:update_external_entity).and_return(nil)
-    allow(connec_client).to receive(:batch).and_return(ActionDispatch::Response.new(200, {}, {results: [{status: 200, body: {company: {}}}]}.to_json, {}))
+    allow(connec_client).to receive(:batch).and_return(ActionDispatch::Response.new(200, {}, {results: [{status: 200, body: {company: {id: [{provider: 'connec', id: 'some connec id'}]}}}]}.to_json, {}))
   }
 
   subject { Maestrano::Connector::Rails::SynchronizationJob.new.sync_entity('singleton_integration', organization, connec_client, external_client, nil, {}) }
@@ -133,6 +133,7 @@ describe 'singleton workflow' do
           expect(idmap.external_entity).to eql('company')
           expect(idmap.message).to be_nil
           expect(idmap.external_id).to eql(ext_comp_id)
+          expect(idmap.connec_id).to eql('some connec id')
         end
 
         it 'does the mapping correctly' do
