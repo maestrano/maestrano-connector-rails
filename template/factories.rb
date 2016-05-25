@@ -3,12 +3,12 @@ FactoryGirl.define do
   factory :organization, class: Maestrano::Connector::Rails::Organization do
     name "My company"
     tenant "default"
+    sequence(:uid) { |n| "cld-11#{n}" }
     oauth_uid 'sfuiy765'
     oauth_provider 'this_app'
   end
 
   factory :idmap, class: Maestrano::Connector::Rails::IdMap do
-    connec_id '6798-ada6-te43'
     connec_entity 'person'
     external_id '4567ada66'
     external_entity 'contact'

@@ -19,7 +19,6 @@ FactoryGirl.define do
   end
 
   factory :idmap, class: Maestrano::Connector::Rails::IdMap do
-    connec_id '6798-ada6-te43'
     connec_entity 'person'
     external_id '4567ada66'
     external_entity 'contact'
