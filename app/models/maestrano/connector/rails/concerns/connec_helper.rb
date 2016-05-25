@@ -2,6 +2,12 @@ module Maestrano::Connector::Rails::Concerns::ConnecHelper
   extend ActiveSupport::Concern
 
   module ClassMethods
+
+    def get_client(organization)
+      client = Maestrano::Connec::Client[organization.tenant].new(organization.uid)
+      client.class.headers('CONNEC-EXTERNAL-IDS' => 'true')
+      client
+    end
     
     # Replace the ids arrays by the external id
     # If a reference has no id for this oauth_provider and oauth_uid but has one for connec returns nil

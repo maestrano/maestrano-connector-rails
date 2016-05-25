@@ -16,7 +16,7 @@ class Maestrano::ConnecController < Maestrano::Rails::WebHookController
 
 
           Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Received entity from Connec! webhook: Entity=#{entity_name}, Data=#{entity}")
-          connec_client = Maestrano::Connec::Client[organization.tenant].new(organization.uid)
+          connec_client = Maestrano::Connector::Rails::ConnecHelper.get_client(organization)
           external_client = Maestrano::Connector::Rails::External.get_client(organization)
           last_synchronization = organization.last_successful_synchronization
 

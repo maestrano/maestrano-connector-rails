@@ -157,8 +157,6 @@ module Maestrano::Connector::Rails::Concerns::Entity
   def get_connec_entities(last_synchronization)
     return [] if @opts[:skip_connec] || !self.class.can_read_connec?
 
-    @connec_client.class.headers('CONNEC-EXTERNAL-IDS' => 'true')
-
     Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, "Fetching Connec! #{self.class.connec_entity_name}")
 
     entities = []

@@ -29,7 +29,7 @@ module Maestrano::Connector::Rails
 
       begin
         last_synchronization = organization.last_successful_synchronization
-        connec_client = Maestrano::Connec::Client[organization.tenant].new(organization.uid)
+        connec_client = ConnecHelper.get_client(organization)
         external_client = External.get_client(organization)
 
         # First synchronization should be from external to Connec! only to let the smart merging works
