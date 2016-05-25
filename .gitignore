@@ -2,3 +2,4 @@ spec/dummy/log/**/*
 spec/dummy/db
 /coverage
 /pkg
+Gemfile.lock
