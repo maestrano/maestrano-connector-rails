@@ -516,7 +516,7 @@ describe Maestrano::Connector::Rails::Entity do
 
           context 'when ids to send to connec' do
             let(:batch_param) {
-              {:sequential=>true, :ops=>[{:method=>"put", :url=>"/api/v2/cld-123/people/#{idmap2.connec_id}", :params=>{:people=>{:id=>"id", :provider=>organization.oauth_provider, :realm=>organization.oauth_uid}}}]}
+              {:sequential=>true, :ops=>[{:method=>"put", :url=>"/api/v2/cld-123/people/#{idmap2.connec_id}", :params=>{:people=>{id: [{:id=>"id", :provider=>organization.oauth_provider, :realm=>organization.oauth_uid}]}}}]}
             }
 
             it 'does a batch call on connec' do

@@ -113,9 +113,13 @@ describe 'singleton workflow' do
                 :url => "/api/v2/#{organization.uid}/company/some connec id",
                 :params => {
                   :company => {
-                    :id => "ext comp id",
-                    :provider => "provider",
-                    :realm => "oauth uid"
+                    id: [
+                      {
+                        :id => "ext comp id",
+                        :provider => "provider",
+                        :realm => "oauth uid"
+                      }
+                    ]
                   }
                 }
               }

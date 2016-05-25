@@ -101,9 +101,13 @@ describe 'connec to the external application' do
             :params=>
             {
               :people=>{
-                :id=>"ext contact id",
-                :provider=>"provider",
-                :realm=>"oauth uid"
+                id: [
+                  {
+                    :id=>"ext contact id",
+                    :provider=>"provider",
+                    :realm=>"oauth uid"
+                  }
+                ]
               }
             }
           }

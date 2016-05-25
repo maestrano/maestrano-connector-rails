@@ -243,7 +243,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
 
     unless ids_to_send_to_connec.empty?
       # Send the external ids to connec if it was a creation
-      proc = lambda{|id| batch_op('put', Maestrano::Connector::Rails::ConnecHelper.id_hash(id[:external_id], @organization), id[:connec_id], self.class.normalize_connec_entity_name(self.class.connec_entity_name)) }
+      proc = lambda{|id| batch_op('put', {id: [Maestrano::Connector::Rails::ConnecHelper.id_hash(id[:external_id], @organization)]}, id[:connec_id], self.class.normalize_connec_entity_name(self.class.connec_entity_name)) }
       batch_calls(ids_to_send_to_connec, proc, self.class.connec_entity_name, true)
     end
   end
