@@ -244,7 +244,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
 
     unless ids_to_send_to_connec.empty?
       # Send the external ids to connec if it was a creation
-      proc = lambda{|id| batch_op('put', {id: [Maestrano::Connector::Rails::ConnecHelper.id_hash(id[:external_id], @organization)]}, id[:connec_id], self.class.normalize_connec_entity_name(self.class.connec_entity_name)) }
+      proc = lambda{|id| batch_op('put', {id: [Maestrano::Connector::Rails::ConnecHelper.id_hash(id[:idmap].external_id, @organization)]}, id[:idmap].connec_id, self.class.normalize_connec_entity_name(self.class.connec_entity_name)) }
       batch_calls(ids_to_send_to_connec, proc, self.class.connec_entity_name, true)
     end
   end
@@ -257,10 +257,10 @@ module Maestrano::Connector::Rails::Concerns::Entity
     begin
       # Create and return id to send to connec!
       if idmap.external_id.blank?
-        connec_id = mapped_connec_entity_with_idmap[:idmap].connec_id
+        connec_id = idmap.connec_id
         external_id = create_external_entity(mapped_connec_entity, external_entity_name)
         idmap.update(external_id: external_id, last_push_to_external: Time.now, message: nil)
-        return {connec_id: connec_id, external_id: external_id, idmap: idmap}
+        return {idmap: idmap}
 
       # Update
       else
@@ -271,7 +271,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
         if self.class.singleton? && idmap.last_push_to_external.nil?
           connec_id = mapped_connec_entity_with_idmap[:idmap].connec_id
           idmap.update(last_push_to_external: Time.now, message: nil)
-          return {connec_id: connec_id, external_id: idmap.external_id}
+          return {idmap: idmap}
         else
           idmap.update(last_push_to_external: Time.now, message: nil)
         end

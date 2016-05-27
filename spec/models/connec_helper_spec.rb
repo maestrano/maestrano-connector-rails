@@ -94,9 +94,10 @@ describe Maestrano::Connector::Rails::ConnecHelper do
   end
 
   describe 'fold_references' do
+    let(:id) { 'id1' }
     let(:mapped_hash) {
       {
-        id: 'id1',
+        id: id,
         organization_id: nil,
         contact: {
           id: ''
@@ -115,7 +116,7 @@ describe Maestrano::Connector::Rails::ConnecHelper do
     let(:output_hash) {
       {
         "id" => [
-          subject.id_hash('id1', organization)
+          subject.id_hash(id, organization)
         ],
         "organization_id" => nil,
         "contact" => {
@@ -138,6 +139,14 @@ describe Maestrano::Connector::Rails::ConnecHelper do
 
     it 'folds the existing refs' do
       expect(subject.fold_references(mapped_hash, ['organization_id', 'contact/id', 'lines/id', 'not_here_ref'], organization)).to eql(output_hash.with_indifferent_access)
+    end
+
+    context 'when id is an integer' do
+      let(:id) { 1234 }
+
+      it 'folds the existing refs' do
+        expect(subject.fold_references(mapped_hash, ['organization_id', 'contact/id', 'lines/id', 'not_here_ref'], organization)).to eql(output_hash.with_indifferent_access)
+      end
     end
   end
 end

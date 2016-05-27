@@ -51,7 +51,7 @@ module Maestrano::Connector::Rails::Concerns::ConnecHelper
       ref = array_of_refs.shift
       field = entity[ref]
 
-      # Follow embedment path, remplace if it's a string
+      # Follow embedment path, remplace if it's not an array or a hash
       unless field.blank?
         case field
         when Array
@@ -60,7 +60,7 @@ module Maestrano::Connector::Rails::Concerns::ConnecHelper
           end
         when HashWithIndifferentAccess
           fold_references_helper(entity[ref], array_of_refs, organization)
-        when String
+        else
           id = field
           entity[ref] = [id_hash(id, organization)]
         end
