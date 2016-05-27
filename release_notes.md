@@ -1,3 +1,13 @@
+## 1.0.2
+
+### Fixes
+* Fix an issue with integer ids
+
+## 1.0.1
+
+### Fixes
+* Fix an issue with singleton entities
+
 ## 1.0.0
 
 ### Features
