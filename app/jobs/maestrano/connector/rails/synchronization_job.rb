@@ -63,7 +63,7 @@ module Maestrano::Connector::Rails
     end
 
     def sync_entity(entity_name, organization, connec_client, external_client, last_synchronization, opts)
-      entity_instance = "Entities::#{entity_name.titleize.split.join}".constantize.new(organization, connec_client, external_client, opts)
+      entity_instance = "Entities::#{entity_name.titleize.split.join}".constantize.new(organization, connec_client, external_client, opts.dup)
 
       entity_instance.before_sync(last_synchronization)
       external_entities = entity_instance.get_external_entities_wrapper(last_synchronization)
