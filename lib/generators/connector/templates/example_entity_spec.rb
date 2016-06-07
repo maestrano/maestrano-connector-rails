@@ -15,7 +15,7 @@
 
 #   describe 'instance methods' do
 #     let(:organization) { create(:organization) }
-#     let(:connec_client) { Maestrano::Connec::Client[organization.tenant].new(organization.uid) }
+#     let(:connec_client) { Maestrano::Connector::Rails::ConnecHelper.get_client(organization) }
 #     let(:external_client) { Maestrano::Connector::Rails::External.get_client(organization) }
 #     let(:opts) { {} }
 #     subject { Entities::ExampleEntity.new(organization, connec_client, external_client, opts) }
@@ -46,7 +46,7 @@
 #       it { expect(subject.map_to_connec(external_hash)).to eql(mapped_external_hash) }
 #     end
 
-#     describe 'connec to salesforce' do
+#     describe 'connec to external' do
 #       let(:connec_hash) {
 #         {
 #           "first_name" => "John",
