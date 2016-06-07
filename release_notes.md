@@ -1,3 +1,9 @@
+## 1.0.4
+
+### Fixes
+* Fix uneeded creation of idmap for Connec! entities following a failure
+* Fix Connec! pagination
+
 ## 1.0.3
 
 ### Fixes
