@@ -130,7 +130,7 @@ describe 'connec to the external application' do
 
     it 'does the mapping correctly' do
       idmap = Entities::ConnecToExternal.create_idmap(organization_id: organization.id, external_id: ext_contact_id, connec_id: "23daf041-e18e-0133-7b6a-15461b913fab")
-      allow(Entities::ConnecToExternal).to receive(:create_idmap).and_return(idmap)
+      allow(Entities::ConnecToExternal).to receive(:find_or_create_idmap).and_return(idmap)
       expect_any_instance_of(Entities::ConnecToExternal).to receive(:push_entities_to_external).with([{entity: mapped_entity, idmap: idmap}])
       subject
     end

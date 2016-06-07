@@ -325,7 +325,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
       connec_id = entity.delete(:__connec_id)
 
       if entity['id'].blank?
-        idmap = self.class.create_idmap(organization_id: @organization.id, name: self.class.object_name_from_connec_entity_hash(entity), external_entity: external_entity_name.downcase, connec_id: connec_id)
+        idmap = self.class.find_or_create_idmap(organization_id: @organization.id, name: self.class.object_name_from_connec_entity_hash(entity), external_entity: external_entity_name.downcase, connec_id: connec_id)
         next map_connec_entity_with_idmap(entity, external_entity_name, idmap)
       end
 
