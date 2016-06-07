@@ -197,7 +197,7 @@ describe Maestrano::Connector::Rails::Entity do
             }
 
             it 'calls get with a singularize url' do
-              expect(connec_client).to receive(:get).with("/#{connec_name.downcase}?")
+              expect(connec_client).to receive(:get).with("#{connec_name.downcase}?")
               subject.get_connec_entities(nil)
             end
           end
@@ -210,14 +210,14 @@ describe Maestrano::Connector::Rails::Entity do
             context 'when opts[:full_sync] is true' do
               let(:opts) { {full_sync: true} }
               it 'performs a full get' do
-                expect(connec_client).to receive(:get).with("/#{connec_name.downcase.pluralize}?")
+                expect(connec_client).to receive(:get).with("#{connec_name.downcase.pluralize}?")
                 subject.get_connec_entities(sync)
               end
             end
 
             context 'when there is no last sync' do
               it 'performs a full get' do
-                expect(connec_client).to receive(:get).with("/#{connec_name.downcase.pluralize}?")
+                expect(connec_client).to receive(:get).with("#{connec_name.downcase.pluralize}?")
                 subject.get_connec_entities(nil)
               end
             end
@@ -225,7 +225,7 @@ describe Maestrano::Connector::Rails::Entity do
             context 'when there is a last sync' do
               it 'performs a time limited get' do
                 uri_param = {"$filter" => "updated_at gt '#{sync.updated_at.iso8601}'"}.to_query
-                expect(connec_client).to receive(:get).with("/#{connec_name.downcase.pluralize}?#{uri_param}")
+                expect(connec_client).to receive(:get).with("#{connec_name.downcase.pluralize}?#{uri_param}")
                 subject.get_connec_entities(sync)
               end
             end
@@ -234,21 +234,21 @@ describe Maestrano::Connector::Rails::Entity do
               it 'support filter option for full sync' do
                 subject.instance_variable_set(:@opts, {full_sync: true, :$filter => "code eq 'PEO12'"})
                 uri_param = {'$filter'=>'code eq \'PEO12\''}.to_query
-                expect(connec_client).to receive(:get).with("/#{connec_name.downcase.pluralize}?#{uri_param}")
+                expect(connec_client).to receive(:get).with("#{connec_name.downcase.pluralize}?#{uri_param}")
                 subject.get_connec_entities(sync)
               end
 
               it 'support filter option for time limited sync' do
                 subject.instance_variable_set(:@opts, {:$filter => "code eq 'PEO12'"})
                 uri_param = {"$filter"=>"updated_at gt '#{sync.updated_at.iso8601}' and code eq 'PEO12'"}.to_query
-                expect(connec_client).to receive(:get).with("/#{connec_name.downcase.pluralize}?#{uri_param}")
+                expect(connec_client).to receive(:get).with("#{connec_name.downcase.pluralize}?#{uri_param}")
                 subject.get_connec_entities(sync)
               end
 
               it 'support orderby option for time limited sync' do
                 subject.instance_variable_set(:@opts, {:$orderby => "name asc"})
                 uri_param = {"$orderby"=>"name asc", "$filter"=>"updated_at gt '#{sync.updated_at.iso8601}'"}.to_query
-                expect(connec_client).to receive(:get).with("/#{connec_name.downcase.pluralize}?#{uri_param}")
+                expect(connec_client).to receive(:get).with("#{connec_name.downcase.pluralize}?#{uri_param}")
                 subject.get_connec_entities(sync)
               end
             end
@@ -259,7 +259,8 @@ describe Maestrano::Connector::Rails::Entity do
               }
 
               it 'calls get multiple times' do
-                expect(connec_client).to receive(:get).twice
+                expect(connec_client).to receive(:get).with('people?')
+                expect(connec_client).to receive(:get).with('people?%24skip=10&%24top=10')
                 subject.get_connec_entities(nil)
               end
             end
