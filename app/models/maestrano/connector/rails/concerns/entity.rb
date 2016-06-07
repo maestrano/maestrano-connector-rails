@@ -166,14 +166,13 @@ module Maestrano::Connector::Rails::Concerns::Entity
     # Fetch first page
     page_number = 0
     if last_synchronization.blank? || @opts[:full_sync]
-      Maestrano::Connector::Rails::ConnectorLogger.log('debug', @organization, "entity=#{self.class.connec_entity_name}, fetching all data")
       query_params[:$filter] = @opts[:$filter] if @opts[:$filter]
     else
-      Maestrano::Connector::Rails::ConnectorLogger.log('debug', @organization, "entity=#{self.class.connec_entity_name}, fetching data since #{last_synchronization.updated_at.iso8601}")
       query_params[:$filter] = "updated_at gt '#{last_synchronization.updated_at.iso8601}'" + (@opts[:$filter] ? " and #{@opts[:$filter]}" : '')
     end
 
-    uri = "/#{self.class.normalized_connec_entity_name}?#{query_params.to_query}"
+    Maestrano::Connector::Rails::ConnectorLogger.log('debug', @organization, "entity=#{self.class.connec_entity_name}, fetching data with #{query_params.to_query}")
+    uri = "#{self.class.normalized_connec_entity_name}?#{query_params.to_query}"
     response_hash = fetch_connec(uri, 0)
     entities = response_hash["#{self.class.normalized_connec_entity_name}"]
     entities = [entities] if self.class.singleton?
@@ -184,7 +183,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
       # ugly way to convert https://api-connec/api/v2/group_id/organizations?next_page_params to /organizations?next_page_params
       next_page = response_hash['pagination']['next'].gsub(/^(.*)\/#{self.class.normalized_connec_entity_name}/, self.class.normalized_connec_entity_name)
 
-      response_hash = fetch_connec(uri, page_number)
+      response_hash = fetch_connec(next_page, page_number)
       entities << response_hash["#{self.class.normalized_connec_entity_name}"]
     end
 
@@ -325,7 +324,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
       connec_id = entity.delete(:__connec_id)
 
       if entity['id'].blank?
-        idmap = self.class.create_idmap(organization_id: @organization.id, name: self.class.object_name_from_connec_entity_hash(entity), external_entity: external_entity_name.downcase, connec_id: connec_id)
+        idmap = self.class.find_or_create_idmap(organization_id: @organization.id, name: self.class.object_name_from_connec_entity_hash(entity), external_entity: external_entity_name.downcase, connec_id: connec_id)
         next map_connec_entity_with_idmap(entity, external_entity_name, idmap)
       end
 
@@ -492,7 +491,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
       raise "No data received from Connec! when trying to fetch page #{page_number} of #{self.class.normalized_connec_entity_name}" unless response && !response.body.blank?
 
       response_hash = JSON.parse(response.body)
-      Maestrano::Connector::Rails::ConnectorLogger.log('debug', @organization, "received first page entity=#{self.class.connec_entity_name}, response=#{response_hash}")
+      Maestrano::Connector::Rails::ConnectorLogger.log('debug', @organization, "Received page #{page_number} for entity=#{self.class.connec_entity_name}, response=#{response_hash}")
       raise "Received unrecognized Connec! data when trying to fetch page #{page_number} of #{self.class.normalized_connec_entity_name}: #{response_hash}" unless response_hash["#{self.class.normalized_connec_entity_name}"]
 
       response_hash
