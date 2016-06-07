@@ -574,9 +574,9 @@ describe Maestrano::Connector::Rails::Entity do
             expect(idmap2.last_push_to_external).to_not be_nil
           end
 
-          it 'returns an hash with the idmap' do
+          it 'returns the idmap' do
             allow(subject).to receive(:create_external_entity).and_return('999111')
-            expect(subject.push_entity_to_external(entity_with_idmap2, external_name)).to eql({idmap: idmap2})
+            expect(subject.push_entity_to_external(entity_with_idmap2, external_name)).to eql(idmap2)
           end
         end
 

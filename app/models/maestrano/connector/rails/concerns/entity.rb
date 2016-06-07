@@ -239,7 +239,8 @@ module Maestrano::Connector::Rails::Concerns::Entity
 
     Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, "Sending Connec! #{self.class.connec_entity_name.pluralize} to #{Maestrano::Connector::Rails::External.external_name} #{external_entity_name.pluralize}")
     ids_to_send_to_connec = mapped_connec_entities_with_idmaps.map{ |mapped_connec_entity_with_idmap|
-      push_entity_to_external(mapped_connec_entity_with_idmap, external_entity_name)
+      idmap = push_entity_to_external(mapped_connec_entity_with_idmap, external_entity_name)
+      idmap ? {idmap: idmap} : nil
     }.compact
 
     unless ids_to_send_to_connec.empty?
@@ -260,7 +261,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
         connec_id = idmap.connec_id
         external_id = create_external_entity(mapped_connec_entity, external_entity_name)
         idmap.update(external_id: external_id, last_push_to_external: Time.now, message: nil)
-        return {idmap: idmap}
+        return idmap
 
       # Update
       else
@@ -271,7 +272,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
         if self.class.singleton? && idmap.last_push_to_external.nil?
           connec_id = mapped_connec_entity_with_idmap[:idmap].connec_id
           idmap.update(last_push_to_external: Time.now, message: nil)
-          return {idmap: idmap}
+          return idmap
         else
           idmap.update(last_push_to_external: Time.now, message: nil)
         end
