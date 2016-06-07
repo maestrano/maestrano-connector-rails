@@ -1,3 +1,8 @@
+## 1.0.3
+
+### Fixes
+* Fix an issue with options that were involuntarily shared across entities
+
 ## 1.0.2
 
 ### Fixes
