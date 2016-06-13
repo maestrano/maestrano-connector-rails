@@ -465,11 +465,11 @@ module Maestrano::Connector::Rails::Concerns::Entity
         end
 
         if keep_connec
-          Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, "Conflict between #{Maestrano::Connector::Rails::External::external_name} #{external_entity_name} #{external_entity} and Connec! #{self.class.connec_entity_name} #{connec_entity}. Entity from external kept")
+          Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, "Conflict between #{Maestrano::Connector::Rails::External::external_name} #{external_entity_name} #{external_entity} and Connec! #{self.class.connec_entity_name} #{connec_entity}. Entity from Connec! kept")
           external_entities.delete(external_entity)
           map_connec_entity_with_idmap(connec_entity, external_entity_name, idmap)
         else
-          Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, "Conflict between #{Maestrano::Connector::Rails::External::external_name} #{external_entity_name} #{external_entity} and Connec! #{self.class.connec_entity_name} #{connec_entity}. Entity from Connec! kept")
+          Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, "Conflict between #{Maestrano::Connector::Rails::External::external_name} #{external_entity_name} #{external_entity} and Connec! #{self.class.connec_entity_name} #{connec_entity}. Entity from external kept")
           nil
         end
 
