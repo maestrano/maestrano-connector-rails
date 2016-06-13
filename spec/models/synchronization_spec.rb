@@ -72,25 +72,34 @@ describe Maestrano::Connector::Rails::Synchronization do
       end
     end
 
-    describe 'clean_synchronizations' do
+    describe 'clean_synchronizations on creation' do
       let!(:organization) { create(:organization) }
-      let!(:sync) { create(:synchronization, organization: organization) }
-      let!(:sync2) { create(:synchronization, organization: organization) }
 
       context 'when less than 100 syncs' do
+        before {
+          2.times do
+            create(:synchronization, organization: organization)
+          end
+        }
+
         it 'does nothing' do
-          expect{ sync.clean_synchronizations }.to_not change{ organization.synchronizations.count }
+          expect{ organization.synchronizations.create(status: 'RUNNING') }.to change{ organization.synchronizations.count }.by(1)
         end
       end
 
       context 'when more than 100 syncs' do
         before {
-          allow_any_instance_of(ActiveRecord::Associations::CollectionProxy).to receive(:count).and_return(102)
+          100.times do
+            create(:synchronization, organization: organization)
+          end
         }
 
-        it 'destroy the idmaps' do
-          expect{ sync.clean_synchronizations }.to change{ Maestrano::Connector::Rails::Synchronization.count }.by(-2)
+        it 'destroy the right syncs' do
+          sync = organization.synchronizations.create(status: 'RUNNING')
+          expect(Maestrano::Connector::Rails::Synchronization.count).to eql(100)
+          expect(Maestrano::Connector::Rails::Synchronization.all.map(&:id)).to eql([*2..101])
         end
+
       end
     end
   end

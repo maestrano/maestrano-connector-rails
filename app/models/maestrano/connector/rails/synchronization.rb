@@ -41,7 +41,7 @@ module Maestrano::Connector::Rails
     def clean_synchronizations
       count = self.organization.synchronizations.count
       if count > 100
-        self.organization.synchronizations.limit(count - 100).destroy_all
+        self.organization.synchronizations.order('id ASC').limit(count - 100).destroy_all
       end
     end
   end
