@@ -137,7 +137,7 @@ describe Maestrano::Connector::Rails::Organization do
     describe 'last_successful_synchronization' do
       let!(:running_sync) { create(:synchronization, organization: subject, status: 'RUNNING') }
       let!(:failed_sync) { create(:synchronization, organization: subject, status: 'ERROR') }
-      let!(:success_sync) { create(:synchronization, organization: subject, status: 'SUCCESS') }
+      let!(:success_sync) { create(:synchronization, organization: subject, status: 'SUCCESS', updated_at: 1.minute.ago) }
       let!(:success_sync2) { create(:synchronization, organization: subject, status: 'SUCCESS', updated_at: 3.hours.ago) }
       let!(:partial) { create(:synchronization, organization: subject, status: 'SUCCESS', partial: true) }
 
@@ -155,9 +155,11 @@ describe Maestrano::Connector::Rails::Organization do
       end
 
       context 'with sync' do
-        let!(:success_sync) { create(:synchronization, organization: subject, status: 'SUCCESS') }
+        Timecop.freeze do
+          let!(:success_sync) { create(:synchronization, organization: subject, status: 'SUCCESS') }
 
-        it { expect(subject.last_synchronization_date).to eql(success_sync.updated_at) }
+          it { expect(subject.last_synchronization_date.to_date).to eql(success_sync.updated_at.to_date) }
+        end
       end
 
       context 'without sync' do
