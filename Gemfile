@@ -7,8 +7,8 @@ gem 'sidekiq'
 gem 'haml-rails'
 gem 'bootstrap-sass'
 gem 'autoprefixer-rails'
-# gem 'attr_encrypted', '~> 3.0.0'
-# gem 'config'
+gem 'attr_encrypted', '~> 1.4.0'
+gem 'config'
 
 # Add dependencies to develop your gem here.
 group :development do

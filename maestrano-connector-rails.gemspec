@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.require_paths = ["lib"]
   s.authors = ["Pierre Berard"]
-  s.date = "2016-05-25"
+  s.date = "2016-06-14"
   s.description = "Maestrano is the next generation marketplace for SME applications. See https://maestrano.com for details."
   s.email = "pierre.berard@maestrano.com"
   s.executables = ["rails"]
@@ -64,7 +64,8 @@ Gem::Specification.new do |s|
     "db/migrate/20160205132857_add_sync_enabled_to_organizations.rb",
     "db/migrate/20160215103120_add_name_to_id_map.rb",
     "db/migrate/20160427112250_add_inactive_to_idmaps.rb",
-    "db/migrate/20160524112054_add_encryption_on_oauth_keys.rb",
+    "db/migrate/20160614114401_add_date_filtering_limit_to_organization.rb",
+    "db/migrate/20160614160654_add_encryption_on_oauth_keys.rb",
     "lib/generators/connector/USAGE",
     "lib/generators/connector/complex_entity_generator.rb",
     "lib/generators/connector/install_generator.rb",
@@ -119,7 +120,6 @@ Gem::Specification.new do |s|
     "spec/dummy/app/models/entities/example_entitiy.rb",
     "spec/dummy/app/models/maestrano/connector/rails/entity.rb",
     "spec/dummy/app/models/maestrano/connector/rails/external.rb",
-    "spec/dummy/app/views/admin/index.html.erb",
     "spec/dummy/app/views/home/index.html.erb",
     "spec/dummy/app/views/layouts/application.html.erb",
     "spec/dummy/bin/bundle",
@@ -146,6 +146,11 @@ Gem::Specification.new do |s|
     "spec/dummy/config/locales/en.yml",
     "spec/dummy/config/routes.rb",
     "spec/dummy/config/secrets.yml",
+    "spec/dummy/config/settings.yml",
+    "spec/dummy/config/settings/development.yml",
+    "spec/dummy/config/settings/production.yml",
+    "spec/dummy/config/settings/test.yml",
+    "spec/dummy/config/settings/uat.yml",
     "spec/dummy/db/schema.rb",
     "spec/dummy/lib/assets/.keep",
     "spec/dummy/log/.keep",
@@ -205,7 +210,7 @@ Gem::Specification.new do |s|
       s.add_runtime_dependency(%q<haml-rails>, [">= 0"])
       s.add_runtime_dependency(%q<bootstrap-sass>, [">= 0"])
       s.add_runtime_dependency(%q<autoprefixer-rails>, [">= 0"])
-      s.add_runtime_dependency(%q<attr_encrypted>, ["~> 3.0.0"])
+      s.add_runtime_dependency(%q<attr_encrypted>, ["~> 1.4.0"])
       s.add_runtime_dependency(%q<config>, [">= 0"])
       s.add_development_dependency(%q<shoulda>, [">= 0"])
       s.add_development_dependency(%q<rdoc>, ["~> 3.12"])
@@ -216,6 +221,7 @@ Gem::Specification.new do |s|
       s.add_development_dependency(%q<factory_girl_rails>, [">= 0"])
       s.add_development_dependency(%q<sqlite3>, [">= 0"])
       s.add_development_dependency(%q<shoulda-matchers>, [">= 0"])
+      s.add_development_dependency(%q<timecop>, [">= 0"])
     else
       s.add_dependency(%q<maestrano-rails>, [">= 0"])
       s.add_dependency(%q<hash_mapper>, [">= 0"])
@@ -223,7 +229,7 @@ Gem::Specification.new do |s|
       s.add_dependency(%q<haml-rails>, [">= 0"])
       s.add_dependency(%q<bootstrap-sass>, [">= 0"])
       s.add_dependency(%q<autoprefixer-rails>, [">= 0"])
-      s.add_dependency(%q<attr_encrypted>, ["~> 3.0.0"])
+      s.add_dependency(%q<attr_encrypted>, ["~> 1.4.0"])
       s.add_dependency(%q<config>, [">= 0"])
       s.add_dependency(%q<shoulda>, [">= 0"])
       s.add_dependency(%q<rdoc>, ["~> 3.12"])
@@ -234,6 +240,7 @@ Gem::Specification.new do |s|
       s.add_dependency(%q<factory_girl_rails>, [">= 0"])
       s.add_dependency(%q<sqlite3>, [">= 0"])
       s.add_dependency(%q<shoulda-matchers>, [">= 0"])
+      s.add_dependency(%q<timecop>, [">= 0"])
     end
   else
     s.add_dependency(%q<maestrano-rails>, [">= 0"])
@@ -242,7 +249,7 @@ Gem::Specification.new do |s|
     s.add_dependency(%q<haml-rails>, [">= 0"])
     s.add_dependency(%q<bootstrap-sass>, [">= 0"])
     s.add_dependency(%q<autoprefixer-rails>, [">= 0"])
-    s.add_dependency(%q<attr_encrypted>, ["~> 3.0.0"])
+    s.add_dependency(%q<attr_encrypted>, ["~> 1.4.0"])
     s.add_dependency(%q<config>, [">= 0"])
     s.add_dependency(%q<shoulda>, [">= 0"])
     s.add_dependency(%q<rdoc>, ["~> 3.12"])
@@ -253,6 +260,7 @@ Gem::Specification.new do |s|
     s.add_dependency(%q<factory_girl_rails>, [">= 0"])
     s.add_dependency(%q<sqlite3>, [">= 0"])
     s.add_dependency(%q<shoulda-matchers>, [">= 0"])
+    s.add_dependency(%q<timecop>, [">= 0"])
   end
 end
 
