@@ -20,8 +20,9 @@ module Maestrano::Connector::Rails
     #===================================
     # Encryptions
     #===================================
-    # attr_encrypted :oauth_token, key: ::Settings.encryption_key
-    # attr_encrypted :refresh_token, key: ::Settings.encryption_key
+    attr_encrypted_options.merge!(:mode => :per_attribute_iv_and_salt)
+    attr_encrypted :oauth_token, key: ::Settings.encryption_key1
+    attr_encrypted :refresh_token, key: ::Settings.encryption_key2
 
     #===================================
     # Associations
