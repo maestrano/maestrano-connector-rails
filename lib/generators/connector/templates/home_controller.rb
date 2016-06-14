@@ -13,9 +13,17 @@ class HomeController < ApplicationController
         organization.synchronized_entities[entity] = !!params["#{entity}"]
       end
       organization.sync_enabled = organization.synchronized_entities.values.any?
+
+      no_historical_data = !!params['no-historical-data']
+      if no_historical_data
+        organization.date_filtering_limit ||= Time.now
+      else
+        organization.date_filtering_limit = nil
+      end
+      
       organization.save
 
-      if !old_sync_state
+      if !old_sync_state && organization.sync_enabled
         Maestrano::Connector::Rails::SynchronizationJob.perform_later(organization, {})
         flash[:info] = 'Congrats, you\'re all set up! Your data are now being synced'
       end

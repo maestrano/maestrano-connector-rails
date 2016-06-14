@@ -59,6 +59,10 @@ module Maestrano::Connector::Rails::Concerns::Entity
       raise "Not implemented"
     end
 
+    def creation_date_from_external_entity_hash(entity)
+      raise "Not implemented"
+    end
+
     # Return a string representing the object from a connec! entity hash
     def object_name_from_connec_entity_hash(entity)
       raise "Not implemented"
@@ -154,7 +158,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
   # * full_sync
   # * $filter (see Connec! documentation)
   # * $orderby (see Connec! documentation)
-  def get_connec_entities(last_synchronization)
+  def get_connec_entities(last_synchronization_date=nil)
     return [] if @opts[:skip_connec] || !self.class.can_read_connec?
 
     Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, "Fetching Connec! #{self.class.connec_entity_name}")
@@ -165,10 +169,10 @@ module Maestrano::Connector::Rails::Concerns::Entity
 
     # Fetch first page
     page_number = 0
-    if last_synchronization.blank? || @opts[:full_sync]
+    if last_synchronization_date.blank? || @opts[:full_sync]
       query_params[:$filter] = @opts[:$filter] if @opts[:$filter]
     else
-      query_params[:$filter] = "updated_at gt '#{last_synchronization.updated_at.iso8601}'" + (@opts[:$filter] ? " and #{@opts[:$filter]}" : '')
+      query_params[:$filter] = "updated_at gt '#{last_synchronization_date.iso8601}'" + (@opts[:$filter] ? " and #{@opts[:$filter]}" : '')
     end
 
     Maestrano::Connector::Rails::ConnectorLogger.log('debug', @organization, "entity=#{self.class.connec_entity_name}, fetching data with #{query_params.to_query}")
@@ -219,12 +223,12 @@ module Maestrano::Connector::Rails::Concerns::Entity
   # ----------------------------------------------
   #                 External methods
   # ----------------------------------------------
-  def get_external_entities_wrapper(last_synchronization)
+  def get_external_entities_wrapper(last_synchronization_date=nil)
     return [] if @opts[:skip_external] || !self.class.can_read_external?
-    get_external_entities(last_synchronization)
+    get_external_entities(last_synchronization_date)
   end
   
-  def get_external_entities(last_synchronization)
+  def get_external_entities(last_synchronization_date=nil)
     Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, "Fetching #{Maestrano::Connector::Rails::External.external_name} #{self.class.external_entity_name.pluralize}")
     raise "Not implemented"
   end
@@ -319,6 +323,9 @@ module Maestrano::Connector::Rails::Concerns::Entity
 
   def consolidate_and_map_connec_entities(connec_entities, external_entities, references, external_entity_name)
     connec_entities.map{|entity|
+      # Entity has been created before date filtering limit
+      next nil if before_date_filtering_limit?(entity, false) && !@opts[:full_sync]
+
       entity = Maestrano::Connector::Rails::ConnecHelper.unfold_references(entity, references, @organization)
       next nil unless entity
       connec_id = entity.delete(:__connec_id)
@@ -332,7 +339,6 @@ module Maestrano::Connector::Rails::Concerns::Entity
       idmap.update(name: self.class.object_name_from_connec_entity_hash(entity))
 
       next nil if idmap.external_inactive || !idmap.to_external || (!@opts[:full_sync] && not_modified_since_last_push_to_external?(idmap, entity))
-
       # Check for conflict with entities from external
       solve_conflict(entity, external_entities, external_entity_name, idmap)
     }.compact
@@ -340,6 +346,9 @@ module Maestrano::Connector::Rails::Concerns::Entity
 
   def consolidate_and_map_external_entities(external_entities, connec_entity_name)
     external_entities.map{|entity|
+      # Entity has been created before date filtering limit
+      next nil if before_date_filtering_limit?(entity) && !@opts[:full_sync]
+
       entity_id = self.class.id_from_external_entity_hash(entity)
       idmap = self.class.find_or_create_idmap(external_id: entity_id, organization_id: @organization.id, connec_entity: connec_entity_name.downcase)
 
@@ -389,11 +398,11 @@ module Maestrano::Connector::Rails::Concerns::Entity
   # ----------------------------------------------
   #             After and before sync
   # ----------------------------------------------
-  def before_sync(last_synchronization)
+  def before_sync(last_synchronization_date)
     # Does nothing by default
   end
 
-  def after_sync(last_synchronization)
+  def after_sync(last_synchronization_date)
     # Does nothing by default
   end
 
@@ -449,6 +458,10 @@ module Maestrano::Connector::Rails::Concerns::Entity
       not_modified = idmap.last_push_to_external && idmap.last_push_to_external > entity['updated_at']
       Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, "Discard Connec! #{self.class.connec_entity_name} : #{entity}") if not_modified
       not_modified
+    end
+
+    def before_date_filtering_limit?(entity, external=true)
+      @organization.date_filtering_limit && @organization.date_filtering_limit > (external ? self.class.creation_date_from_external_entity_hash(entity) : entity['created_at'])
     end
 
     def is_connec_more_recent?(connec_entity, external_entity)

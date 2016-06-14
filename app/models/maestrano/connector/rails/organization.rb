@@ -74,5 +74,9 @@ module Maestrano::Connector::Rails
     def last_successful_synchronization
       self.synchronizations.where(status: 'SUCCESS', partial: false).order(updated_at: :desc).first
     end
+
+    def last_synchronization_date
+      date_filtering_limit || (last_successful_synchronization && last_successful_synchronization.updated_at)
+    end
   end
 end

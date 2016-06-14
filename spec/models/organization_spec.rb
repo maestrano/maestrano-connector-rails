@@ -143,6 +143,27 @@ describe Maestrano::Connector::Rails::Organization do
 
       it { expect(subject.last_successful_synchronization).to eql(success_sync) }
     end
+
+    describe 'last_synchronization_date' do
+      context 'with date_filtering_limit' do
+        let(:date) { 2.days.ago }
+        before {
+          subject.date_filtering_limit = date
+        }
+
+        it { expect(subject.last_synchronization_date).to eql(date) }
+      end
+
+      context 'with sync' do
+        let!(:success_sync) { create(:synchronization, organization: subject, status: 'SUCCESS') }
+
+        it { expect(subject.last_synchronization_date).to eql(success_sync.updated_at) }
+      end
+
+      context 'without sync' do
+        it { expect(subject.last_synchronization_date).to eql(nil) }
+      end
+    end
   end
 
 

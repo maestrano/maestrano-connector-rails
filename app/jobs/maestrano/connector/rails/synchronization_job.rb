@@ -29,6 +29,7 @@ module Maestrano::Connector::Rails
 
       begin
         last_synchronization = organization.last_successful_synchronization
+        last_synchronization_date = organization.last_synchronization_date
         connec_client = ConnecHelper.get_client(organization)
         external_client = External.get_client(organization)
 
@@ -38,7 +39,7 @@ module Maestrano::Connector::Rails
           ConnectorLogger.log('info', organization, "First synchronization ever. Doing two half syncs to allow smart merging to work its magic.")
           [{skip_connec: true}, {skip_external: true}].each do |opt|
             organization.synchronized_entities.select{|k, v| v}.keys.each do |entity|
-              sync_entity(entity.to_s, organization, connec_client, external_client, last_synchronization, opts.merge(opt))
+              sync_entity(entity.to_s, organization, connec_client, external_client, last_synchronization_date, opts.merge(opt))
             end
           end
         elsif opts[:only_entities]
@@ -46,11 +47,11 @@ module Maestrano::Connector::Rails
           # The synchronization is marked as partial and will not be considered as the last-synchronization for the next sync
           current_synchronization.set_partial
           opts[:only_entities].each do |entity|
-            sync_entity(entity, organization, connec_client, external_client, last_synchronization, opts)
+            sync_entity(entity, organization, connec_client, external_client, last_synchronization_date, opts)
           end
         else
           organization.synchronized_entities.select{|k, v| v}.keys.each do |entity|
-            sync_entity(entity.to_s, organization, connec_client, external_client, last_synchronization, opts)
+            sync_entity(entity.to_s, organization, connec_client, external_client, last_synchronization_date, opts)
           end
         end
 
@@ -62,16 +63,16 @@ module Maestrano::Connector::Rails
       end
     end
 
-    def sync_entity(entity_name, organization, connec_client, external_client, last_synchronization, opts)
+    def sync_entity(entity_name, organization, connec_client, external_client, last_synchronization_date, opts)
       entity_instance = "Entities::#{entity_name.titleize.split.join}".constantize.new(organization, connec_client, external_client, opts.dup)
 
-      entity_instance.before_sync(last_synchronization)
-      external_entities = entity_instance.get_external_entities_wrapper(last_synchronization)
-      connec_entities = entity_instance.get_connec_entities(last_synchronization)
+      entity_instance.before_sync(last_synchronization_date)
+      external_entities = entity_instance.get_external_entities_wrapper(last_synchronization_date)
+      connec_entities = entity_instance.get_connec_entities(last_synchronization_date)
       mapped_entities = entity_instance.consolidate_and_map_data(connec_entities, external_entities)
       entity_instance.push_entities_to_external(mapped_entities[:connec_entities])
       entity_instance.push_entities_to_connec(mapped_entities[:external_entities])
-      entity_instance.after_sync(last_synchronization)
+      entity_instance.after_sync(last_synchronization_date)
     end
   end
 end

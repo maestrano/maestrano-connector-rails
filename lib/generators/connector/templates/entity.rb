@@ -8,11 +8,11 @@ class Maestrano::Connector::Rails::Entity
   # * @opts
 
   # Return an array of entities from the external app
-  def get_external_entities(last_synchronization)
+  def get_external_entities(last_synchronization_date=nil)
     Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, "Fetching #{Maestrano::Connector::Rails::External.external_name} #{self.class.external_entity_name.pluralize}")
     # TODO
-    # This method should return only entities that have been updated since the last_synchronization
-    # It should also implements an option to do a full synchronization when @opts[:full_sync] == true or when there is no last_synchronization
+    # This method should return only entities that have been updated since the last_synchronization_date
+    # It should also implements an option to do a full synchronization when @opts[:full_sync] == true or when there is no last_synchronization_date
     # Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, "Received data: Source=#{Maestrano::Connector::Rails::External.external_name}, Entity=#{self.class.external_entity_name}, Response=#{entities}")
   end
 
@@ -38,6 +38,12 @@ class Maestrano::Connector::Rails::Entity
     # TODO
     # This method return the last update date from an external_entity_hash
     # e.g entity['last_update']
+  end
+
+  def self.creation_date_from_external_entity_hash(entity)
+    # TODO
+    # This method return the creation date from an external_entity_hash
+    # e.g entity['created_at']
   end
 
   def self.inactive_from_external_entity_hash?(entity)
