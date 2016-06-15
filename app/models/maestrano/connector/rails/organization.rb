@@ -76,7 +76,7 @@ module Maestrano::Connector::Rails
     end
 
     def last_synchronization_date
-      date_filtering_limit || (last_successful_synchronization && last_successful_synchronization.updated_at)
+      (last_successful_synchronization && last_successful_synchronization.updated_at) || date_filtering_limit
     end
   end
 end
