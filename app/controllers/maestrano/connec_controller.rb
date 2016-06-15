@@ -18,10 +18,10 @@ class Maestrano::ConnecController < Maestrano::Rails::WebHookController
           Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Received entity from Connec! webhook: Entity=#{entity_name}, Data=#{entity}")
           connec_client = Maestrano::Connector::Rails::ConnecHelper.get_client(organization)
           external_client = Maestrano::Connector::Rails::External.get_client(organization)
-          last_synchronization = organization.last_successful_synchronization
+          last_synchronization_date = organization.last_synchronization_date
 
           entity_instance = entity_class_hash[:class].new(organization, connec_client, external_client, {})
-          entity_instance.before_sync(last_synchronization)
+          entity_instance.before_sync(last_synchronization_date)
           
           # Build expected input for consolidate_and_map_data
           if entity_class_hash[:is_complex]
@@ -33,7 +33,7 @@ class Maestrano::ConnecController < Maestrano::Rails::WebHookController
           end
           entity_instance.push_entities_to_external(mapped_entity[:connec_entities])
 
-          entity_instance.after_sync(last_synchronization)
+          entity_instance.after_sync(last_synchronization_date)
         end
       end
     rescue => e

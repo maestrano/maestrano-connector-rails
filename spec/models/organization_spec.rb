@@ -137,11 +137,44 @@ describe Maestrano::Connector::Rails::Organization do
     describe 'last_successful_synchronization' do
       let!(:running_sync) { create(:synchronization, organization: subject, status: 'RUNNING') }
       let!(:failed_sync) { create(:synchronization, organization: subject, status: 'ERROR') }
-      let!(:success_sync) { create(:synchronization, organization: subject, status: 'SUCCESS') }
+      let!(:success_sync) { create(:synchronization, organization: subject, status: 'SUCCESS', updated_at: 1.minute.ago) }
       let!(:success_sync2) { create(:synchronization, organization: subject, status: 'SUCCESS', updated_at: 3.hours.ago) }
       let!(:partial) { create(:synchronization, organization: subject, status: 'SUCCESS', partial: true) }
 
       it { expect(subject.last_successful_synchronization).to eql(success_sync) }
+    end
+
+    describe 'last_synchronization_date' do
+      let(:date) { 2.days.ago }
+      
+      context 'with date_filtering_limit' do
+        before {
+          subject.date_filtering_limit = date
+        }
+
+        it { expect(subject.last_synchronization_date).to eql(date) }
+      end
+
+      context 'with sync' do
+        let!(:success_sync) { create(:synchronization, organization: subject, status: 'SUCCESS') }
+
+        it { expect(subject.last_synchronization_date.to_date).to eql(success_sync.updated_at.to_date) }
+      end
+
+      context 'with both' do
+        let!(:success_sync) { create(:synchronization, organization: subject, status: 'SUCCESS') }
+        before {
+          subject.date_filtering_limit = date
+        }
+
+        it 'returns the sync date' do
+          expect(subject.last_synchronization_date.to_date).to eql(success_sync.updated_at.to_date)
+        end
+      end
+
+      context 'with none' do
+        it { expect(subject.last_synchronization_date).to eql(nil) }
+      end
     end
   end
 

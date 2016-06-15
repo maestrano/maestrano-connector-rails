@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160427120963) do
+ActiveRecord::Schema.define(version: 20160614120421) do
 
   create_table "id_maps", force: :cascade do |t|
     t.string   "connec_id"
@@ -49,6 +49,7 @@ ActiveRecord::Schema.define(version: 20160427120963) do
     t.datetime "created_at",                            null: false
     t.datetime "updated_at",                            null: false
     t.boolean  "sync_enabled",          default: false
+    t.datetime "date_filtering_limit"
   end
 
   add_index "organizations", ["uid", "tenant"], name: "orga_uid_index"
