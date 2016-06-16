@@ -1,1 +1,0 @@
-require 'maestrano/connector/rails'

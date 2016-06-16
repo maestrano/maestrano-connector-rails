@@ -7,19 +7,19 @@ module Maestrano::Connector::Rails
     #  * :only_entities => [person, tasks_list]
     #  * :full_sync => true  synchronization is performed without date filtering
     #  * :connec_preemption => true|false : preemption is always|never given to connec in case of conflict (if not set, the most recently updated entity is kept)
-    def perform(organization, opts={})
+    def perform(organization, opts = {})
       return unless organization.sync_enabled
 
       # Check if previous synchronization is still running
       if Synchronization.where(organization_id: organization.id, status: 'RUNNING').where(created_at: (30.minutes.ago..Time.now)).exists?
-        ConnectorLogger.log('info', organization, "Synchronization skipped: Previous synchronization is still running")
+        ConnectorLogger.log('info', organization, 'Synchronization skipped: Previous synchronization is still running')
         return
       end
 
       # Check if recovery mode: last 3 synchronizations have failed
       if !opts[:forced] && organization.last_three_synchronizations_failed? \
           && organization.synchronizations.order(created_at: :desc).limit(1).first.updated_at > 1.day.ago
-        ConnectorLogger.log('info', organization, "Synchronization skipped: Recovery mode (three previous synchronizations have failed)")
+        ConnectorLogger.log('info', organization, 'Synchronization skipped: Recovery mode (three previous synchronizations have failed)')
         return
       end
 
@@ -36,9 +36,9 @@ module Maestrano::Connector::Rails
         # First synchronization should be from external to Connec! only to let the smart merging works
         # We do a doube sync: only from external, then only from connec!
         if last_synchronization.nil?
-          ConnectorLogger.log('info', organization, "First synchronization ever. Doing two half syncs to allow smart merging to work its magic.")
+          ConnectorLogger.log('info', organization, 'First synchronization ever. Doing two half syncs to allow smart merging to work its magic.')
           [{skip_connec: true}, {skip_external: true}].each do |opt|
-            organization.synchronized_entities.select{|k, v| v}.keys.each do |entity|
+            organization.synchronized_entities.select { |_k, v| v }.keys.each do |entity|
               sync_entity(entity.to_s, organization, connec_client, external_client, last_synchronization_date, opts.merge(opt))
             end
           end
@@ -50,7 +50,7 @@ module Maestrano::Connector::Rails
             sync_entity(entity, organization, connec_client, external_client, last_synchronization_date, opts)
           end
         else
-          organization.synchronized_entities.select{|k, v| v}.keys.each do |entity|
+          organization.synchronized_entities.select { |_k, v| v }.keys.each do |entity|
             sync_entity(entity.to_s, organization, connec_client, external_client, last_synchronization_date, opts)
           end
         end

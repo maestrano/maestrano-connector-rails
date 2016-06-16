@@ -14,7 +14,7 @@ module Maestrano::Connector::Rails::Concerns::External
     # If you add new entities, you need to generate
     # a migration to add them to existing organizations
     def entities_list
-      raise "Not implemented"
+      raise 'Not implemented'
     end
   end
 end

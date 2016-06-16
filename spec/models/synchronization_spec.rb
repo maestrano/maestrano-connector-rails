@@ -26,19 +26,19 @@ describe Maestrano::Connector::Rails::Synchronization do
   end
 
   describe 'instance methods' do
-    describe 'is_success?' do
-      it { expect(Maestrano::Connector::Rails::Synchronization.new(status: 'SUCCESS').is_success?).to be(true) }
-      it { expect(Maestrano::Connector::Rails::Synchronization.new(status: 'ERROR').is_success?).to be(false) }
+    describe 'success?' do
+      it { expect(Maestrano::Connector::Rails::Synchronization.new(status: 'SUCCESS').success?).to be(true) }
+      it { expect(Maestrano::Connector::Rails::Synchronization.new(status: 'ERROR').success?).to be(false) }
     end
 
-    describe 'is_error?' do
-      it { expect(Maestrano::Connector::Rails::Synchronization.new(status: 'ERROR').is_error?).to be(true) }
-      it { expect(Maestrano::Connector::Rails::Synchronization.new(status: 'RUNNING').is_error?).to be(false) }
+    describe 'error?' do
+      it { expect(Maestrano::Connector::Rails::Synchronization.new(status: 'ERROR').error?).to be(true) }
+      it { expect(Maestrano::Connector::Rails::Synchronization.new(status: 'RUNNING').error?).to be(false) }
     end
 
-    describe 'is_running?' do
-      it { expect(Maestrano::Connector::Rails::Synchronization.new(status: 'RUNNING').is_running?).to be(true) }
-      it { expect(Maestrano::Connector::Rails::Synchronization.new(status: 'ERROR').is_running?).to be(false) }
+    describe 'running?' do
+      it { expect(Maestrano::Connector::Rails::Synchronization.new(status: 'RUNNING').running?).to be(true) }
+      it { expect(Maestrano::Connector::Rails::Synchronization.new(status: 'ERROR').running?).to be(false) }
     end
 
     describe 'set_success' do

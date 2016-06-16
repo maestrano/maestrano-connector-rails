@@ -1,5 +1,4 @@
 class Maestrano::Auth::SamlController < Maestrano::Rails::SamlBaseController
-
   def init
     session[:settings] = !!params[:settings]
     super
@@ -14,9 +13,7 @@ class Maestrano::Auth::SamlController < Maestrano::Rails::SamlBaseController
     user = Maestrano::Connector::Rails::User.find_or_create_for_maestrano(user_auth_hash, params[:tenant])
     organization = Maestrano::Connector::Rails::Organization.find_or_create_for_maestrano(group_auth_hash, params[:tenant])
     if user && organization
-      unless organization.member?(user)
-        organization.add_member(user)
-      end
+      organization.add_member(user) unless organization.member?(user)
 
       session[:tenant] = params[:tenant]
       session[:uid] = user.uid
@@ -27,12 +24,10 @@ class Maestrano::Auth::SamlController < Maestrano::Rails::SamlBaseController
     if session[:settings]
       session.delete(:settings)
       redirect_to main_app.root_path
+    elsif current_organization && current_organization.oauth_uid && current_organization.sync_enabled
+      redirect_to main_app.home_redirect_to_external_path
     else
-      if current_organization && current_organization.oauth_uid && current_organization.sync_enabled
-        redirect_to main_app.home_redirect_to_external_path
-      else
-        redirect_to main_app.root_path
-      end
+      redirect_to main_app.root_path
     end
   end
 end

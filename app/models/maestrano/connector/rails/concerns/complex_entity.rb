@@ -1,7 +1,7 @@
 module Maestrano::Connector::Rails::Concerns::ComplexEntity
   extend ActiveSupport::Concern
 
-  def initialize(organization, connec_client, external_client, opts={})
+  def initialize(organization, connec_client, external_client, opts = {})
     @organization = organization
     @connec_client = connec_client
     @external_client = external_client
@@ -14,11 +14,11 @@ module Maestrano::Connector::Rails::Concerns::ComplexEntity
   # -------------------------------------------------------------
   module ClassMethods
     def connec_entities_names
-      raise "Not implemented"
+      raise 'Not implemented'
     end
 
     def external_entities_names
-      raise "Not implemented"
+      raise 'Not implemented'
     end
   end
 
@@ -36,7 +36,7 @@ module Maestrano::Connector::Rails::Concerns::ComplexEntity
   #             }
   #          }
   def connec_model_to_external_model(connec_hash_of_entities)
-    raise "Not implemented"
+    raise 'Not implemented'
   end
 
   # input :  {
@@ -53,13 +53,13 @@ module Maestrano::Connector::Rails::Concerns::ComplexEntity
   #             }
   #           }
   def external_model_to_connec_model(external_hash_of_entities)
-    raise "Not implemented"
+    raise 'Not implemented'
   end
 
   # -------------------------------------------------------------
   #          Entity equivalent methods
   # -------------------------------------------------------------
-  def get_connec_entities(last_synchronization_date=nil)
+  def get_connec_entities(last_synchronization_date = nil)
     entities = ActiveSupport::HashWithIndifferentAccess.new
 
     self.class.connec_entities_names.each do |connec_entity_name|
@@ -69,7 +69,7 @@ module Maestrano::Connector::Rails::Concerns::ComplexEntity
     entities
   end
 
-  def get_external_entities_wrapper(last_synchronization_date=nil)
+  def get_external_entities_wrapper(last_synchronization_date = nil)
     entities = ActiveSupport::HashWithIndifferentAccess.new
 
     self.class.external_entities_names.each do |external_entity_name|
@@ -86,13 +86,12 @@ module Maestrano::Connector::Rails::Concerns::ComplexEntity
     mapped_connec_entities = consolidate_and_map_connec_entities(modeled_connec_entities, modeled_external_entities)
     mapped_external_entities = consolidate_and_map_external_entities(modeled_external_entities)
 
-    return {connec_entities: mapped_connec_entities, external_entities: mapped_external_entities}
+    {connec_entities: mapped_connec_entities, external_entities: mapped_external_entities}
   end
 
   def consolidate_and_map_connec_entities(modeled_connec_entities, modeled_external_entities)
     modeled_connec_entities.each do |connec_entity_name, entities_in_external_model|
       entities_in_external_model.each do |external_entity_name, entities|
-
         sub_entity_instance = instantiate_sub_entity_instance(connec_entity_name)
         equivalent_external_entities = (modeled_external_entities[external_entity_name] && modeled_external_entities[external_entity_name][connec_entity_name]) || []
 
@@ -131,7 +130,6 @@ module Maestrano::Connector::Rails::Concerns::ComplexEntity
     end
   end
 
-
   def push_entities_to_external(mapped_connec_entities_with_idmaps)
     mapped_connec_entities_with_idmaps.each do |connec_entity_name, entities_in_external_model|
       sub_entity_instance = instantiate_sub_entity_instance(connec_entity_name)
@@ -169,13 +167,13 @@ module Maestrano::Connector::Rails::Concerns::ComplexEntity
   module ClassMethods
     # output : {entities_names[0] => [], entities_names[1] => []}
     def build_empty_hash(entities_names)
-      Hash[ *entities_names.collect{|name| [ name, []]}.flatten(1) ]
+      Hash[*entities_names.collect { |name| [name, []]}.flatten(1)]
     end
 
     # output: {entities_name[0] => [], entities_name[1] => entities}
     # with proc.call(entities_name[1] == entity_name)
     def build_hash_with_entities(entities_name, entity_name, proc, entities)
-      Hash[ *entities_name.collect{|name| proc.call(name) == entity_name ? [name, entities] : [ name, []]}.flatten(1) ]
+      Hash[*entities_name.collect { |name| proc.call(name) == entity_name ? [name, entities] : [name, []] }.flatten(1)]
     end
   end
 end
