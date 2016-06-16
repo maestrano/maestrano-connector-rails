@@ -70,17 +70,17 @@ describe Maestrano::Connector::Rails::ComplexEntity do
         }
 
         it 'calls get_external_entities on each connec sub complex entities' do
-          expect_any_instance_of(Entities::SubEntities::ScE1).to receive(:get_external_entities).with(nil)
-          expect_any_instance_of(Entities::SubEntities::ScE2).to receive(:get_external_entities).with(nil)
-          subject.get_external_entities(nil)
+          expect_any_instance_of(Entities::SubEntities::ScE1).to receive(:get_external_entities_wrapper).with(nil)
+          expect_any_instance_of(Entities::SubEntities::ScE2).to receive(:get_external_entities_wrapper).with(nil)
+          subject.get_external_entities_wrapper(nil)
         end
 
         let(:arr1) { [{'name' => 'Water'}, {'name' => 'Sugar'}] }
         let(:arr2) { [{'price' => 92}, {'price' => 300}] }
         it 'returns an hash of the external_entities keyed by external_entity_name' do
-          allow_any_instance_of(Entities::SubEntities::ScE1).to receive(:get_external_entities).and_return(arr1)
-          allow_any_instance_of(Entities::SubEntities::ScE2).to receive(:get_external_entities).and_return(arr2)
-          expect(subject.get_external_entities(nil)).to eql({'sc_e1' => arr1, 'ScE2' => arr2})
+          allow_any_instance_of(Entities::SubEntities::ScE1).to receive(:get_external_entities_wrapper).and_return(arr1)
+          allow_any_instance_of(Entities::SubEntities::ScE2).to receive(:get_external_entities_wrapper).and_return(arr2)
+          expect(subject.get_external_entities_wrapper(nil)).to eql({'sc_e1' => arr1, 'ScE2' => arr2})
         end
       end
 
@@ -177,6 +177,7 @@ describe Maestrano::Connector::Rails::ComplexEntity do
 
         describe 'consolidate_and_map_connec_entities' do
           let(:id) { 'external-unfolded-id' }
+          let(:connec_id) { 'connec-id' }
           let(:entity) { {'id' => id, 'name' => 'John', 'updated_at' => date} }
           let(:modeled_connec_entities) { {connec_name => {external_name => [entity]}} }
           let(:modeled_external_entities) { {} }
@@ -187,7 +188,7 @@ describe Maestrano::Connector::Rails::ComplexEntity do
             allow(Entities::SubEntities::ScE1).to receive(:entity_name).and_return(connec_name)
             allow_any_instance_of(Entities::SubEntities::ScE1).to receive(:map_to).with(external_name, entity).and_return(mapped_entity)
             allow(Entities::SubEntities::ScE1).to receive(:object_name_from_connec_entity_hash).and_return(human_name)
-            allow(Maestrano::Connector::Rails::ConnecHelper).to receive(:unfold_references).and_return(entity)
+            allow(Maestrano::Connector::Rails::ConnecHelper).to receive(:unfold_references).and_return(entity.merge(__connec_id: connec_id))
           }
 
           context 'when idmaps do not exist' do
@@ -200,7 +201,7 @@ describe Maestrano::Connector::Rails::ComplexEntity do
           end
 
           context 'when idmap exists' do
-            let!(:idmap1) { create(:idmap, organization: organization, connec_entity: connec_name.downcase, external_entity: external_name.downcase, external_id: id) }
+            let!(:idmap1) { create(:idmap, organization: organization, connec_entity: connec_name.downcase, external_entity: external_name.downcase, external_id: id, connec_id: connec_id) }
 
             it 'does not create an idmap' do
               expect{
@@ -236,6 +237,9 @@ describe Maestrano::Connector::Rails::ComplexEntity do
             context 'when conflict' do
               let(:external_entity_1) { {'id' => id} }
               let(:modeled_external_entities) { {external_name => {connec_name => [external_entity_1]}} }
+              before {
+                allow(Entities::SubEntities::ScE1).to receive(:id_from_external_entity_hash).and_return(id)
+              }
 
               context 'with opts' do
                 context 'with connec preemption false' do
@@ -309,7 +313,7 @@ describe Maestrano::Connector::Rails::ComplexEntity do
               allow(klass).to receive(:external?).and_return(true)
               allow(klass).to receive(:entity_name).and_return('n')
             end
-            allow(connec_client).to receive(:batch).and_return(ActionDispatch::Response.new(200, {}, {results: [{status: 200, body: {connec1s: {}}}]}.to_json, {}))
+            allow(connec_client).to receive(:batch).and_return(ActionDispatch::Response.new(200, {}, {results: [{status: 200, body: {connec1s: {id: [{provider: 'connec', id: 'connec-id'}]}}}]}.to_json, {}), ActionDispatch::Response.new(200, {}, {results: [{status: 200, body: {connec1s: {id: [{provider: 'connec', id: 'connec-id'}]}}}]}.to_json, {}), ActionDispatch::Response.new(200, {}, {results: [{status: 200, body: {connec2s: {id: [{provider: 'connec', id: 'connec-id'}]}}}]}.to_json, {}))
           }
           it 'is successful' do
             subject.push_entities_to_connec(external_hash)

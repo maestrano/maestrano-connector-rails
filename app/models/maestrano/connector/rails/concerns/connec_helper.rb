@@ -2,6 +2,12 @@ module Maestrano::Connector::Rails::Concerns::ConnecHelper
   extend ActiveSupport::Concern
 
   module ClassMethods
+
+    def get_client(organization)
+      client = Maestrano::Connec::Client[organization.tenant].new(organization.uid)
+      client.class.headers('CONNEC-EXTERNAL-IDS' => 'true')
+      client
+    end
     
     # Replace the ids arrays by the external id
     # If a reference has no id for this oauth_provider and oauth_uid but has one for connec returns nil
@@ -11,10 +17,10 @@ module Maestrano::Connector::Rails::Concerns::ConnecHelper
 
       # Id
       id = unfolded_connec_entity['id'].find{|id| id['provider'] == organization.oauth_provider && id['realm'] == organization.oauth_uid}
+      unfolded_connec_entity[:__connec_id] = unfolded_connec_entity['id'].find{|id| id['provider'] == 'connec'}['id']
       if id
         unfolded_connec_entity['id'] = id['id']
       else
-        unfolded_connec_entity[:__connec_id] = unfolded_connec_entity['id'].find{|id| id['provider'] == 'connec'}['id']
         unfolded_connec_entity['id'] = nil
       end
 
@@ -45,7 +51,7 @@ module Maestrano::Connector::Rails::Concerns::ConnecHelper
       ref = array_of_refs.shift
       field = entity[ref]
 
-      # Follow embedment path, remplace if it's a string
+      # Follow embedment path, remplace if it's not an array or a hash
       unless field.blank?
         case field
         when Array
@@ -54,7 +60,7 @@ module Maestrano::Connector::Rails::Concerns::ConnecHelper
           end
         when HashWithIndifferentAccess
           fold_references_helper(entity[ref], array_of_refs, organization)
-        when String
+        else
           id = field
           entity[ref] = [id_hash(id, organization)]
         end

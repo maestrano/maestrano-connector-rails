@@ -53,7 +53,7 @@ describe 'singleton workflow' do
   let(:company_base) {
     {
       "name" => "My awesome company",
-      "updated_at" => connec_updated
+      "updated_at" => connec_updated.iso8601
     }
   }
 
@@ -61,7 +61,7 @@ describe 'singleton workflow' do
     {
       'id' => ext_comp_id,
       'name' => 'My not so awesome store',
-      'updated_at' => ext_updated
+      'updated_at' => ext_updated.iso8601
     }
   }
 
@@ -90,7 +90,7 @@ describe 'singleton workflow' do
     allow(connec_client).to receive(:get).and_return(ActionDispatch::Response.new(200, {}, {company: company}.to_json, {}))
     allow_any_instance_of(Entities::SingletonIntegration).to receive(:get_external_entities).and_return(ext_company)
     allow_any_instance_of(Entities::SingletonIntegration).to receive(:update_external_entity).and_return(nil)
-    allow(connec_client).to receive(:batch).and_return(ActionDispatch::Response.new(200, {}, {results: [{status: 200, body: {company: {}}}]}.to_json, {}))
+    allow(connec_client).to receive(:batch).and_return(ActionDispatch::Response.new(200, {}, {results: [{status: 200, body: {company: {id: [{provider: 'connec', id: 'some connec id'}]}}}]}.to_json, {}))
   }
 
   subject { Maestrano::Connector::Rails::SynchronizationJob.new.sync_entity('singleton_integration', organization, connec_client, external_client, nil, {}) }
@@ -99,7 +99,7 @@ describe 'singleton workflow' do
   describe 'when no idmap' do
 
     describe 'when received both' do
-      let(:company) { [company_base.merge('id' => [{'id' => 'some connec id', 'provider' => 'connec', 'realm' => organization.uid}])] }
+      let(:company) { company_base.merge('id' => [{'id' => 'some connec id', 'provider' => 'connec', 'realm' => organization.uid}]) }
       let(:ext_company) { [ext_company_base] }
 
       context 'when connec most recent' do
@@ -110,18 +110,27 @@ describe 'singleton workflow' do
             :ops => [
               {
                 :method => "put",
-                :url => "/api/v2//company/some connec id",
+                :url => "/api/v2/#{organization.uid}/company/some connec id",
                 :params => {
                   :company => {
-                    :id => "ext comp id",
-                    :provider => "provider",
-                    :realm => "oauth uid"
+                    id: [
+                      {
+                        :id => "ext comp id",
+                        :provider => "provider",
+                        :realm => "oauth uid"
+                      }
+                    ]
                   }
                 }
               }
             ]
           }
         }
+
+        it 'handles the get correctly' do
+          expect_any_instance_of(Entities::SingletonIntegration).to receive(:consolidate_and_map_data).with([company], ext_company).and_return({connec_entities: [], external_entities: []})
+          subject
+        end
 
         it 'handles the idmap correctly' do
           expect{
@@ -133,12 +142,13 @@ describe 'singleton workflow' do
           expect(idmap.external_entity).to eql('company')
           expect(idmap.message).to be_nil
           expect(idmap.external_id).to eql(ext_comp_id)
+          expect(idmap.connec_id).to eql('some connec id')
         end
 
         it 'does the mapping correctly' do
-          idmap = Entities::SingletonIntegration.create_idmap(organization_id: organization.id, external_id: ext_comp_id)
+          idmap = Entities::SingletonIntegration.create_idmap(organization_id: organization.id, external_id: ext_comp_id, connec_id: 'some connec id')
           allow(Entities::SingletonIntegration).to receive(:create_idmap).and_return(idmap)
-          expect_any_instance_of(Entities::SingletonIntegration).to receive(:push_entities_to_external).with([{entity: {name: 'My awesome company', __connec_id: 'some connec id'}, idmap: idmap}])
+          expect_any_instance_of(Entities::SingletonIntegration).to receive(:push_entities_to_external).with([{entity: {name: 'My awesome company'}, idmap: idmap}])
           subject
         end
 
@@ -177,7 +187,7 @@ describe 'singleton workflow' do
 
   describe 'when idmap exists' do
     describe 'when received both' do
-      let(:company) { [company_base.merge('id' => [{'id' => ext_comp_id, 'provider' => provider, 'realm' => oauth_uid}])] }
+      let(:company) { company_base.merge('id' => [{'id' => ext_comp_id, 'provider' => provider, 'realm' => oauth_uid}, {'id' => 'connec-id', 'provider' => 'connec', 'realm' => 'some-realm'}]) }
       let(:ext_company) { [ext_company_base] }
       let!(:idmap) { Entities::SingletonIntegration.create_idmap(organization_id: organization.id, external_id: ext_comp_id) }
 
@@ -236,7 +246,7 @@ describe 'singleton workflow' do
   end
 
   describe 'when received only connec one' do
-    let(:company) { [company_base.merge('id' => [{'id' => ext_comp_id, 'provider' => provider, 'realm' => oauth_uid}])] }
+    let(:company) { company_base.merge('id' => [{'id' => ext_comp_id, 'provider' => provider, 'realm' => oauth_uid}, {'id' => 'connec-id', 'provider' => 'connec', 'realm' => 'some-realm'}]) }
     let(:ext_company) { [] }
     let!(:idmap) { Entities::SingletonIntegration.create_idmap(organization_id: organization.id, external_id: ext_comp_id) }
 

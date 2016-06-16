@@ -7,6 +7,8 @@ gem 'sidekiq'
 gem 'haml-rails'
 gem 'bootstrap-sass'
 gem 'autoprefixer-rails'
+gem 'attr_encrypted', '~> 1.4.0'
+gem 'config'
 
 # Add dependencies to develop your gem here.
 group :development do
@@ -20,4 +22,5 @@ group :development do
   gem 'sqlite3'
   gem 'shoulda-matchers'
   gem 'rubocop'
+  gem 'timecop'
 end

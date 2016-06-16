@@ -59,22 +59,22 @@ module Maestrano::Connector::Rails::Concerns::ComplexEntity
   # -------------------------------------------------------------
   #          Entity equivalent methods
   # -------------------------------------------------------------
-  def get_connec_entities(last_synchronization)
+  def get_connec_entities(last_synchronization_date=nil)
     entities = ActiveSupport::HashWithIndifferentAccess.new
 
     self.class.connec_entities_names.each do |connec_entity_name|
       sub_entity_instance = instantiate_sub_entity_instance(connec_entity_name)
-      entities[connec_entity_name] = sub_entity_instance.get_connec_entities(last_synchronization)
+      entities[connec_entity_name] = sub_entity_instance.get_connec_entities(last_synchronization_date)
     end
     entities
   end
 
-  def get_external_entities(last_synchronization)
+  def get_external_entities_wrapper(last_synchronization_date=nil)
     entities = ActiveSupport::HashWithIndifferentAccess.new
 
     self.class.external_entities_names.each do |external_entity_name|
       sub_entity_instance = instantiate_sub_entity_instance(external_entity_name)
-      entities[external_entity_name] = sub_entity_instance.get_external_entities(last_synchronization)
+      entities[external_entity_name] = sub_entity_instance.get_external_entities_wrapper(last_synchronization_date)
     end
     entities
   end
@@ -141,11 +141,11 @@ module Maestrano::Connector::Rails::Concerns::ComplexEntity
     end
   end
 
-  def before_sync(last_synchronization)
+  def before_sync(last_synchronization_date)
     # Does nothing by default
   end
 
-  def after_sync(last_synchronization)
+  def after_sync(last_synchronization_date)
     # Does nothing by default
   end
 

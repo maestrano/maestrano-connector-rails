@@ -57,6 +57,15 @@
                       .col-md-5.text-right
                         - if v && @organization.oauth_uid && @organization.sync_enabled
                           = link_to "Force a synchronization for #{k.to_s.humanize.pluralize} only", home_synchronize_path(opts: {only_entities: [k.to_s]}), method: :post, class: "btn btn-warning btn-sm"
+            .spacer1
+            .row
+              .col-md-4
+                %label{:for => 'no-historical-data'} Don't synchronize historical data
+              .col-md-2
+                %input{type: 'checkbox', id: 'no-historical-data', name: 'no-historical-data', checked: @organization.date_filtering_limit}
+              -if @organization.date_filtering_limit
+                .col-md-6
+                  %small Only data created after #{@organization.date_filtering_limit} will be synchronized
           .spacer1
           .row
             .col-md-2.col-md-offset-10.text-center.link-step-action

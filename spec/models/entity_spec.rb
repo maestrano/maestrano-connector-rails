@@ -76,6 +76,10 @@ describe Maestrano::Connector::Rails::Entity do
       it { expect{ subject.last_update_date_from_external_entity_hash(nil) }.to raise_error('Not implemented') }
     end
 
+    describe 'creation_date_from_external_entity_hash' do
+      it { expect{ subject.creation_date_from_external_entity_hash(nil) }.to raise_error('Not implemented') }
+    end
+
     # Entity specific methods
     describe 'singleton?' do
       it 'is false by default' do
@@ -166,7 +170,7 @@ describe Maestrano::Connector::Rails::Entity do
 
     # Connec! methods
     describe 'connec_methods' do
-      let(:sync) { create(:synchronization) }
+      let(:sync) { create(:synchronization, organization: organization) }
 
       describe 'filter_connec_entities' do
         it 'does nothing by default' do
@@ -184,6 +188,11 @@ describe Maestrano::Connector::Rails::Entity do
           it { expect(subject.get_connec_entities(nil)).to eql([]) }
         end
 
+        describe 'when skip_connec' do
+          let(:opts) { {skip_connec: true} }
+          it { expect(subject.get_connec_entities(nil)).to eql([]) }
+        end
+
         describe 'with response' do
           context 'for a singleton resource' do
             before {
@@ -192,7 +201,7 @@ describe Maestrano::Connector::Rails::Entity do
             }
 
             it 'calls get with a singularize url' do
-              expect(connec_client).to receive(:get).with("/#{connec_name.downcase}?")
+              expect(connec_client).to receive(:get).with("#{connec_name.downcase}?")
               subject.get_connec_entities(nil)
             end
           end
@@ -205,14 +214,14 @@ describe Maestrano::Connector::Rails::Entity do
             context 'when opts[:full_sync] is true' do
               let(:opts) { {full_sync: true} }
               it 'performs a full get' do
-                expect(connec_client).to receive(:get).with("/#{connec_name.downcase.pluralize}?")
-                subject.get_connec_entities(sync)
+                expect(connec_client).to receive(:get).with("#{connec_name.downcase.pluralize}?")
+                subject.get_connec_entities(sync.updated_at)
               end
             end
 
             context 'when there is no last sync' do
               it 'performs a full get' do
-                expect(connec_client).to receive(:get).with("/#{connec_name.downcase.pluralize}?")
+                expect(connec_client).to receive(:get).with("#{connec_name.downcase.pluralize}?")
                 subject.get_connec_entities(nil)
               end
             end
@@ -220,8 +229,8 @@ describe Maestrano::Connector::Rails::Entity do
             context 'when there is a last sync' do
               it 'performs a time limited get' do
                 uri_param = {"$filter" => "updated_at gt '#{sync.updated_at.iso8601}'"}.to_query
-                expect(connec_client).to receive(:get).with("/#{connec_name.downcase.pluralize}?#{uri_param}")
-                subject.get_connec_entities(sync)
+                expect(connec_client).to receive(:get).with("#{connec_name.downcase.pluralize}?#{uri_param}")
+                subject.get_connec_entities(sync.updated_at)
               end
             end
 
@@ -229,22 +238,22 @@ describe Maestrano::Connector::Rails::Entity do
               it 'support filter option for full sync' do
                 subject.instance_variable_set(:@opts, {full_sync: true, :$filter => "code eq 'PEO12'"})
                 uri_param = {'$filter'=>'code eq \'PEO12\''}.to_query
-                expect(connec_client).to receive(:get).with("/#{connec_name.downcase.pluralize}?#{uri_param}")
-                subject.get_connec_entities(sync)
+                expect(connec_client).to receive(:get).with("#{connec_name.downcase.pluralize}?#{uri_param}")
+                subject.get_connec_entities(sync.updated_at)
               end
 
               it 'support filter option for time limited sync' do
                 subject.instance_variable_set(:@opts, {:$filter => "code eq 'PEO12'"})
                 uri_param = {"$filter"=>"updated_at gt '#{sync.updated_at.iso8601}' and code eq 'PEO12'"}.to_query
-                expect(connec_client).to receive(:get).with("/#{connec_name.downcase.pluralize}?#{uri_param}")
-                subject.get_connec_entities(sync)
+                expect(connec_client).to receive(:get).with("#{connec_name.downcase.pluralize}?#{uri_param}")
+                subject.get_connec_entities(sync.updated_at)
               end
 
               it 'support orderby option for time limited sync' do
                 subject.instance_variable_set(:@opts, {:$orderby => "name asc"})
                 uri_param = {"$orderby"=>"name asc", "$filter"=>"updated_at gt '#{sync.updated_at.iso8601}'"}.to_query
-                expect(connec_client).to receive(:get).with("/#{connec_name.downcase.pluralize}?#{uri_param}")
-                subject.get_connec_entities(sync)
+                expect(connec_client).to receive(:get).with("#{connec_name.downcase.pluralize}?#{uri_param}")
+                subject.get_connec_entities(sync.updated_at)
               end
             end
 
@@ -254,7 +263,8 @@ describe Maestrano::Connector::Rails::Entity do
               }
 
               it 'calls get multiple times' do
-                expect(connec_client).to receive(:get).twice
+                expect(connec_client).to receive(:get).with('people?')
+                expect(connec_client).to receive(:get).with('people?%24skip=10&%24top=10')
                 subject.get_connec_entities(nil)
               end
             end
@@ -329,8 +339,8 @@ describe Maestrano::Connector::Rails::Entity do
         end
 
         context 'without errors' do
-          let(:result200) { {status: 200, body: {connec_name.downcase.pluralize.to_sym => {}}} }
-          let(:result201) { {status: 201, body: {connec_name.downcase.pluralize.to_sym => {}}} }
+          let(:result200) { {status: 200, body: {connec_name.downcase.pluralize.to_sym => {id: [{provider: 'connec', id: 'id1'}]}}} }
+          let(:result201) { {status: 201, body: {connec_name.downcase.pluralize.to_sym => {id: [{provider: 'connec', id: 'id2'}]}}} }
           before {
             allow(connec_client).to receive(:batch).and_return(ActionDispatch::Response.new(200, {}, {results: [result200, result201]}.to_json, {}))
           }
@@ -447,11 +457,36 @@ describe Maestrano::Connector::Rails::Entity do
       let(:idmap1) { create(:idmap, organization: organization) }
       let(:idmap2) { create(:idmap, organization: organization, external_id: nil, external_entity: nil, last_push_to_external: nil) }
       let(:entity1) { {name: 'John'} }
-      let(:entity2) { {name: 'Jane', __connec_id: connec_id2} }
+      let(:entity2) { {name: 'Jane'} }
       let(:entity_with_idmap1) { {entity: entity1, idmap: idmap1} }
       let(:connec_id2) { 'connec_id2' }
       let(:entity_with_idmap2) { {entity: entity2, idmap: idmap2} }
       let(:entities_with_idmaps) { [entity_with_idmap1, entity_with_idmap2] }
+
+      describe 'get_external_entities_wrapper' do
+        context 'when write only' do
+          before { allow(subject.class).to receive(:can_read_external?).and_return(false) }
+
+          it 'returns an empty array and does not call get_external_entities' do
+            expect(subject).to_not receive(:get_connec_entities)
+            expect(subject.get_external_entities_wrapper(nil)).to eql([])
+          end
+        end
+
+        context 'when skip external' do
+          let(:opts) { {skip_external: true} }
+
+          it 'returns an empty array and does not call get_external_entities' do
+            expect(subject).to_not receive(:get_connec_entities)
+            expect(subject.get_external_entities_wrapper(nil)).to eql([])
+          end
+        end
+
+        it 'calls get_external_entities' do
+          expect(subject).to receive(:get_external_entities).and_return([])
+          subject.get_external_entities_wrapper(nil)
+        end
+      end
 
       describe 'get_external_entities' do
         it { expect{ subject.get_external_entities(nil) }.to raise_error('Not implemented') }
@@ -486,7 +521,7 @@ describe Maestrano::Connector::Rails::Entity do
 
           context 'when ids to send to connec' do
             let(:batch_param) {
-              {:sequential=>true, :ops=>[{:method=>"put", :url=>"/api/v2/cld-123/people/#{connec_id2}", :params=>{:people=>{:id=>"id", :provider=>organization.oauth_provider, :realm=>organization.oauth_uid}}}]}
+              {:sequential=>true, :ops=>[{:method=>"put", :url=>"/api/v2/cld-123/people/#{idmap2.connec_id}", :params=>{:people=>{id: [{:id=>"id", :provider=>organization.oauth_provider, :realm=>organization.oauth_uid}]}}}]}
             }
 
             it 'does a batch call on connec' do
@@ -544,9 +579,9 @@ describe Maestrano::Connector::Rails::Entity do
             expect(idmap2.last_push_to_external).to_not be_nil
           end
 
-          it 'returns an hash with the external_id' do
+          it 'returns the idmap' do
             allow(subject).to receive(:create_external_entity).and_return('999111')
-            expect(subject.push_entity_to_external(entity_with_idmap2, external_name)).to eql({connec_id: connec_id2, external_id: '999111', idmap: idmap2})
+            expect(subject.push_entity_to_external(entity_with_idmap2, external_name)).to eql(idmap2)
           end
         end
 
@@ -589,6 +624,7 @@ describe Maestrano::Connector::Rails::Entity do
       before {
         allow(subject.class).to receive(:id_from_external_entity_hash).and_return(id)
         allow(subject.class).to receive(:last_update_date_from_external_entity_hash).and_return(date)
+        allow(subject.class).to receive(:creation_date_from_external_entity_hash).and_return(date)
       }
       
       describe 'consolidate_and_map_data' do
@@ -671,7 +707,7 @@ describe Maestrano::Connector::Rails::Entity do
               end
 
               it 'map with the unfolded references' do
-                expect(subject).to receive(:map_to_external).with('id' => nil, 'updated_at' => updated, __connec_id: 'lala')
+                expect(subject).to receive(:map_to_external).with('id' => nil, 'updated_at' => updated)
                 subject.consolidate_and_map_singleton([connec_entity], [{}])
               end
             end
@@ -693,14 +729,16 @@ describe Maestrano::Connector::Rails::Entity do
         let(:connec_human_name) { 'connec human name' }
         let(:id1) { 'external-unfolded-id' }
         let(:id2) { nil }
-        let(:entity1) { {'id' => id1, 'name' => 'John', 'updated_at' => date} }
-        let(:entity2) { {'id' => id2, 'name' => 'Jane', 'updated_at' => date} }
+        let(:connec_id1) { 'connec-id-1' }
+        let(:connec_id2) { 'connec-id-2' }
+        let(:entity1) { {'id' => id1, 'name' => 'John', 'updated_at' => date, 'created_at' => date} }
+        let(:entity2) { {'id' => id2, 'name' => 'Jane', 'updated_at' => date, 'created_at' => date} }
         let(:entity_without_refs) { {} }
         let(:entities) { [entity1, entity2] }
         before {
           allow(subject.class).to receive(:object_name_from_connec_entity_hash).and_return(connec_human_name)
           allow(subject).to receive(:map_to_external).and_return({mapped: 'entity'})
-          allow(Maestrano::Connector::Rails::ConnecHelper).to receive(:unfold_references).and_return(entity1, entity2, nil)
+          allow(Maestrano::Connector::Rails::ConnecHelper).to receive(:unfold_references).and_return(entity1.merge(__connec_id: connec_id1), entity2.merge(__connec_id: connec_id2), nil)
         }
 
         context 'when idmaps do not exist' do
@@ -714,7 +752,7 @@ describe Maestrano::Connector::Rails::Entity do
 
         context 'when idmap exists' do
           let(:entities) { [entity1] }
-          let!(:idmap1) { create(:idmap, organization: organization, connec_entity: connec_name.downcase, external_entity: external_name.downcase, external_id: id1) }
+          let!(:idmap1) { create(:idmap, organization: organization, connec_entity: connec_name.downcase, external_entity: external_name.downcase, external_id: id1, connec_id: connec_id1) }
 
           it 'does not create an idmap' do
             expect{
@@ -755,12 +793,33 @@ describe Maestrano::Connector::Rails::Entity do
             end
           end
 
+          context 'when before date_filtering_limit' do
+            before {
+              organization.update(date_filtering_limit: 5.minutes.ago)
+            }
+
+            it 'discards the entity' do
+              expect(subject.consolidate_and_map_connec_entities(entities, [], [], external_name)).to eql([])
+            end
+
+            context 'with full synchronization opts' do
+              let(:opts) { {full_sync: true} }
+
+              it 'keeps the entity' do
+                expect(subject.consolidate_and_map_connec_entities(entities, [], [], external_name)).to eql([{entity: {mapped: 'entity'}, idmap: idmap1}])
+              end
+            end
+          end
+
         end
 
         context 'when conflict' do
           let(:entities) { [entity1] }
           let(:external_entity_1) { {'id' => id1} }
           let(:external_entities) { [external_entity_1] }
+          before {
+            allow(subject.class).to receive(:id_from_external_entity_hash).and_return(id1)
+          }
 
           context 'with opts' do
             context 'with connec preemption false' do
@@ -856,6 +915,24 @@ describe Maestrano::Connector::Rails::Entity do
 
           context 'when last_push_to_connec is recent' do
             before { idmap.update(last_push_to_connec: 2.second.ago) }
+
+            it 'discards the entity' do
+              expect(subject.consolidate_and_map_external_entities([entity], connec_name)).to eql([])
+            end
+
+            context 'with full synchronization opts' do
+              let(:opts) { {full_sync: true} }
+
+              it 'keeps the entity' do
+                expect(subject.consolidate_and_map_external_entities([entity], connec_name)).to eql([{entity: {mapped: 'ext_entity'}, idmap: idmap}])
+              end
+            end
+          end
+
+          context 'when before date_filtering_limit' do
+            before {
+              organization.update(date_filtering_limit: 5.minutes.ago)
+            }
 
             it 'discards the entity' do
               expect(subject.consolidate_and_map_external_entities([entity], connec_name)).to eql([])

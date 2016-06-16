@@ -1,6 +1,5 @@
 module Maestrano::Connector::Rails
   class Organization < ActiveRecord::Base
-
     # Enable Maestrano for this group
     maestrano_group_via :provider, :uid, :tenant do |group, maestrano|
       group.name = (maestrano.name.blank? ? "Default Group name" : maestrano.name)
@@ -19,6 +18,13 @@ module Maestrano::Connector::Rails
     end
 
     #===================================
+    # Encryptions
+    #===================================
+    attr_encrypted_options.merge!(:mode => :per_attribute_iv_and_salt)
+    attr_encrypted :oauth_token, key: ::Settings.encryption_key1
+    attr_encrypted :refresh_token, key: ::Settings.encryption_key2
+
+    #===================================
     # Associations
     #===================================
     has_many :user_organization_rels
@@ -31,6 +37,7 @@ module Maestrano::Connector::Rails
     #===================================
     validates :name, presence: true
     validates :tenant, presence: true
+    validates :uid, uniqueness: true
 
     #===================================
     # Serialized field
@@ -67,6 +74,10 @@ module Maestrano::Connector::Rails
 
     def last_successful_synchronization
       self.synchronizations.where(status: 'SUCCESS', partial: false).order(updated_at: :desc).first
+    end
+
+    def last_synchronization_date
+      date_filtering_limit || (last_successful_synchronization && last_successful_synchronization.updated_at)
     end
   end
 end

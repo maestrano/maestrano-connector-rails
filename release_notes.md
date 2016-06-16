@@ -37,13 +37,13 @@ A major refactoring as lead to some breaking changes:
 **SubEntityBase:**
 **`map_to`**
 
-* Idmap field `connec_id` is depreceated and not filled or used anymore by the framework
 * The class method `entities_list` has been moved from `Entity` to `External`
 * The `references` method has been changed with the new reference system. The framework now expect it to be an array os strings instead of an array of hashes. Furthermore, it now supports reference fields embedded in hashes and arrays.
 * The following method from `Entity` as been changed from class methods to instance methods (and their arguments have been changed):
 `not_modified_since_last_push_to_connec?`
 `is_external_more_recent?`
 `solve_conflict`
+* Organization.uid is now enforced as an uniq attributes
 
 * The following methods have been removed
 `map_to_external_with_idmap`

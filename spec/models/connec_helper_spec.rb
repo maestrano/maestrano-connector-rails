@@ -27,6 +27,7 @@ describe Maestrano::Connector::Rails::ConnecHelper do
 
     let(:output_hash) {
       {
+        __connec_id: 'abcd',
         id: id_id,
         organization_id: org_id_id,
         lines: [
@@ -51,8 +52,8 @@ describe Maestrano::Connector::Rails::ConnecHelper do
     context 'when all ids are here' do
       let(:id_id) { 'id' }
       let(:org_id_id) { 'org_id' }
-      let(:id) { [subject.id_hash(id_id, organization)] }
-      let(:org_id) { [subject.id_hash(org_id_id, organization)] }
+      let(:id) { [subject.id_hash(id_id, organization), {'provider' => 'connec', 'id' => 'abcd'}] }
+      let(:org_id) { [subject.id_hash(org_id_id, organization), {'provider' => 'connec', 'id' => 'abcd'}] }
 
       it 'unfolds everything' do
         expect(subject.unfold_references(connec_hash, ['organization_id', 'lines/linked_transaction/id'], organization)).to eql(output_hash.with_indifferent_access)
@@ -82,7 +83,7 @@ describe Maestrano::Connector::Rails::ConnecHelper do
     end
     context 'when at least one ref is missing but there is no connec id' do
       let(:id_id) { 'id' }
-      let(:id) { [subject.id_hash(id_id, organization)] }
+      let(:id) { [subject.id_hash(id_id, organization), {'provider' => 'connec', 'id' => 'abcd'}] }
       let(:org_id_id) { nil }
       let(:org_id) { nil }
 
@@ -93,9 +94,10 @@ describe Maestrano::Connector::Rails::ConnecHelper do
   end
 
   describe 'fold_references' do
+    let(:id) { 'id1' }
     let(:mapped_hash) {
       {
-        id: 'id1',
+        id: id,
         organization_id: nil,
         contact: {
           id: ''
@@ -114,7 +116,7 @@ describe Maestrano::Connector::Rails::ConnecHelper do
     let(:output_hash) {
       {
         "id" => [
-          subject.id_hash('id1', organization)
+          subject.id_hash(id, organization)
         ],
         "organization_id" => nil,
         "contact" => {
@@ -137,6 +139,14 @@ describe Maestrano::Connector::Rails::ConnecHelper do
 
     it 'folds the existing refs' do
       expect(subject.fold_references(mapped_hash, ['organization_id', 'contact/id', 'lines/id', 'not_here_ref'], organization)).to eql(output_hash.with_indifferent_access)
+    end
+
+    context 'when id is an integer' do
+      let(:id) { 1234 }
+
+      it 'folds the existing refs' do
+        expect(subject.fold_references(mapped_hash, ['organization_id', 'contact/id', 'lines/id', 'not_here_ref'], organization)).to eql(output_hash.with_indifferent_access)
+      end
     end
   end
 end

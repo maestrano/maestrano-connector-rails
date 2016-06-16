@@ -64,7 +64,9 @@ describe 'connec to the external application' do
       ],
       "is_customer" => false,
       "is_supplier" => true,
-      "is_lead" => false
+      "is_lead" => false,
+      "updated_at" => 2.day.ago,
+      "created_at" => 2.day.ago
     }
   }
   let(:person) { person1 }
@@ -77,7 +79,7 @@ describe 'connec to the external application' do
     allow_any_instance_of(Entities::ConnecToExternal).to receive(:get_external_entities).and_return([])
   }
 
-  subject { Maestrano::Connector::Rails::SynchronizationJob.new.sync_entity('connec_to_external', organization, connec_client, external_client, nil, {}) }
+  subject { Maestrano::Connector::Rails::SynchronizationJob.new.sync_entity('connec_to_external', organization, connec_client, external_client, organization.last_synchronization_date, {}) }
 
   describe 'a new record created in connec with all references known' do
     before {
@@ -86,7 +88,6 @@ describe 'connec to the external application' do
 
     let(:mapped_entity) {
       {
-        __connec_id: "23daf041-e18e-0133-7b6a-15461b913fab",
         AccountId: ext_org_id,
         FirstName: 'John'
       }
@@ -98,13 +99,17 @@ describe 'connec to the external application' do
         :ops=> [
           {
             :method=>"put", 
-            :url=>"/api/v2//people/23daf041-e18e-0133-7b6a-15461b913fab", 
+            :url=>"/api/v2/#{organization.uid}/people/23daf041-e18e-0133-7b6a-15461b913fab", 
             :params=>
             {
               :people=>{
-                :id=>"ext contact id",
-                :provider=>"provider",
-                :realm=>"oauth uid"
+                id: [
+                  {
+                    :id=>"ext contact id",
+                    :provider=>"provider",
+                    :realm=>"oauth uid"
+                  }
+                ]
               }
             }
           }
@@ -122,11 +127,12 @@ describe 'connec to the external application' do
       expect(idmap.external_entity).to eql('contact')
       expect(idmap.message).to be_nil
       expect(idmap.external_id).to eql(ext_contact_id)
+      expect(idmap.connec_id).to eql("23daf041-e18e-0133-7b6a-15461b913fab")
     end
 
     it 'does the mapping correctly' do
-      idmap = Entities::ConnecToExternal.create_idmap(organization_id: organization.id, external_id: ext_contact_id)
-      allow(Entities::ConnecToExternal).to receive(:create_idmap).and_return(idmap)
+      idmap = Entities::ConnecToExternal.create_idmap(organization_id: organization.id, external_id: ext_contact_id, connec_id: "23daf041-e18e-0133-7b6a-15461b913fab")
+      allow(Entities::ConnecToExternal).to receive(:find_or_create_idmap).and_return(idmap)
       expect_any_instance_of(Entities::ConnecToExternal).to receive(:push_entities_to_external).with([{entity: mapped_entity, idmap: idmap}])
       subject
     end
@@ -142,7 +148,7 @@ describe 'connec to the external application' do
       allow_any_instance_of(Entities::ConnecToExternal).to receive(:update_external_entity).and_return(nil)
     }
     let(:person) { person1.merge('first_name' => 'Jane', 'id' => person1['id'] << {'id' => ext_contact_id, 'provider' => provider, 'realm' => oauth_uid}) }
-    let!(:idmap) { Entities::ConnecToExternal.create_idmap(organization_id: organization.id, external_id: ext_contact_id) }
+    let!(:idmap) { Entities::ConnecToExternal.create_idmap(organization_id: organization.id, external_id: ext_contact_id, connec_id: "23daf041-e18e-0133-7b6a-15461b913fab") }
 
     let(:mapped_entity) {
       {
@@ -173,6 +179,26 @@ describe 'connec to the external application' do
   describe 'a creation from connec with references missing' do
     let(:person) { person1.merge("organization_id" => [{"realm"=>"org-fg4a", "provider"=>"connec", "id"=>"2305c5e0-e18e-0133-890f-07d4de9f9781"}]) }
     
+    it 'pushes nothing and creates no idmap' do
+      expect_any_instance_of(Entities::ConnecToExternal).to_not receive(:create_external_entity)
+      expect_any_instance_of(Entities::ConnecToExternal).to_not receive(:update_external_entity)
+      expect{
+        subject
+      }.to_not change{ Maestrano::Connector::Rails::IdMap.count }
+    end
+  end
+
+  describe 'an entity from before the date filtering limit' do
+    let(:date_filtering_limit) { 2.minute.ago }
+    before {
+      organization.update(date_filtering_limit: date_filtering_limit)
+    }
+
+    it 'calls get_connec_entities with a date even if there is no last sync' do
+      expect_any_instance_of(Entities::ConnecToExternal).to receive(:get_connec_entities).with(date_filtering_limit).and_return([])
+      subject
+    end
+
     it 'pushes nothing and creates no idmap' do
       expect_any_instance_of(Entities::ConnecToExternal).to_not receive(:create_external_entity)
       expect_any_instance_of(Entities::ConnecToExternal).to_not receive(:update_external_entity)
