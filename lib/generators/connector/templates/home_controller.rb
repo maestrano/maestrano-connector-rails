@@ -14,11 +14,14 @@ class HomeController < ApplicationController
       end
       organization.sync_enabled = organization.synchronized_entities.values.any?
 
-      no_historical_data = !!params['no-historical-data']
-      if no_historical_data
-        organization.date_filtering_limit ||= Time.now
-      else
-        organization.date_filtering_limit = nil
+      unless organization.historical_data
+        historical_data = !!params['historical-data']
+        if historical_data
+          organization.date_filtering_limit = nil
+          organization.historical_data = true
+        else
+          organization.date_filtering_limit ||= Time.now
+        end
       end
       
       organization.save

@@ -60,12 +60,14 @@
             .spacer1
             .row
               .col-md-4
-                %label{:for => 'no-historical-data'} Don't synchronize historical data
+                %label{:for => 'historical-data'} Synchronize my historical data
               .col-md-2
-                %input{type: 'checkbox', id: 'no-historical-data', name: 'no-historical-data', checked: @organization.date_filtering_limit}
-              -if @organization.date_filtering_limit
-                .col-md-6
-                  %small Only data created after #{@organization.date_filtering_limit} will be synchronized
+                %input{type: 'checkbox', id: 'historical-data', name: 'historical-data', checked: @organization.historical_data, onchange: 'historicalDataDisplay();', disabled: @organization.historical_data}
+              .col-md-6
+                %small#historical-data-display-unchecked{style: "display: #{@organization.historical_data ? 'none' : 'block'}"} Only data created after #{(@organization.date_filtering_limit && @organization.date_filtering_limit.utc || Time.now.utc).to_formatted_s(:long_ordinal)} will be synchronized
+                %small#historical-data-display-checked{style: "display: #{!@organization.historical_data ? 'none' : 'block'}"}
+                  Synchronizing your historical data will share all data in ApplicationName. This action is not reversible. Want to know more? Check 
+                  = link_to 'here', 'https://maestrano.atlassian.net/wiki/display/UKB/How+Connec%21+manages+Historical+Data+Sharing'
           .spacer1
           .row
             .col-md-2.col-md-offset-10.text-center.link-step-action
