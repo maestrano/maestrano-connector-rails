@@ -5,6 +5,7 @@ require 'rspec/rails'
 require 'factory_girl_rails'
 require 'shoulda/matchers'
 require 'simplecov'
+require 'timecop'
 SimpleCov.start
 
 Rails.backtrace_cleaner.remove_silencers!

@@ -20,8 +20,9 @@ module Maestrano::Connector::Rails
     #===================================
     # Encryptions
     #===================================
-    # attr_encrypted :oauth_token, key: ::Settings.encryption_key
-    # attr_encrypted :refresh_token, key: ::Settings.encryption_key
+    attr_encrypted_options.merge!(:mode => :per_attribute_iv_and_salt)
+    attr_encrypted :oauth_token, key: ::Settings.encryption_key1
+    attr_encrypted :refresh_token, key: ::Settings.encryption_key2
 
     #===================================
     # Associations
@@ -73,6 +74,10 @@ module Maestrano::Connector::Rails
 
     def last_successful_synchronization
       self.synchronizations.where(status: 'SUCCESS', partial: false).order(updated_at: :desc).first
+    end
+
+    def last_synchronization_date
+      (last_successful_synchronization && last_successful_synchronization.updated_at) || date_filtering_limit
     end
   end
 end

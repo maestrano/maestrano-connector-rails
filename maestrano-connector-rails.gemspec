@@ -248,4 +248,3 @@ Gem::Specification.new do |s|
     s.add_dependency(%q<shoulda-matchers>, [">= 0"])
   end
 end
-

@@ -1,7 +1,7 @@
 # TODO
 # This file is provided as an example and should be removed
 # See README for explanation
-# class Enities::SubEntities::Person < Maestrano::Connector::Rails::SubEntityBase
+# class Entities::SubEntities::Person < Maestrano::Connector::Rails::SubEntityBase
 #   def self.external?
 #     false
 #   end

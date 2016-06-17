@@ -38,6 +38,7 @@ module Connector
         copy_file 'home_controller.rb', 'app/controllers/home_controller.rb'
         copy_file 'home_controller_spec.rb', 'spec/controllers/home_controller_spec.rb'
         copy_file 'home_index.haml', 'app/views/home/index.html.haml'
+        copy_file 'home.js', 'app/assets/javascripts/home.js'
 
         copy_file 'synchronizations_controller.rb', 'app/controllers/synchronizations_controller.rb'
         copy_file 'synchronizations_controller_spec.rb', 'spec/controllers/synchronizations_controller_spec.rb'

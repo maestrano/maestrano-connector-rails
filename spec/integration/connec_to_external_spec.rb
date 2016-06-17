@@ -64,7 +64,9 @@ describe 'connec to the external application' do
       ],
       "is_customer" => false,
       "is_supplier" => true,
-      "is_lead" => false
+      "is_lead" => false,
+      "updated_at" => 2.day.ago,
+      "created_at" => 2.day.ago
     }
   }
   let(:person) { person1 }
@@ -77,7 +79,7 @@ describe 'connec to the external application' do
     allow_any_instance_of(Entities::ConnecToExternal).to receive(:get_external_entities).and_return([])
   }
 
-  subject { Maestrano::Connector::Rails::SynchronizationJob.new.sync_entity('connec_to_external', organization, connec_client, external_client, nil, {}) }
+  subject { Maestrano::Connector::Rails::SynchronizationJob.new.sync_entity('connec_to_external', organization, connec_client, external_client, organization.last_synchronization_date, {}) }
 
   describe 'a new record created in connec with all references known' do
     before {
@@ -177,6 +179,26 @@ describe 'connec to the external application' do
   describe 'a creation from connec with references missing' do
     let(:person) { person1.merge("organization_id" => [{"realm"=>"org-fg4a", "provider"=>"connec", "id"=>"2305c5e0-e18e-0133-890f-07d4de9f9781"}]) }
     
+    it 'pushes nothing and creates no idmap' do
+      expect_any_instance_of(Entities::ConnecToExternal).to_not receive(:create_external_entity)
+      expect_any_instance_of(Entities::ConnecToExternal).to_not receive(:update_external_entity)
+      expect{
+        subject
+      }.to_not change{ Maestrano::Connector::Rails::IdMap.count }
+    end
+  end
+
+  describe 'an entity from before the date filtering limit' do
+    let(:date_filtering_limit) { 2.minute.ago }
+    before {
+      organization.update(date_filtering_limit: date_filtering_limit)
+    }
+
+    it 'calls get_connec_entities with a date even if there is no last sync' do
+      expect_any_instance_of(Entities::ConnecToExternal).to receive(:get_connec_entities).with(date_filtering_limit).and_return([])
+      subject
+    end
+
     it 'pushes nothing and creates no idmap' do
       expect_any_instance_of(Entities::ConnecToExternal).to_not receive(:create_external_entity)
       expect_any_instance_of(Entities::ConnecToExternal).to_not receive(:update_external_entity)

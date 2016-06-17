@@ -76,6 +76,10 @@ describe Maestrano::Connector::Rails::Entity do
       it { expect{ subject.last_update_date_from_external_entity_hash(nil) }.to raise_error('Not implemented') }
     end
 
+    describe 'creation_date_from_external_entity_hash' do
+      it { expect{ subject.creation_date_from_external_entity_hash(nil) }.to raise_error('Not implemented') }
+    end
+
     # Entity specific methods
     describe 'singleton?' do
       it 'is false by default' do
@@ -166,7 +170,7 @@ describe Maestrano::Connector::Rails::Entity do
 
     # Connec! methods
     describe 'connec_methods' do
-      let(:sync) { create(:synchronization) }
+      let(:sync) { create(:synchronization, organization: organization) }
 
       describe 'filter_connec_entities' do
         it 'does nothing by default' do
@@ -211,7 +215,7 @@ describe Maestrano::Connector::Rails::Entity do
               let(:opts) { {full_sync: true} }
               it 'performs a full get' do
                 expect(connec_client).to receive(:get).with("#{connec_name.downcase.pluralize}?")
-                subject.get_connec_entities(sync)
+                subject.get_connec_entities(sync.updated_at)
               end
             end
 
@@ -226,7 +230,7 @@ describe Maestrano::Connector::Rails::Entity do
               it 'performs a time limited get' do
                 uri_param = {"$filter" => "updated_at gt '#{sync.updated_at.iso8601}'"}.to_query
                 expect(connec_client).to receive(:get).with("#{connec_name.downcase.pluralize}?#{uri_param}")
-                subject.get_connec_entities(sync)
+                subject.get_connec_entities(sync.updated_at)
               end
             end
 
@@ -235,21 +239,21 @@ describe Maestrano::Connector::Rails::Entity do
                 subject.instance_variable_set(:@opts, {full_sync: true, :$filter => "code eq 'PEO12'"})
                 uri_param = {'$filter'=>'code eq \'PEO12\''}.to_query
                 expect(connec_client).to receive(:get).with("#{connec_name.downcase.pluralize}?#{uri_param}")
-                subject.get_connec_entities(sync)
+                subject.get_connec_entities(sync.updated_at)
               end
 
               it 'support filter option for time limited sync' do
                 subject.instance_variable_set(:@opts, {:$filter => "code eq 'PEO12'"})
                 uri_param = {"$filter"=>"updated_at gt '#{sync.updated_at.iso8601}' and code eq 'PEO12'"}.to_query
                 expect(connec_client).to receive(:get).with("#{connec_name.downcase.pluralize}?#{uri_param}")
-                subject.get_connec_entities(sync)
+                subject.get_connec_entities(sync.updated_at)
               end
 
               it 'support orderby option for time limited sync' do
                 subject.instance_variable_set(:@opts, {:$orderby => "name asc"})
                 uri_param = {"$orderby"=>"name asc", "$filter"=>"updated_at gt '#{sync.updated_at.iso8601}'"}.to_query
                 expect(connec_client).to receive(:get).with("#{connec_name.downcase.pluralize}?#{uri_param}")
-                subject.get_connec_entities(sync)
+                subject.get_connec_entities(sync.updated_at)
               end
             end
 
@@ -620,6 +624,7 @@ describe Maestrano::Connector::Rails::Entity do
       before {
         allow(subject.class).to receive(:id_from_external_entity_hash).and_return(id)
         allow(subject.class).to receive(:last_update_date_from_external_entity_hash).and_return(date)
+        allow(subject.class).to receive(:creation_date_from_external_entity_hash).and_return(date)
       }
       
       describe 'consolidate_and_map_data' do
@@ -726,8 +731,8 @@ describe Maestrano::Connector::Rails::Entity do
         let(:id2) { nil }
         let(:connec_id1) { 'connec-id-1' }
         let(:connec_id2) { 'connec-id-2' }
-        let(:entity1) { {'id' => id1, 'name' => 'John', 'updated_at' => date} }
-        let(:entity2) { {'id' => id2, 'name' => 'Jane', 'updated_at' => date} }
+        let(:entity1) { {'id' => id1, 'name' => 'John', 'updated_at' => date, 'created_at' => date} }
+        let(:entity2) { {'id' => id2, 'name' => 'Jane', 'updated_at' => date, 'created_at' => date} }
         let(:entity_without_refs) { {} }
         let(:entities) { [entity1, entity2] }
         before {
@@ -775,6 +780,24 @@ describe Maestrano::Connector::Rails::Entity do
 
           context 'when last_push_to_external is recent' do
             before { idmap1.update(last_push_to_external: 2.second.ago) }
+            it 'discards the entity' do
+              expect(subject.consolidate_and_map_connec_entities(entities, [], [], external_name)).to eql([])
+            end
+
+            context 'with full synchronization opts' do
+              let(:opts) { {full_sync: true} }
+
+              it 'keeps the entity' do
+                expect(subject.consolidate_and_map_connec_entities(entities, [], [], external_name)).to eql([{entity: {mapped: 'entity'}, idmap: idmap1}])
+              end
+            end
+          end
+
+          context 'when before date_filtering_limit' do
+            before {
+              organization.update(date_filtering_limit: 5.minutes.ago)
+            }
+
             it 'discards the entity' do
               expect(subject.consolidate_and_map_connec_entities(entities, [], [], external_name)).to eql([])
             end
@@ -892,6 +915,24 @@ describe Maestrano::Connector::Rails::Entity do
 
           context 'when last_push_to_connec is recent' do
             before { idmap.update(last_push_to_connec: 2.second.ago) }
+
+            it 'discards the entity' do
+              expect(subject.consolidate_and_map_external_entities([entity], connec_name)).to eql([])
+            end
+
+            context 'with full synchronization opts' do
+              let(:opts) { {full_sync: true} }
+
+              it 'keeps the entity' do
+                expect(subject.consolidate_and_map_external_entities([entity], connec_name)).to eql([{entity: {mapped: 'ext_entity'}, idmap: idmap}])
+              end
+            end
+          end
+
+          context 'when before date_filtering_limit' do
+            before {
+              organization.update(date_filtering_limit: 5.minutes.ago)
+            }
 
             it 'discards the entity' do
               expect(subject.consolidate_and_map_external_entities([entity], connec_name)).to eql([])
