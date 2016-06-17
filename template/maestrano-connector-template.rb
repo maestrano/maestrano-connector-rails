@@ -47,7 +47,7 @@ gem 'uglifier', '>= 1.3.0'
 
 gem 'maestrano-connector-rails'
 gem 'config'
-# gem 'attr_encrypted', '~> 3.0.0'
+gem 'attr_encrypted', '~> 1.4.0'
 
 # Background jobs
 gem 'sinatra', :require => nil
@@ -112,6 +112,8 @@ after_bundle do
     copy_file "settings/#{file}.yml", "config/settings/#{file}.yml"
   end
   copy_file 'settings/settings.yml', 'config/settings.yml'
+
+  copy_file 'application.yml.sample', 'config/application.yml.sample'
 
   application do <<-RUBY
     config.generators do |g|
