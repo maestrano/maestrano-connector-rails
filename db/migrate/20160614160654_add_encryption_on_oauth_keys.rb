@@ -1,6 +1,6 @@
 class AddEncryptionOnOauthKeys < ActiveRecord::Migration
   def change
-    tokens = Maestrano::Connector::Rails::Organization.map{|o|
+    tokens = Maestrano::Connector::Rails::Organization.all.map{|o|
       {id: o.id, oauth_token: o.oauth_token, refresh_token: o.refresh_token}
     }
 
