@@ -66,7 +66,7 @@
               .col-md-6
                 %small#historical-data-display-unchecked{style: "display: #{@organization.historical_data ? 'none' : 'block'}"} Only data created after #{(@organization.date_filtering_limit && @organization.date_filtering_limit.utc || Time.now.utc).to_formatted_s(:long_ordinal)} will be synchronized
                 %small#historical-data-display-checked{style: "display: #{!@organization.historical_data ? 'none' : 'block'}"}
-                  Synchronizing your historical data will share all data in ApplicationName. This action is not reversible. Want to know more? Check 
+                  Synchronizing your historical data will share all data, including the one created prior to #{Time.now.utc} in ApplicationName. This action is <strong>not reversible</strong>. Want to know more? Check 
                   = link_to 'here', 'https://maestrano.atlassian.net/wiki/display/UKB/How+Connec%21+manages+Historical+Data+Sharing'
           .spacer1
           .row
