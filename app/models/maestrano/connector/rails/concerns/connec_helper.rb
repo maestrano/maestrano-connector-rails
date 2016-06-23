@@ -16,6 +16,15 @@ module Maestrano::Connector::Rails::Concerns::ConnecHelper
       client.class.headers('CONNEC-EXTERNAL-IDS' => 'true')
       client
     end
+
+    def connec_version(organization)
+      @@connec_version = Rails.cache.fetch('connec_version', namespace: 'maestrano', expires_in: 1.day) do
+        response = get_client(organization).class.get("#{Maestrano[organization.tenant].param('connec.host')}/version")
+        response = JSON.parse(response.body)
+        @@connec_version = response['ci_branch']
+      end
+      @@connec_version
+    end
     
     # Replace the ids arrays by the external id
     # If a reference has no id for this oauth_provider and oauth_uid but has one for connec returns nil

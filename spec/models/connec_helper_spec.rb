@@ -15,6 +15,18 @@ describe Maestrano::Connector::Rails::ConnecHelper do
     end
   end
 
+  describe 'connec_version' do
+    let!(:organization) { create(:organization, tenant: 'default') }
+    before {
+      allow(Maestrano::Connec::Client[organization.tenant]).to receive(:get).and_return(ActionDispatch::Response.new(200, {}, {ci_build_number: '111', ci_branch: '1.1', ci_commit: '111'}.to_json, {}))
+    }
+
+    it 'returns the connec_version' do
+      expect(subject.connec_version(organization)).to eql('1.1')
+    end
+
+  end
+
   describe 'unfold_references' do
     let(:connec_hash) {
       {
