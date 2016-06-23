@@ -2,6 +2,14 @@ module Maestrano::Connector::Rails::Concerns::ConnecHelper
   extend ActiveSupport::Concern
 
   module ClassMethods
+    def dependancies
+      # Meant to be overloaded if needed
+      {
+        connec: '1.0',
+        impac: '1.0',
+        maestrano_hub: '1.0'
+      }
+    end
 
     def get_client(organization)
       client = Maestrano::Connec::Client[organization.tenant].new(organization.uid)

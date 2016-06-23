@@ -5,6 +5,16 @@ describe Maestrano::Connector::Rails::ConnecHelper do
 
   let!(:organization) { create(:organization) }
 
+  describe 'dependancies' do
+    it 'returns a default hash' do
+      expect(subject.dependancies).to eql({
+        connec: '1.0',
+        impac: '1.0',
+        maestrano_hub: '1.0'
+      })
+    end
+  end
+
   describe 'unfold_references' do
     let(:connec_hash) {
       {

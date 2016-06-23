@@ -6,5 +6,6 @@ Maestrano::Connector::Rails::Engine.routes.draw do
     post 'connec/notifications/:tenant' => 'connec#notifications'
 
     resources :synchronizations, only: [:show, :create, :destroy]
+    resources :dependancies, only: [:index]
   end
 end
