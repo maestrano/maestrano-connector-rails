@@ -110,6 +110,12 @@ describe Maestrano::Connector::Rails::Entity do
     describe 'connec_matching_fields' do
       it { expect(subject.connec_matching_fields).to be_nil }
     end
+
+    describe 'count_entities' do
+      it 'returns the array size' do
+        expect(subject.count_entities([*1..27])).to eql(27)
+      end
+    end
   end
 
   describe 'instance methods' do
@@ -210,6 +216,19 @@ describe Maestrano::Connector::Rails::Entity do
             before {
               allow(connec_client).to receive(:get).and_return(ActionDispatch::Response.new(200, {}, {people: []}.to_json, {}))
             }
+
+            context 'with limit and skip opts' do
+              let(:opts) { {__skip: 100, __limit: 50} }
+              before {
+                allow(connec_client).to receive(:get).and_return(ActionDispatch::Response.new(200, {}, {people: [], pagination: {next: "https://api-connec.maestrano.com/api/v2/cld-dkg601/people?%24skip=10&%24top=10"}}.to_json, {}), ActionDispatch::Response.new(200, {}, {people: []}.to_json, {}))
+              }
+
+              it 'performs a size limited date and do not paginate' do
+                uri_param = {"$filter" => "updated_at gt '#{sync.updated_at.iso8601}'", "$skip" => 100, "$top" => 50}.to_query
+                expect(connec_client).to receive(:get).once.with("#{connec_name.downcase.pluralize}?#{uri_param}")
+                subject.get_connec_entities(sync.updated_at)
+              end
+            end
 
             context 'when opts[:full_sync] is true' do
               let(:opts) { {full_sync: true} }

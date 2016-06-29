@@ -20,7 +20,7 @@ describe Maestrano::Connector::Rails::SynchronizationJob do
     end
 
     context 'with sync_enabled set to true' do
-      before {organization.update(sync_enabled: true)}
+      before { organization.update(sync_enabled: true)} 
 
       context 'with a sync still running for less than 30 minutes' do
         let!(:running_sync) { create(:synchronization, organization: organization, status: 'RUNNING', created_at: 29.minutes.ago) }
@@ -67,17 +67,18 @@ describe Maestrano::Connector::Rails::SynchronizationJob do
         end
       end
 
-      it { performes }
 
       context 'first sync' do
         it 'does two half syncs' do
-          expect_any_instance_of(Maestrano::Connector::Rails::SynchronizationJob).to receive(:sync_entity).exactly(2 * organization.synchronized_entities.count).times
+          expect_any_instance_of(Maestrano::Connector::Rails::SynchronizationJob).to receive(:first_sync_entity).exactly(2 * organization.synchronized_entities.count).times
           subject
         end
       end
 
       context 'subsequent sync' do
         let!(:old_sync) { create(:synchronization, partial: false, status: 'SUCCESS', organization: organization) }
+        
+        it { performes }
 
         it 'calls sync entity on all the organization synchronized entities set to true' do
           organization.synchronized_entities[organization.synchronized_entities.keys.first] = false
@@ -107,42 +108,93 @@ describe Maestrano::Connector::Rails::SynchronizationJob do
     end
   end
 
-  describe 'sync_entity' do
+  describe 'other methods' do
     subject { Maestrano::Connector::Rails::SynchronizationJob.new }
 
-    context 'non complex entity' do
-      before {
-        class Entities::Person < Maestrano::Connector::Rails::Entity
-        end
-      }
+    describe 'sync_entity' do
 
-      it 'calls the seven methods' do
-        expect_any_instance_of(Entities::Person).to receive(:before_sync)
-        expect_any_instance_of(Entities::Person).to receive(:get_connec_entities)
-        expect_any_instance_of(Entities::Person).to receive(:get_external_entities_wrapper)
-        expect_any_instance_of(Entities::Person).to receive(:consolidate_and_map_data).and_return({})
-        expect_any_instance_of(Entities::Person).to receive(:push_entities_to_external)
-        expect_any_instance_of(Entities::Person).to receive(:push_entities_to_connec)
-        expect_any_instance_of(Entities::Person).to receive(:after_sync)
-        subject.sync_entity('person', organization, nil, nil, nil, {})
+      context 'non complex entity' do
+        before {
+          class Entities::Person < Maestrano::Connector::Rails::Entity
+          end
+        }
+
+        it 'calls the seven methods' do
+          expect_any_instance_of(Entities::Person).to receive(:before_sync)
+          expect_any_instance_of(Entities::Person).to receive(:get_connec_entities).and_return([])
+          expect_any_instance_of(Entities::Person).to receive(:get_external_entities_wrapper).and_return([])
+          expect_any_instance_of(Entities::Person).to receive(:consolidate_and_map_data).and_return({})
+          expect_any_instance_of(Entities::Person).to receive(:push_entities_to_external)
+          expect_any_instance_of(Entities::Person).to receive(:push_entities_to_connec)
+          expect_any_instance_of(Entities::Person).to receive(:after_sync)
+          subject.sync_entity('person', organization, nil, nil, nil, {})
+        end
+      end
+
+      context 'complex entity' do
+        before {
+          class Entities::SomeStuff < Maestrano::Connector::Rails::ComplexEntity
+          end
+        }
+
+        it 'calls the seven methods' do
+          expect_any_instance_of(Entities::SomeStuff).to receive(:before_sync)
+          expect_any_instance_of(Entities::SomeStuff).to receive(:get_connec_entities).and_return({})
+          expect_any_instance_of(Entities::SomeStuff).to receive(:get_external_entities_wrapper).and_return({})
+          expect_any_instance_of(Entities::SomeStuff).to receive(:consolidate_and_map_data).and_return({})
+          expect_any_instance_of(Entities::SomeStuff).to receive(:push_entities_to_external)
+          expect_any_instance_of(Entities::SomeStuff).to receive(:push_entities_to_connec)
+          expect_any_instance_of(Entities::SomeStuff).to receive(:after_sync)
+          subject.sync_entity('some stuff', organization, nil, nil, nil, {})
+        end
       end
     end
 
-    context 'complex entity' do
-      before {
-        class Entities::SomeStuff < Maestrano::Connector::Rails::ComplexEntity
-        end
-      }
+    describe 'first_sync_entity' do
+      let(:batch_limit) { 50 }
 
-      it 'calls the seven methods' do
-        expect_any_instance_of(Entities::SomeStuff).to receive(:before_sync)
-        expect_any_instance_of(Entities::SomeStuff).to receive(:get_connec_entities)
-        expect_any_instance_of(Entities::SomeStuff).to receive(:get_external_entities_wrapper)
-        expect_any_instance_of(Entities::SomeStuff).to receive(:consolidate_and_map_data).and_return({})
-        expect_any_instance_of(Entities::SomeStuff).to receive(:push_entities_to_external)
-        expect_any_instance_of(Entities::SomeStuff).to receive(:push_entities_to_connec)
-        expect_any_instance_of(Entities::SomeStuff).to receive(:after_sync)
-        subject.sync_entity('some stuff', organization, nil, nil, nil, {})
+      context 'non complex entity' do
+        before {
+          class Entities::Person < Maestrano::Connector::Rails::Entity
+          end
+          allow_any_instance_of(Entities::Person).to receive(:get_connec_entities).and_return([])
+          allow_any_instance_of(Entities::Person).to receive(:get_external_entities_wrapper).and_return([])
+          allow_any_instance_of(Entities::Person).to receive(:consolidate_and_map_data).and_return({})
+          allow_any_instance_of(Entities::Person).to receive(:push_entities_to_external)
+          allow_any_instance_of(Entities::Person).to receive(:push_entities_to_connec)
+        }
+
+        context 'with pagination' do
+          context 'with more than 50 entities' do
+            it 'calls perform_sync several time' do
+              allow(subject).to receive(:perform_sync).and_return(batch_limit, 0)
+              expect_any_instance_of(Entities::Person).to receive(:opts_merge!).twice
+              expect(subject).to receive(:perform_sync).twice
+              
+              subject.first_sync_entity('person', organization, nil, nil, {}, true)
+            end
+          end
+
+          context 'with less than 50 entities' do
+            it 'calls perform_sync once' do
+              allow(subject).to receive(:perform_sync).and_return(batch_limit - 10)
+              expect_any_instance_of(Entities::Person).to receive(:opts_merge!).once.with({__skip: 0})
+              expect(subject).to receive(:perform_sync).once
+              
+              subject.first_sync_entity('person', organization, nil, nil, {}, true)
+            end
+          end
+        end
+
+        context 'without pagination' do
+          it 'calls perform_sync once' do
+            allow(subject).to receive(:perform_sync).and_return(batch_limit + 10)
+            expect_any_instance_of(Entities::Person).to receive(:opts_merge!).once.with({__skip: 0})
+            expect(subject).to receive(:perform_sync).once
+            
+            subject.first_sync_entity('person', organization, nil, nil, {}, true)
+          end
+        end
       end
     end
   end

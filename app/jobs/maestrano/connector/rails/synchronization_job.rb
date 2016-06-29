@@ -35,12 +35,12 @@ module Maestrano::Connector::Rails
 
         # First synchronization should be from external to Connec! only to let the smart merging works
         # We do a doube sync: only from external, then only from connec!
+        # We also do batched sync as the first one can be quite huge
         if last_synchronization.nil?
           ConnectorLogger.log('info', organization, "First synchronization ever. Doing two half syncs to allow smart merging to work its magic.")
-          [{skip_connec: true}, {skip_external: true}].each do |opt|
-            organization.synchronized_entities.select{|k, v| v}.keys.each do |entity|
-              sync_entity(entity.to_s, organization, connec_client, external_client, last_synchronization_date, opts.merge(opt))
-            end
+          organization.synchronized_entities.select{|k, v| v}.keys.each do |entity|
+            first_sync_entity(entity.to_s, organization, connec_client, external_client, opts, true)
+            first_sync_entity(entity.to_s, organization, connec_client, external_client, opts, false)
           end
         elsif opts[:only_entities]
           ConnectorLogger.log('info', organization, "Synchronization is partial and will synchronize only #{opts[:only_entities].join(' ')}")
@@ -64,15 +64,50 @@ module Maestrano::Connector::Rails
     end
 
     def sync_entity(entity_name, organization, connec_client, external_client, last_synchronization_date, opts)
-      entity_instance = "Entities::#{entity_name.titleize.split.join}".constantize.new(organization, connec_client, external_client, opts.dup)
+      entity_instance = instanciate_entity(entity_name, organization, connec_client, external_client, opts)
 
-      entity_instance.before_sync(last_synchronization_date)
-      external_entities = entity_instance.get_external_entities_wrapper(last_synchronization_date)
-      connec_entities = entity_instance.get_connec_entities(last_synchronization_date)
-      mapped_entities = entity_instance.consolidate_and_map_data(connec_entities, external_entities)
-      entity_instance.push_entities_to_external(mapped_entities[:connec_entities])
-      entity_instance.push_entities_to_connec(mapped_entities[:external_entities])
-      entity_instance.after_sync(last_synchronization_date)
+      perform_sync(entity_instance, last_synchronization_date)
     end
+
+    # Does a batched sync on either external or connec!
+    def first_sync_entity(entity_name, organization, connec_client, external_client, opts, external = true)
+      limit = Settings.first_sync_batch_size || 50
+      skip = 0
+      entities_count = limit
+
+      h = {__limit: limit}
+      external ? h.merge!(__skip_connec: true) : h.merge!(__skip_external: true)
+      entity_instance = instanciate_entity(entity_name, organization, connec_client, external_client, opts.merge(h))
+
+      # IF entities_count > limit
+      # This first sync feature is probably not implemented in the connector
+      # because it fetched more than the expected number of entities
+      # No need to fetch it a second Time
+      # ELSIF entities_count < limit
+      # No more entities to fetch
+      while entities_count == limit do
+        entity_instance.opts_merge!(__skip: skip)
+        entities_count = perform_sync(entity_instance, nil, external)
+        skip += limit
+      end
+    end
+
+    private
+      def instanciate_entity(entity_name, organization, connec_client, external_client, opts)
+        "Entities::#{entity_name.titleize.split.join}".constantize.new(organization, connec_client, external_client, opts.dup)
+      end
+
+      # Perform the sync and return the entities_count for either external or connec
+      def perform_sync(entity_instance, last_synchronization_date, external = true)
+        entity_instance.before_sync(last_synchronization_date)
+        external_entities = entity_instance.get_external_entities_wrapper(last_synchronization_date)
+        connec_entities = entity_instance.get_connec_entities(last_synchronization_date)
+        mapped_entities = entity_instance.consolidate_and_map_data(connec_entities, external_entities)
+        entity_instance.push_entities_to_external(mapped_entities[:connec_entities])
+        entity_instance.push_entities_to_connec(mapped_entities[:external_entities])
+        entity_instance.after_sync(last_synchronization_date)
+        
+        external ? entity_instance.class.count_entities(external_entities) : entity_instance.class.count_entities(connec_entities)
+      end
   end
 end

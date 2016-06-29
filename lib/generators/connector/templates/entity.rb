@@ -13,6 +13,7 @@ class Maestrano::Connector::Rails::Entity
     # TODO
     # This method should return only entities that have been updated since the last_synchronization_date
     # It should also implements an option to do a full synchronization when @opts[:full_sync] == true or when there is no last_synchronization_date
+    # It should also support [:__limit] and [:__skip] opts, meaning that if they are present, it should return only @[:__limit] entities while skipping the @opts[:__skip] firsts
     # Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, "Received data: Source=#{Maestrano::Connector::Rails::External.external_name}, Entity=#{self.class.external_entity_name}, Response=#{entities}")
   end
 
