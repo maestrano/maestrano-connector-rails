@@ -1,13 +1,6 @@
 module Maestrano::Connector::Rails::Concerns::Entity
   extend ActiveSupport::Concern
 
-  def initialize(organization, connec_client, external_client, opts={})
-    @organization = organization
-    @connec_client = connec_client
-    @external_client = external_client
-    @opts = opts
-  end
-
   module ClassMethods
     # ----------------------------------------------
     #                 IdMap methods
@@ -131,7 +124,20 @@ module Maestrano::Connector::Rails::Concerns::Entity
     def can_update_external?
       true
     end
+
+    # ----------------------------------------------
+    #                 Helper methods
+    # ----------------------------------------------
+    def count_entities(entities)
+      entities.size
+    end
   end
+
+  # ==============================================
+  # ==============================================
+  #                 Instance  methods
+  # ==============================================
+  # ==============================================
 
   # ----------------------------------------------
   #                 Mapper methods
@@ -159,7 +165,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
   # * $filter (see Connec! documentation)
   # * $orderby (see Connec! documentation)
   def get_connec_entities(last_synchronization_date=nil)
-    return [] if @opts[:skip_connec] || !self.class.can_read_connec?
+    return [] if @opts[:__skip_connec] || !self.class.can_read_connec?
 
     Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, "Fetching Connec! #{self.class.connec_entity_name}")
 
@@ -169,6 +175,13 @@ module Maestrano::Connector::Rails::Concerns::Entity
 
     # Fetch first page
     page_number = 0
+
+    batched_fetch = @opts[:__limit] && @opts[:__skip]
+    if batched_fetch
+      query_params[:$top] = @opts[:__limit]
+      query_params[:$skip] = @opts[:__skip]
+    end
+
     if last_synchronization_date.blank? || @opts[:full_sync]
       query_params[:$filter] = @opts[:$filter] if @opts[:$filter]
     else
@@ -181,14 +194,17 @@ module Maestrano::Connector::Rails::Concerns::Entity
     entities = response_hash["#{self.class.normalized_connec_entity_name}"]
     entities = [entities] if self.class.singleton?
 
-    # Fetch subsequent pages
-    while response_hash['pagination'] && response_hash['pagination']['next']
-      page_number += 1
-      # ugly way to convert https://api-connec/api/v2/group_id/organizations?next_page_params to /organizations?next_page_params
-      next_page = response_hash['pagination']['next'].gsub(/^(.*)\/#{self.class.normalized_connec_entity_name}/, self.class.normalized_connec_entity_name)
+    # Only the first page if batched_fetch
+    unless batched_fetch
+      # Fetch subsequent pages
+      while response_hash['pagination'] && response_hash['pagination']['next']
+        page_number += 1
+        # ugly way to convert https://api-connec/api/v2/group_id/organizations?next_page_params to /organizations?next_page_params
+        next_page = response_hash['pagination']['next'].gsub(/^(.*)\/#{self.class.normalized_connec_entity_name}/, self.class.normalized_connec_entity_name)
 
-      response_hash = fetch_connec(next_page, page_number)
-      entities << response_hash["#{self.class.normalized_connec_entity_name}"]
+        response_hash = fetch_connec(next_page, page_number)
+        entities << response_hash["#{self.class.normalized_connec_entity_name}"]
+      end
     end
 
     entities.flatten!
@@ -224,7 +240,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
   #                 External methods
   # ----------------------------------------------
   def get_external_entities_wrapper(last_synchronization_date=nil)
-    return [] if @opts[:skip_external] || !self.class.can_read_external?
+    return [] if @opts[:__skip_external] || !self.class.can_read_external?
     get_external_entities(last_synchronization_date)
   end
   
@@ -299,12 +315,6 @@ module Maestrano::Connector::Rails::Concerns::Entity
     raise "Not implemented"
   end
 
-  # This method is called during the webhook workflow only. It should return the array of filtered entities
-  # The aim is to have the same filtering as with the Connec! filters on API calls in the webhooks
-  def filter_connec_entities(entities)
-    entities
-  end
-
   # ----------------------------------------------
   #                 General methods
   # ----------------------------------------------
@@ -313,6 +323,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
   # * Maps not discarded entities and associates them with their idmap, or create one if there isn't any
   # * Returns a hash {connec_entities: [], external_entities: []}
   def consolidate_and_map_data(connec_entities, external_entities)
+    Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, "Consolidating and mapping #{self.class.external_entity_name}/#{self.class.connec_entity_name}")
     return consolidate_and_map_singleton(connec_entities, external_entities) if self.class.singleton?
 
     mapped_connec_entities = consolidate_and_map_connec_entities(connec_entities, external_entities, self.class.references, self.class.external_entity_name)
@@ -394,18 +405,6 @@ module Maestrano::Connector::Rails::Concerns::Entity
       return {connec_entities: [{entity: map_to_external(entity), idmap: idmap}], external_entities: []}
     end
   end
-
-  # ----------------------------------------------
-  #             After and before sync
-  # ----------------------------------------------
-  def before_sync(last_synchronization_date)
-    # Does nothing by default
-  end
-
-  def after_sync(last_synchronization_date)
-    # Does nothing by default
-  end
-
 
   # ----------------------------------------------
   #             Internal helper methods
