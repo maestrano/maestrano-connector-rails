@@ -30,7 +30,7 @@ class Maestrano::SynchronizationsController < Maestrano::Rails::WebHookControlle
     return render json: { errors: {message: "Organization not found", code: 404} }, status: :not_found unless organization
 
     Maestrano::Connector::Rails::SynchronizationJob.perform_later(organization, opts.with_indifferent_access)
-    head 201, content_type: "application/json"
+    head :created
   end
 
   def destroy
@@ -39,6 +39,6 @@ class Maestrano::SynchronizationsController < Maestrano::Rails::WebHookControlle
     return render json: { errors: {message: "Organization not found", code: 404} }, status: :not_found unless organization
 
     organization.update(sync_enabled: false)
-    head 200, content_type: "application/json"
+    head :ok
   end
 end

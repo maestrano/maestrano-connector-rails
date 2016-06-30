@@ -195,7 +195,7 @@ describe Maestrano::Connector::Rails::Entity do
         end
 
         describe 'when skip_connec' do
-          let(:opts) { {skip_connec: true} }
+          let(:opts) { {__skip_connec: true} }
           it { expect(subject.get_connec_entities(nil)).to eql([]) }
         end
 
@@ -493,7 +493,7 @@ describe Maestrano::Connector::Rails::Entity do
         end
 
         context 'when skip external' do
-          let(:opts) { {skip_external: true} }
+          let(:opts) { {__skip_external: true} }
 
           it 'returns an empty array and does not call get_external_entities' do
             expect(subject).to_not receive(:get_connec_entities)

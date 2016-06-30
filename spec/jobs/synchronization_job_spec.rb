@@ -171,7 +171,7 @@ describe Maestrano::Connector::Rails::SynchronizationJob do
               expect_any_instance_of(Entities::Person).to receive(:opts_merge!).twice
               expect(subject).to receive(:perform_sync).twice
               
-              subject.first_sync_entity('person', organization, nil, nil, {}, true)
+              subject.first_sync_entity('person', organization, nil, nil, nil, {}, true)
             end
           end
 
@@ -181,7 +181,7 @@ describe Maestrano::Connector::Rails::SynchronizationJob do
               expect_any_instance_of(Entities::Person).to receive(:opts_merge!).once.with({__skip: 0})
               expect(subject).to receive(:perform_sync).once
               
-              subject.first_sync_entity('person', organization, nil, nil, {}, true)
+              subject.first_sync_entity('person', organization, nil, nil, nil, {}, true)
             end
           end
         end
@@ -192,7 +192,7 @@ describe Maestrano::Connector::Rails::SynchronizationJob do
             expect_any_instance_of(Entities::Person).to receive(:opts_merge!).once.with({__skip: 0})
             expect(subject).to receive(:perform_sync).once
             
-            subject.first_sync_entity('person', organization, nil, nil, {}, true)
+            subject.first_sync_entity('person', organization, nil, nil, nil, {}, true)
           end
         end
       end

@@ -1,4 +1,4 @@
-class Maestrano::Connector::Rails::Entity
+class Maestrano::Connector::Rails::Entity < Maestrano::Connector::Rails::EntityBase
   include Maestrano::Connector::Rails::Concerns::Entity
 
   # In this class and in all entities which inherit from it, the following instance variables are available:

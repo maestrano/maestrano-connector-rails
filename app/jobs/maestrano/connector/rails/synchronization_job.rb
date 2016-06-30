@@ -39,8 +39,10 @@ module Maestrano::Connector::Rails
         if last_synchronization.nil?
           ConnectorLogger.log('info', organization, "First synchronization ever. Doing two half syncs to allow smart merging to work its magic.")
           organization.synchronized_entities.select{|k, v| v}.keys.each do |entity|
-            first_sync_entity(entity.to_s, organization, connec_client, external_client, opts, true)
-            first_sync_entity(entity.to_s, organization, connec_client, external_client, opts, false)
+            ConnectorLogger.log('info', organization, "First synchronization ever. Doing half sync from external for #{entity}.")
+            first_sync_entity(entity.to_s, organization, connec_client, external_client, last_synchronization_date, opts, true)
+            ConnectorLogger.log('info', organization, "First synchronization ever. Doing half sync from Connec! for #{entity}.")
+            first_sync_entity(entity.to_s, organization, connec_client, external_client, last_synchronization_date, opts, false)
           end
         elsif opts[:only_entities]
           ConnectorLogger.log('info', organization, "Synchronization is partial and will synchronize only #{opts[:only_entities].join(' ')}")
@@ -70,7 +72,7 @@ module Maestrano::Connector::Rails
     end
 
     # Does a batched sync on either external or connec!
-    def first_sync_entity(entity_name, organization, connec_client, external_client, opts, external = true)
+    def first_sync_entity(entity_name, organization, connec_client, external_client, last_synchronization_date, opts, external = true)
       limit = Settings.first_sync_batch_size || 50
       skip = 0
       entities_count = limit
@@ -87,7 +89,7 @@ module Maestrano::Connector::Rails
       # No more entities to fetch
       while entities_count == limit do
         entity_instance.opts_merge!(__skip: skip)
-        entities_count = perform_sync(entity_instance, nil, external)
+        entities_count = perform_sync(entity_instance, last_synchronization_date, external)
         skip += limit
       end
     end

@@ -165,7 +165,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
   # * $filter (see Connec! documentation)
   # * $orderby (see Connec! documentation)
   def get_connec_entities(last_synchronization_date=nil)
-    return [] if @opts[:skip_connec] || !self.class.can_read_connec?
+    return [] if @opts[:__skip_connec] || !self.class.can_read_connec?
 
     Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, "Fetching Connec! #{self.class.connec_entity_name}")
 
@@ -240,7 +240,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
   #                 External methods
   # ----------------------------------------------
   def get_external_entities_wrapper(last_synchronization_date=nil)
-    return [] if @opts[:skip_external] || !self.class.can_read_external?
+    return [] if @opts[:__skip_external] || !self.class.can_read_external?
     get_external_entities(last_synchronization_date)
   end
   
@@ -323,6 +323,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
   # * Maps not discarded entities and associates them with their idmap, or create one if there isn't any
   # * Returns a hash {connec_entities: [], external_entities: []}
   def consolidate_and_map_data(connec_entities, external_entities)
+    Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, "Consolidating and mapping #{self.class.external_entity_name}/#{self.class.connec_entity_name}")
     return consolidate_and_map_singleton(connec_entities, external_entities) if self.class.singleton?
 
     mapped_connec_entities = consolidate_and_map_connec_entities(connec_entities, external_entities, self.class.references, self.class.external_entity_name)
