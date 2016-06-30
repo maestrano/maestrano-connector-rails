@@ -121,8 +121,8 @@ describe Maestrano::SynchronizationsController, type: :controller do
     end
   end
 
-  describe 'destroy' do
-    subject { delete :destroy, id: uid }
+  describe 'toggle_sync' do
+    subject { put :toggle_sync, group_id: uid }
 
 
     context 'without authentication' do
@@ -151,16 +151,27 @@ describe Maestrano::SynchronizationsController, type: :controller do
       end
 
       context 'when organization is found' do
-        let!(:organization) { create(:organization, uid: uid, sync_enabled: true) }
+        let!(:organization) { create(:organization, uid: uid) }
 
         it 'is a success' do
           subject
           expect(response.status).to eq(200)
         end
 
-        it 'disable the organizatio syncs' do
-          subject
-          expect(organization.reload.sync_enabled).to be false
+        context 'when sync_enabled is true' do
+          before { organization.update(sync_enabled: true) }
+          it 'disables the organizatio syncs' do
+            subject
+            expect(organization.reload.sync_enabled).to be false
+          end
+        end
+
+        context 'when  sync_enabled is false' do
+          before { organization.update(sync_enabled: false) }
+          it 'enables the organizatio syncs' do
+            subject
+            expect(organization.reload.sync_enabled).to be true
+          end
         end
       end
     end

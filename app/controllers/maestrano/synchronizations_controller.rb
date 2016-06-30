@@ -33,12 +33,14 @@ class Maestrano::SynchronizationsController < Maestrano::Rails::WebHookControlle
     head :created
   end
 
-  def destroy
-    uid = params[:id]
+  def toggle_sync
+    uid = params[:group_id]
     organization = Maestrano::Connector::Rails::Organization.find_by_uid(uid)
     return render json: { errors: {message: "Organization not found", code: 404} }, status: :not_found unless organization
 
-    organization.update(sync_enabled: false)
-    head :ok
+    organization.toggle(:sync_enabled)
+    organization.save
+
+    render json: {sync_enabled: organization.sync_enabled}
   end
 end
