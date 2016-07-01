@@ -2,11 +2,28 @@ module Maestrano::Connector::Rails::Concerns::ConnecHelper
   extend ActiveSupport::Concern
 
   module ClassMethods
+    def dependancies
+      # Meant to be overloaded if needed
+      {
+        connec: '1.0',
+        impac: '1.0',
+        maestrano_hub: '1.0'
+      }
+    end
 
     def get_client(organization)
       client = Maestrano::Connec::Client[organization.tenant].new(organization.uid)
       client.class.headers('CONNEC-EXTERNAL-IDS' => 'true')
       client
+    end
+
+    def connec_version(organization)
+      @@connec_version = Rails.cache.fetch('connec_version', namespace: 'maestrano', expires_in: 1.day) do
+        response = get_client(organization).class.get("#{Maestrano[organization.tenant].param('connec.host')}/version")
+        response = JSON.parse(response.body)
+        @@connec_version = response['ci_branch']
+      end
+      @@connec_version
     end
     
     # Replace the ids arrays by the external id
