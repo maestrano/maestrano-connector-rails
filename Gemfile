@@ -4,6 +4,8 @@ source "http://rubygems.org"
 gem 'maestrano-rails'
 gem 'hash_mapper'
 gem 'sidekiq'
+# The missing unique jobs for sidekiq
+gem 'sidekiq-unique-jobs'
 gem 'haml-rails'
 gem 'bootstrap-sass'
 gem 'autoprefixer-rails'

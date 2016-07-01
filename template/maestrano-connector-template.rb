@@ -53,6 +53,8 @@ gem 'attr_encrypted', '~> 1.4.0'
 gem 'sinatra', :require => nil
 gem 'sidekiq'
 gem 'sidekiq-cron'
+# The missing unique jobs for sidekiq
+gem 'sidekiq-unique-jobs'
 gem 'slim'
 
 gem_group :production, :uat do
