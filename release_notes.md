@@ -1,3 +1,25 @@
+## 1.2.0
+/!\ For this version to work, you'll need to add `< Maestrano::Connector::Rails::EntityBase` to your `entity.rb` class
+
+### Features
+* Custom synchronization process for first sync. (For this feature to work, you'll need to implement handling of additionnal options in your `get_external_entities` method. The connector will still work as before if you don't).
+* Administrations endpoints to get the synchronizations status, start a synchronization, toggle `sync_enabled` and get the connector dependancies (depenancies are declared in ConnecHelper. You'll need to overload the dependancies method if you have specific dependancies)
+
+### Improvments
+* Entity and ComplexEntity now inherits from EntityBase
+
+## 1.1.2
+/!\ This version need a migration (`bundle exec rake railties:install:migrations; bundle exec rake db:migrate`). It also requires the running of a manual script to encrypt existing oauth_keys
+You'll also need to change some methods as the framework is not sending the `last_synchronization` anymore but directly the `last_synchronization_date` (`get_external_entities`, `before_sync`, `after_sync`)
+
+### Features
+* Encryption of oauth keys (you'll need to add `gem 'attr_encrypted', '~> 1.4.0'` to your Gemfile)
+* No historical data option: only data created after the link to the connector will be sync. For this option to be available, you'll need to implement a `creation_date_from_external_entity_hash` method. It also requires a front end update (view, controller, js)
+
+### Fixes
+* Fix synchronization cleaning
+* Minor fixes
+
 ## 1.0.4
 
 ### Fixes
