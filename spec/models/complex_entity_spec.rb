@@ -11,6 +11,17 @@ describe Maestrano::Connector::Rails::ComplexEntity do
       describe 'external_entities_names' do
         it { expect{ subject.external_entities_names }.to raise_error('Not implemented') }
       end
+
+      describe 'count_entities' do
+        it 'returns the biggest array size' do
+          entities = {
+            'people' => [*1..27],
+            'organizations' => [*1..39],
+            'items' => []
+          }
+          expect(subject.count_entities(entities)).to eql(39)
+        end
+      end
   end
 
   describe 'instance methods' do

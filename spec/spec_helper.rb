@@ -20,4 +20,10 @@ RSpec.configure do |config|
   config.order = "random"
   config.include FactoryGirl::Syntax::Methods
   config.include Maestrano::Connector::Rails::Engine.routes.url_helpers
+
+  config.before(:each) do
+    allow(Maestrano::Connector::Rails::External).to receive(:external_name).and_return('External app')
+    allow(Maestrano::Connector::Rails::External).to receive(:get_client).and_return(Object.new)
+    allow(Maestrano::Connector::Rails::External).to receive(:entities_list).and_return(%w(entity1 entity2))
+  end
 end

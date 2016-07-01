@@ -76,7 +76,6 @@ describe Maestrano::Connector::Rails::SubEntityBase do
     let!(:connec_client) { Maestrano::Connec::Client[organization.tenant].new(organization.uid) }
     let!(:external_client) { Object.new }
     let(:opts) { {} }
-    subject { Maestrano::Connector::Rails::Entity.new(organization, connec_client, external_client, opts) }
     subject { Maestrano::Connector::Rails::SubEntityBase.new(organization, connec_client, external_client, opts) }
 
     describe 'map_to' do

@@ -1,5 +1,6 @@
 spec/dummy/log/**/*
 spec/dummy/db
+spec/dummy/tmp
 /coverage
 /pkg
 Gemfile.lock
