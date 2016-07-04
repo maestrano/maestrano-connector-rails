@@ -1,6 +1,6 @@
 # Setup
 ```
-rvm install ruby-2.2.3
+rvm install ruby-2.3.1
 gem install bundler
 bundle install
 ```
