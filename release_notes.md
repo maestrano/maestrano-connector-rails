@@ -1,3 +1,8 @@
+## 1.2.1
+
+### Features
+* Add PushToConnecWorker that give the possibilty to do jobs sequentially for a given organization and entity
+
 ## 1.2.0
 /!\ For this version to work, you'll need to add `< Maestrano::Connector::Rails::EntityBase` to your `entity.rb` class
 
