@@ -1,9 +1,12 @@
 source "http://rubygems.org"
 
 # Add dependencies required to use your gem here.
+gem 'rails', '~> 4.0'
 gem 'maestrano-rails'
 gem 'hash_mapper'
 gem 'sidekiq'
+# The missing unique jobs for sidekiq
+gem 'sidekiq-unique-jobs'
 gem 'haml-rails'
 gem 'bootstrap-sass'
 gem 'autoprefixer-rails'
