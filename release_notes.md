@@ -1,3 +1,15 @@
+## 1.2.2
+
+### Fixes
+* Fix PushToConnecWork to take an organization_id insteand of an organization object
+
+### Features
+* Add a version endpoint with the framework version
+
+### Improvments
+* Add rubocop in the framework for better code quality
+* Improve framework dependancies handling and update template accordingly
+
 ## 1.2.1
 
 ### Features
