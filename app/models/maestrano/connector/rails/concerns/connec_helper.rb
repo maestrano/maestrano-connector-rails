@@ -25,7 +25,7 @@ module Maestrano::Connector::Rails::Concerns::ConnecHelper
       end
       @@connec_version
     end
-    
+
     # Replace the ids arrays by the external id
     # If a reference has no id for this oauth_provider and oauth_uid but has one for connec returns nil
     def unfold_references(connec_entity, references, organization)
@@ -33,13 +33,9 @@ module Maestrano::Connector::Rails::Concerns::ConnecHelper
       not_nil = true
 
       # Id
-      id = unfolded_connec_entity['id'].find{|id| id['provider'] == organization.oauth_provider && id['realm'] == organization.oauth_uid}
-      unfolded_connec_entity[:__connec_id] = unfolded_connec_entity['id'].find{|id| id['provider'] == 'connec'}['id']
-      if id
-        unfolded_connec_entity['id'] = id['id']
-      else
-        unfolded_connec_entity['id'] = nil
-      end
+      id_hash = unfolded_connec_entity['id'].find { |id| id['provider'] == organization.oauth_provider && id['realm'] == organization.oauth_uid }
+      unfolded_connec_entity[:__connec_id] = unfolded_connec_entity['id'].find { |id| id['provider'] == 'connec' }['id']
+      unfolded_connec_entity['id'] = id_hash ? id_hash['id'] : nil
 
       # Other refs
       references.each do |reference|
@@ -67,20 +63,19 @@ module Maestrano::Connector::Rails::Concerns::ConnecHelper
     def fold_references_helper(entity, array_of_refs, organization)
       ref = array_of_refs.shift
       field = entity[ref]
+      return if field.blank?
 
       # Follow embedment path, remplace if it's not an array or a hash
-      unless field.blank?
-        case field
-        when Array
-          field.each do |f|
-            fold_references_helper(f, array_of_refs.dup, organization)
-          end
-        when HashWithIndifferentAccess
-          fold_references_helper(entity[ref], array_of_refs, organization)
-        else
-          id = field
-          entity[ref] = [id_hash(id, organization)]
+      case field
+      when Array
+        field.each do |f|
+          fold_references_helper(f, array_of_refs.dup, organization)
         end
+      when HashWithIndifferentAccess
+        fold_references_helper(entity[ref], array_of_refs, organization)
+      else
+        id = field
+        entity[ref] = [id_hash(id, organization)]
       end
     end
 
@@ -89,10 +84,11 @@ module Maestrano::Connector::Rails::Concerns::ConnecHelper
       field = entity[ref]
 
       # Unfold the id
-      if array_of_refs.empty?
-        if id = field && field.find{|id| id[:provider] == organization.oauth_provider && id[:realm] == organization.oauth_uid}
-          entity[ref] = id['id']
-        elsif field && field.find{|id| id[:provider] == 'connec'}
+      if array_of_refs.empty? && field
+        id_hash = field.find { |id| id[:provider] == organization.oauth_provider && id[:realm] == organization.oauth_uid }
+        if id_hash
+          entity[ref] = id_hash['id']
+        elsif field.find { |id| id[:provider] == 'connec' } # Should always be true as ids will always contain a connec id
           # We may enqueue a fetch on the endpoint of the missing association, followed by a re-fetch on this one.
           # However it's expected to be an edge case, so for now we rely on the fact that the webhooks should be relativly in order.
           # Worst case it'll be done on following sync
@@ -114,6 +110,5 @@ module Maestrano::Connector::Rails::Concerns::ConnecHelper
       end
       true
     end
-
   end
 end

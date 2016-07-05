@@ -3,27 +3,21 @@ module Maestrano::Connector::Rails::Concerns::SubEntityBase
 
   module ClassMethods
     def external?
-      raise "Not implemented"
+      raise 'Not implemented'
     end
 
     def entity_name
-      raise "Not implemented"
+      raise 'Not implemented'
     end
 
     def external_entity_name
-      if external?
-        entity_name
-      else
-        raise "Forbidden call: cannot call external_entity_name for a connec entity"
-      end
+      return entity_name if external?
+      raise 'Forbidden call: cannot call external_entity_name for a connec entity'
     end
 
     def connec_entity_name
-      if external?
-        raise "Forbidden call: cannot call connec_entity_name for an external entity"
-      else
-        entity_name
-      end
+      return entity_name unless external?
+      raise 'Forbidden call: cannot call connec_entity_name for an external entity'
     end
 
     def names_hash
@@ -49,7 +43,6 @@ module Maestrano::Connector::Rails::Concerns::SubEntityBase
     end
   end
 
-
   def map_to(name, entity)
     mapper = self.class.mapper_classes[name]
     raise "Impossible mapping from #{self.class.entity_name} to #{name}" unless mapper
@@ -57,7 +50,12 @@ module Maestrano::Connector::Rails::Concerns::SubEntityBase
     if self.class.external?
       mapped_entity = mapper.denormalize(entity).merge(id: self.class.id_from_external_entity_hash(entity))
       folded_entity = Maestrano::Connector::Rails::ConnecHelper.fold_references(mapped_entity, self.class.references[name] || [], @organization)
-      folded_entity.merge!(opts: (folded_entity[:opts] || {}).merge(matching_fields: self.class.connec_matching_fields)) if self.class.connec_matching_fields
+
+      if self.class.connec_matching_fields
+        folded_entity[:opts] ||= {}
+        folded_entity[:opts][:matching_fields] = self.class.connec_matching_fields
+      end
+
       folded_entity
     else
       connec_id = entity[:__connec_id]

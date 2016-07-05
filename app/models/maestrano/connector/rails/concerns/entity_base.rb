@@ -1,7 +1,7 @@
 module Maestrano::Connector::Rails::Concerns::EntityBase
   extend ActiveSupport::Concern
 
-  def initialize(organization, connec_client, external_client, opts={})
+  def initialize(organization, connec_client, external_client, opts = {})
     @organization = organization
     @connec_client = connec_client
     @external_client = external_client
@@ -22,7 +22,7 @@ module Maestrano::Connector::Rails::Concerns::EntityBase
 
   # This method is called during the webhook workflow only. It should return the hash of arrays of filtered entities
   # The aim is to have the same filtering as with the Connec! filters on API calls in the webhooks
-  # input :  
+  # input :
   # For non complex entities [unmapped_external_entity1, unmapped_external_entity2]
   # For complex entities {
   #   external_entities_names[0]: [unmapped_external_entity1, unmapped_external_entity2],

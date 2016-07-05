@@ -7,5 +7,6 @@ bundle install
 
 # Test commands
 ```
-bundle exec rake
+bundle exec rspec
+bundle exec rubocop
 ```

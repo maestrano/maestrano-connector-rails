@@ -1,0 +1,41 @@
+# require: rubocop-rspec
+inherit_from: .rubocop_todo.yml
+
+Rails:
+  Enabled: true
+
+AllCops:
+  TargetRubyVersion: 2.3
+  Exclude:
+    - 'maestrano-connector-rails.gemspec'
+    - 'db/schema.rb'
+    - 'db/migrate/*'
+    - 'bin/*'
+    - 'spec/**/*'
+    - 'template/**/*'
+    - 'lib/generators/connector/**/*'
+
+# Enabled disabled Cops
+Style/CollectionMethods:
+  Enabled: true
+
+Metrics/LineLength:
+  Max: 320
+
+Style/IndentationConsistency:
+  EnforcedStyle: rails
+
+# Missing top-level class documentation comment
+Style/Documentation:
+  Enabled: false
+
+Style/ClassAndModuleChildren:
+  Enabled: false
+
+# Space inside braces => only for blocks (not for literal)
+Style/SpaceInsideHashLiteralBraces:
+  EnforcedStyle: no_space
+
+# RSpec/FilePath:
+#   Exclude:
+    # - 'spec/routing/**/*_routing_spec.rb'
