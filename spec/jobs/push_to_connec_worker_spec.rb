@@ -2,7 +2,7 @@ require 'spec_helper'
 require 'sidekiq/testing'
 
 describe Maestrano::Connector::Rails::PushToConnecWorker do
-  describe 'class method' do
+  describe 'class methods' do
     let(:organization) { create(:organization) }
     subject { Maestrano::Connector::Rails::PushToConnecWorker }
 
@@ -21,6 +21,16 @@ describe Maestrano::Connector::Rails::PushToConnecWorker do
     end
   end
 
+  describe 'instance methods' do
+    subject { Maestrano::Connector::Rails::PushToConnecWorker.new }
+
+    describe 'perform' do
+      it 'calls the PushToConnecJob perform' do
+        expect_any_instance_of(Maestrano::Connector::Rails::PushToConnecJob).to receive(:perform).with(1, 2, 3)
+        subject.perform(1, 2, 3)
+      end
+    end
+  end
 
 end
 
