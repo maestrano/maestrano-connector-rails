@@ -7,12 +7,13 @@ module Maestrano::Connector::Rails
     sidekiq_options unique: :while_executing, unique_args: :unique_args
 
     def self.unique_args(args)
-      organization = args[0]
+      organization_id = args[0]
       entities_hash = args[1]
-      return [organization.id, entities_hash.keys.sort]
+      return[organization_id, entities_hash.keys.sort]
     end
 
-    def perform(organization, entities_hash, opts = {})
+    def perform(organization_id, entities_hash, opts={})
+      organization = Organization.find(organization_id)
       PushToConnecJob.new.perform(organization, entities_hash, opts)
     end
   end
