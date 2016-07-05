@@ -1,6 +1,5 @@
 module Maestrano::Connector::Rails
   class UserOrganizationRel < ActiveRecord::Base
-
     #===================================
     # Associations
     #===================================

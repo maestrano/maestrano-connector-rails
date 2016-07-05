@@ -1,6 +1,5 @@
 module Maestrano::Connector::Rails
   module SessionHelper
-
     def is_admin?(user, organization)
       organization.member?(user) && session[:"role_#{organization.uid}"] && ['Admin', 'Super Admin'].include?(session[:"role_#{organization.uid}"])
     end
@@ -16,6 +15,5 @@ module Maestrano::Connector::Rails
     def is_admin
       @is_admin ||= current_user && current_organization && is_admin?(current_user, current_organization)
     end
-
   end
 end

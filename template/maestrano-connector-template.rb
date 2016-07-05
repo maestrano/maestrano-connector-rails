@@ -33,29 +33,14 @@ if yes?("Use JRuby? [y/n]")
   run 'echo "ruby \'2.2.3\', :engine => \'jruby\', :engine_version => \'9.0.5.0\'" | cat - Gemfile > temp && mv temp Gemfile'
 end
 
-gem 'haml-rails'
-gem 'bootstrap-sass'
-gem 'autoprefixer-rails'
-
-gem 'rails', '4.2.4'
-gem 'turbolinks'
+gem 'rails', '~> 4.2.6'
+gem 'turbolinks', '~> 2.5'
 gem 'jquery-rails'
 gem 'puma'
-gem 'figaro'
 gem 'tzinfo-data', platforms: [:mingw, :mswin, :jruby]
 gem 'uglifier', '>= 1.3.0'
 
 gem 'maestrano-connector-rails'
-gem 'config'
-gem 'attr_encrypted', '~> 1.4.0'
-
-# Background jobs
-gem 'sinatra', :require => nil
-gem 'sidekiq'
-gem 'sidekiq-cron'
-# The missing unique jobs for sidekiq
-gem 'sidekiq-unique-jobs'
-gem 'slim'
 
 gem_group :production, :uat do
   gem 'activerecord-jdbcpostgresql-adapter', :platforms => :jruby

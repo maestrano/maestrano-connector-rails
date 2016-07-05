@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.require_paths = ["lib"]
   s.authors = ["Pierre Berard"]
-  s.date = "2016-07-04"
+  s.date = "2016-07-05"
   s.description = "Maestrano is the next generation marketplace for SME applications. See https://maestrano.com for details."
   s.email = "pierre.berard@maestrano.com"
   s.executables = ["rails"]
@@ -21,6 +21,8 @@ Gem::Specification.new do |s|
   ]
   s.files = [
     ".rspec",
+    ".rubocop.yml",
+    ".rubocop_todo.yml",
     ".ruby-version",
     "CODESHIP.md",
     "DEVELOPER.md",
@@ -37,6 +39,7 @@ Gem::Specification.new do |s|
     "app/controllers/maestrano/dependancies_controller.rb",
     "app/controllers/maestrano/sessions_controller.rb",
     "app/controllers/maestrano/synchronizations_controller.rb",
+    "app/controllers/version_controller.rb",
     "app/helpers/maestrano/connector/rails/session_helper.rb",
     "app/jobs/maestrano/connector/rails/all_synchronizations_job.rb",
     "app/jobs/maestrano/connector/rails/push_to_connec_job.rb",
@@ -103,8 +106,8 @@ Gem::Specification.new do |s|
     "lib/generators/connector/templates/synchronizations_controller.rb",
     "lib/generators/connector/templates/synchronizations_controller_spec.rb",
     "lib/generators/connector/templates/synchronizations_index.haml",
-    "lib/maestrano-connector-rails.rb",
     "lib/maestrano/connector/rails.rb",
+    "lib/maestrano_connector_rails.rb",
     "maestrano-connector-rails.gemspec",
     "maestrano.png",
     "release_notes.md",
@@ -113,6 +116,7 @@ Gem::Specification.new do |s|
     "spec/controllers/group_users_controller_spec.rb",
     "spec/controllers/groups_controller_spec.rb",
     "spec/controllers/synchronizations_controller_spec.rb",
+    "spec/controllers/version_controller_spec.rb",
     "spec/dummy/README.md",
     "spec/dummy/Rakefile",
     "spec/dummy/app/assets/images/.keep",
@@ -215,16 +219,20 @@ Gem::Specification.new do |s|
     s.specification_version = 4
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
-      s.add_runtime_dependency(%q<rails>, ["~> 4.0"])
+      s.add_runtime_dependency(%q<rails>, ["~> 4.2"])
       s.add_runtime_dependency(%q<maestrano-rails>, [">= 0"])
       s.add_runtime_dependency(%q<hash_mapper>, [">= 0"])
-      s.add_runtime_dependency(%q<sidekiq>, [">= 0"])
-      s.add_runtime_dependency(%q<sidekiq-unique-jobs>, [">= 0"])
       s.add_runtime_dependency(%q<haml-rails>, [">= 0"])
       s.add_runtime_dependency(%q<bootstrap-sass>, [">= 0"])
       s.add_runtime_dependency(%q<autoprefixer-rails>, [">= 0"])
       s.add_runtime_dependency(%q<attr_encrypted>, ["~> 1.4.0"])
       s.add_runtime_dependency(%q<config>, [">= 0"])
+      s.add_runtime_dependency(%q<figaro>, [">= 0"])
+      s.add_runtime_dependency(%q<sidekiq>, [">= 0"])
+      s.add_runtime_dependency(%q<sidekiq-unique-jobs>, [">= 0"])
+      s.add_runtime_dependency(%q<sinatra>, [">= 0"])
+      s.add_runtime_dependency(%q<sidekiq-cron>, [">= 0"])
+      s.add_runtime_dependency(%q<slim>, [">= 0"])
       s.add_development_dependency(%q<shoulda>, [">= 0"])
       s.add_development_dependency(%q<rdoc>, ["~> 3.12"])
       s.add_development_dependency(%q<bundler>, ["~> 1.0"])
@@ -234,18 +242,23 @@ Gem::Specification.new do |s|
       s.add_development_dependency(%q<factory_girl_rails>, [">= 0"])
       s.add_development_dependency(%q<sqlite3>, [">= 0"])
       s.add_development_dependency(%q<shoulda-matchers>, [">= 0"])
+      s.add_development_dependency(%q<rubocop>, [">= 0"])
       s.add_development_dependency(%q<timecop>, [">= 0"])
     else
-      s.add_dependency(%q<rails>, ["~> 4.0"])
+      s.add_dependency(%q<rails>, ["~> 4.2"])
       s.add_dependency(%q<maestrano-rails>, [">= 0"])
       s.add_dependency(%q<hash_mapper>, [">= 0"])
-      s.add_dependency(%q<sidekiq>, [">= 0"])
-      s.add_dependency(%q<sidekiq-unique-jobs>, [">= 0"])
       s.add_dependency(%q<haml-rails>, [">= 0"])
       s.add_dependency(%q<bootstrap-sass>, [">= 0"])
       s.add_dependency(%q<autoprefixer-rails>, [">= 0"])
       s.add_dependency(%q<attr_encrypted>, ["~> 1.4.0"])
       s.add_dependency(%q<config>, [">= 0"])
+      s.add_dependency(%q<figaro>, [">= 0"])
+      s.add_dependency(%q<sidekiq>, [">= 0"])
+      s.add_dependency(%q<sidekiq-unique-jobs>, [">= 0"])
+      s.add_dependency(%q<sinatra>, [">= 0"])
+      s.add_dependency(%q<sidekiq-cron>, [">= 0"])
+      s.add_dependency(%q<slim>, [">= 0"])
       s.add_dependency(%q<shoulda>, [">= 0"])
       s.add_dependency(%q<rdoc>, ["~> 3.12"])
       s.add_dependency(%q<bundler>, ["~> 1.0"])
@@ -255,19 +268,24 @@ Gem::Specification.new do |s|
       s.add_dependency(%q<factory_girl_rails>, [">= 0"])
       s.add_dependency(%q<sqlite3>, [">= 0"])
       s.add_dependency(%q<shoulda-matchers>, [">= 0"])
+      s.add_dependency(%q<rubocop>, [">= 0"])
       s.add_dependency(%q<timecop>, [">= 0"])
     end
   else
-    s.add_dependency(%q<rails>, ["~> 4.0"])
+    s.add_dependency(%q<rails>, ["~> 4.2"])
     s.add_dependency(%q<maestrano-rails>, [">= 0"])
     s.add_dependency(%q<hash_mapper>, [">= 0"])
-    s.add_dependency(%q<sidekiq>, [">= 0"])
-    s.add_dependency(%q<sidekiq-unique-jobs>, [">= 0"])
     s.add_dependency(%q<haml-rails>, [">= 0"])
     s.add_dependency(%q<bootstrap-sass>, [">= 0"])
     s.add_dependency(%q<autoprefixer-rails>, [">= 0"])
     s.add_dependency(%q<attr_encrypted>, ["~> 1.4.0"])
     s.add_dependency(%q<config>, [">= 0"])
+    s.add_dependency(%q<figaro>, [">= 0"])
+    s.add_dependency(%q<sidekiq>, [">= 0"])
+    s.add_dependency(%q<sidekiq-unique-jobs>, [">= 0"])
+    s.add_dependency(%q<sinatra>, [">= 0"])
+    s.add_dependency(%q<sidekiq-cron>, [">= 0"])
+    s.add_dependency(%q<slim>, [">= 0"])
     s.add_dependency(%q<shoulda>, [">= 0"])
     s.add_dependency(%q<rdoc>, ["~> 3.12"])
     s.add_dependency(%q<bundler>, ["~> 1.0"])
@@ -277,6 +295,7 @@ Gem::Specification.new do |s|
     s.add_dependency(%q<factory_girl_rails>, [">= 0"])
     s.add_dependency(%q<sqlite3>, [">= 0"])
     s.add_dependency(%q<shoulda-matchers>, [">= 0"])
+    s.add_dependency(%q<rubocop>, [">= 0"])
     s.add_dependency(%q<timecop>, [">= 0"])
   end
 end

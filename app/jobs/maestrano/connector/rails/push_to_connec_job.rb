@@ -3,7 +3,7 @@ module Maestrano::Connector::Rails
     queue_as :default
 
     # expected hash: {"external_entity_name1" => [entity1, entity2], "external_entity_name2" => []}
-    def perform(organization, entities_hash, opts={})
+    def perform(organization, entities_hash, opts = {})
       return unless organization.sync_enabled && organization.oauth_uid
 
       connec_client = Maestrano::Connector::Rails::ConnecHelper.get_client(organization)
@@ -18,11 +18,11 @@ module Maestrano::Connector::Rails
 
           entity_instance.before_sync(last_synchronization_date)
           # Build expected input for consolidate_and_map_data
-          if entity_instance_hash[:is_complex]
-            mapped_entities = entity_instance.consolidate_and_map_data(ComplexEntity.build_empty_hash(entity_instance.class.connec_entities_names), ComplexEntity.build_hash_with_entities(entity_instance.class.external_entities_names, external_entity_name, lambda{|name| name}, entities))
-          else
-            mapped_entities = entity_instance.consolidate_and_map_data([], entities)
-          end
+          mapped_entities = if entity_instance_hash[:is_complex]
+                              entity_instance.consolidate_and_map_data(ComplexEntity.build_empty_hash(entity_instance.class.connec_entities_names), ComplexEntity.build_hash_with_entities(entity_instance.class.external_entities_names, external_entity_name, ->(name) { name }, entities))
+                            else
+                              entity_instance.consolidate_and_map_data([], entities)
+                            end
           entity_instance.push_entities_to_connec(mapped_entities[:external_entities])
 
           entity_instance.after_sync(last_synchronization_date)
@@ -33,6 +33,7 @@ module Maestrano::Connector::Rails
     end
 
     private
+
       def find_entity_instance(entity_name, organization, connec_client, external_client, opts)
         Maestrano::Connector::Rails::External.entities_list.each do |entity_name_from_list|
           clazz = "Entities::#{entity_name_from_list.singularize.titleize.split.join}".constantize
