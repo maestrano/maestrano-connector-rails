@@ -7,19 +7,19 @@ module Maestrano::Connector::Rails
     #  * :only_entities => [person, tasks_list]
     #  * :full_sync => true  synchronization is performed without date filtering
     #  * :connec_preemption => true|false : preemption is always|never given to connec in case of conflict (if not set, the most recently updated entity is kept)
-    def perform(organization, opts={})
+    def perform(organization, opts = {})
       return unless organization.sync_enabled
 
       # Check if previous synchronization is still running
       if Synchronization.where(organization_id: organization.id, status: 'RUNNING').where(created_at: (30.minutes.ago..Time.now)).exists?
-        ConnectorLogger.log('info', organization, "Synchronization skipped: Previous synchronization is still running")
+        ConnectorLogger.log('info', organization, 'Synchronization skipped: Previous synchronization is still running')
         return
       end
 
       # Check if recovery mode: last 3 synchronizations have failed
       if !opts[:forced] && organization.last_three_synchronizations_failed? \
           && organization.synchronizations.order(created_at: :desc).limit(1).first.updated_at > 1.day.ago
-        ConnectorLogger.log('info', organization, "Synchronization skipped: Recovery mode (three previous synchronizations have failed)")
+        ConnectorLogger.log('info', organization, 'Synchronization skipped: Recovery mode (three previous synchronizations have failed)')
         return
       end
 
@@ -37,8 +37,8 @@ module Maestrano::Connector::Rails
         # We do a doube sync: only from external, then only from connec!
         # We also do batched sync as the first one can be quite huge
         if last_synchronization.nil?
-          ConnectorLogger.log('info', organization, "First synchronization ever. Doing two half syncs to allow smart merging to work its magic.")
-          organization.synchronized_entities.select{|k, v| v}.keys.each do |entity|
+          ConnectorLogger.log('info', organization, 'First synchronization ever. Doing two half syncs to allow smart merging to work its magic.')
+          organization.synchronized_entities.select { |k, v| v }.keys.each do |entity|
             ConnectorLogger.log('info', organization, "First synchronization ever. Doing half sync from external for #{entity}.")
             first_sync_entity(entity.to_s, organization, connec_client, external_client, last_synchronization_date, opts, true)
             ConnectorLogger.log('info', organization, "First synchronization ever. Doing half sync from Connec! for #{entity}.")
@@ -52,7 +52,7 @@ module Maestrano::Connector::Rails
             sync_entity(entity, organization, connec_client, external_client, last_synchronization_date, opts)
           end
         else
-          organization.synchronized_entities.select{|k, v| v}.keys.each do |entity|
+          organization.synchronized_entities.select { |_k, v| v }.keys.each do |entity|
             sync_entity(entity.to_s, organization, connec_client, external_client, last_synchronization_date, opts)
           end
         end
@@ -78,7 +78,7 @@ module Maestrano::Connector::Rails
       entities_count = limit
 
       h = {__limit: limit}
-      external ? h.merge!(__skip_connec: true) : h.merge!(__skip_external: true)
+      external ? h[:__skip_connec] = true : h[:__skip_external] = true
       entity_instance = instanciate_entity(entity_name, organization, connec_client, external_client, opts.merge(h))
 
       # IF entities_count > limit
@@ -87,7 +87,7 @@ module Maestrano::Connector::Rails
       # No need to fetch it a second Time
       # ELSIF entities_count < limit
       # No more entities to fetch
-      while entities_count == limit do
+      while entities_count == limit
         entity_instance.opts_merge!(__skip: skip)
         entities_count = perform_sync(entity_instance, last_synchronization_date, external)
         skip += limit
@@ -95,6 +95,7 @@ module Maestrano::Connector::Rails
     end
 
     private
+
       def instanciate_entity(entity_name, organization, connec_client, external_client, opts)
         "Entities::#{entity_name.titleize.split.join}".constantize.new(organization, connec_client, external_client, opts.dup)
       end

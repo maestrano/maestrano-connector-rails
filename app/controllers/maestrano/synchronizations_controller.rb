@@ -2,7 +2,7 @@ class Maestrano::SynchronizationsController < Maestrano::Rails::WebHookControlle
   def show
     uid = params[:id]
     organization = Maestrano::Connector::Rails::Organization.find_by_uid(uid)
-    return render json: { errors: {message: "Organization not found", code: 404} }, status: :not_found unless organization
+    return render json: {errors: {message: "Organization not found", code: 404}}, status: :not_found unless organization
 
     h = {
       group_id: organization.uid,
@@ -12,11 +12,9 @@ class Maestrano::SynchronizationsController < Maestrano::Rails::WebHookControlle
     last_sync = organization.synchronizations.last
     if last_sync
       h.merge!(
-        {
-          status: last_sync.status,
-          message: last_sync.message,
-          updated_at: last_sync.updated_at
-        }
+        status: last_sync.status,
+        message: last_sync.message,
+        updated_at: last_sync.updated_at
       )
     end
 
@@ -27,7 +25,7 @@ class Maestrano::SynchronizationsController < Maestrano::Rails::WebHookControlle
     uid = params[:group_id]
     opts = params[:opts] || {}
     organization = Maestrano::Connector::Rails::Organization.find_by_uid(uid)
-    return render json: { errors: {message: "Organization not found", code: 404} }, status: :not_found unless organization
+    return render json: {errors: {message: "Organization not found", code: 404}}, status: :not_found unless organization
 
     Maestrano::Connector::Rails::SynchronizationJob.perform_later(organization, opts.with_indifferent_access)
     head :created
@@ -36,7 +34,7 @@ class Maestrano::SynchronizationsController < Maestrano::Rails::WebHookControlle
   def toggle_sync
     uid = params[:group_id]
     organization = Maestrano::Connector::Rails::Organization.find_by_uid(uid)
-    return render json: { errors: {message: "Organization not found", code: 404} }, status: :not_found unless organization
+    return render json: {errors: {message: "Organization not found", code: 404}}, status: :not_found unless organization
 
     organization.toggle(:sync_enabled)
     organization.save

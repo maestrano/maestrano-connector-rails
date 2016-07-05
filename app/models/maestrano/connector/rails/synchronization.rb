@@ -3,6 +3,10 @@ module Maestrano::Connector::Rails
     # Keeping only 100 synchronizations per organization
     after_create :clean_synchronizations
 
+    RUNNING_STATUS = 'RUNNING'.freeze
+    ERROR_STATUS = 'ERROR'.freeze
+    SUCCESS_STATUS = 'SUCCESS'.freeze
+
     #===================================
     # Associations
     #===================================
@@ -10,39 +14,37 @@ module Maestrano::Connector::Rails
 
     validates :status, presence: true
 
-    def is_running?
-      self.status == 'RUNNING'
+    def running?
+      status == RUNNING_STATUS
     end
 
-    def is_error?
-      self.status == 'ERROR'
+    def error?
+      status == ERROR_STATUS
     end
 
-    def is_success?
-      self.status == 'SUCCESS'
+    def success?
+      status == SUCCESS_STATUS
     end
 
     def self.create_running(organization)
-      Synchronization.create(organization_id: organization.id, status: 'RUNNING')
+      Synchronization.create(organization_id: organization.id, status: RUNNING_STATUS)
     end
 
     def set_success
-      self.update_attributes(status: 'SUCCESS')
+      update_attributes(status: SUCCESS_STATUS)
     end
 
     def set_error(msg)
-      self.update_attributes(status: 'ERROR', message: msg)
+      update_attributes(status: ERROR_STATUS, message: msg)
     end
 
     def set_partial
-      self.update_attributes(partial: true)
+      update_attributes(partial: true)
     end
 
     def clean_synchronizations
-      count = self.organization.synchronizations.count
-      if count > 100
-        self.organization.synchronizations.order('id ASC').limit(count - 100).destroy_all
-      end
+      count = organization.synchronizations.count
+      organization.synchronizations.order('id ASC').limit(count - 100).destroy_all if count > 100
     end
   end
 end
