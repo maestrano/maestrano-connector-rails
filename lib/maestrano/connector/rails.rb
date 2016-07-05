@@ -1,6 +1,21 @@
-require 'maestrano'
 require 'maestrano-rails'
+
+require 'haml-rails'
+require 'bootstrap-sass'
+require 'autoprefixer-rails'
+
 require 'hash_mapper'
+
+require 'config'
+require 'figaro'
+
+require 'attr_encrypted'
+
+require 'sidekiq'
+require 'sidekiq-cron'
+require 'sidekiq-unique-jobs'
+require 'sinatra'
+require 'slim'
 
 module Maestrano
   module Connector
