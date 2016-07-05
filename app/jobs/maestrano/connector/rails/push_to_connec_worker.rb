@@ -9,10 +9,11 @@ module Maestrano::Connector::Rails
     def self.unique_args(args)
       organization_id = args[0]
       entities_hash = args[1]
-      return[organization_id, entities_hash.keys.sort]
+
+      [organization_id, entities_hash.keys.sort]
     end
 
-    def perform(organization_id, entities_hash, opts={})
+    def perform(organization_id, entities_hash, opts = {})
       organization = Organization.find(organization_id)
       PushToConnecJob.new.perform(organization, entities_hash, opts)
     end
