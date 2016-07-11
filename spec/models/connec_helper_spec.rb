@@ -17,12 +17,17 @@ describe Maestrano::Connector::Rails::ConnecHelper do
 
   describe 'connec_version' do
     let!(:organization) { create(:organization, tenant: 'default') }
+    let!(:organization2) { create(:organization, tenant: 'default2') }
     before {
-      allow(Maestrano::Connec::Client[organization.tenant]).to receive(:get).and_return(ActionDispatch::Response.new(200, {}, {ci_build_number: '111', ci_branch: '1.1', ci_commit: '111'}.to_json, {}))
+      allow(Maestrano::Connec::Client).to receive(:get).and_return(ActionDispatch::Response.new(200, {}, {ci_build_number: '111', ci_branch: '1.1', ci_commit: '111'}.to_json, {}), ActionDispatch::Response.new(200, {}, {ci_build_number: '112', ci_branch: '1.2', ci_commit: '112'}.to_json, {}))
     }
 
     it 'returns the connec_version' do
+      expect(Maestrano::Connec::Client).to receive(:get).twice
       expect(subject.connec_version(organization)).to eql('1.1')
+      expect(subject.connec_version(organization2)).to eql('1.2')
+      expect(subject.connec_version(organization)).to eql('1.1')
+      expect(subject.connec_version(organization2)).to eql('1.2')
     end
 
   end
@@ -111,6 +116,26 @@ describe Maestrano::Connector::Rails::ConnecHelper do
 
       it 'unfold the others refs' do
         expect(subject.unfold_references(connec_hash, ['organization_id', 'lines/linked_transaction/id'], organization)).to eql(output_hash.merge(organization_id: nil).with_indifferent_access)
+      end
+    end
+
+    describe 'when reference field is a string instead of an array' do
+      let(:connec_hash) {
+        {
+          id: [subject.id_hash('123', organization), {'provider' => 'connec', 'id' => 'abcd'}],
+          organization_id: 'an unexpected string id',
+        }
+      }
+
+      let(:output_hash) {
+        {
+          __connec_id: 'abcd',
+          id: '123'
+        }
+      }
+
+      it 'let the string as it is' do
+        expect(subject.unfold_references(connec_hash, ['organization_id'], organization)).to eql(output_hash.with_indifferent_access)
       end
     end
   end
