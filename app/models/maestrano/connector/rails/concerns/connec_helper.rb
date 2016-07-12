@@ -18,7 +18,7 @@ module Maestrano::Connector::Rails::Concerns::ConnecHelper
     end
 
     def connec_version(organization)
-      @@connec_version = Rails.cache.fetch('connec_version', namespace: 'maestrano', expires_in: 1.day) do
+      @@connec_version = Rails.cache.fetch("connec_version_#{organization.tenant}", namespace: 'maestrano', expires_in: 1.day) do
         response = get_client(organization).class.get("#{Maestrano[organization.tenant].param('connec.host')}/version")
         response = JSON.parse(response.body)
         @@connec_version = response['ci_branch']
@@ -27,7 +27,7 @@ module Maestrano::Connector::Rails::Concerns::ConnecHelper
     end
 
     # Replace the ids arrays by the external id
-    # If a reference has no id for this oauth_provider and oauth_uid but has one for connec returns nil
+    # If a reference has no id for this oauth_provider and oauth_uid but has one for connec, returns nil
     def unfold_references(connec_entity, references, organization)
       unfolded_connec_entity = connec_entity.with_indifferent_access
       not_nil = true
@@ -85,6 +85,7 @@ module Maestrano::Connector::Rails::Concerns::ConnecHelper
 
       # Unfold the id
       if array_of_refs.empty? && field
+        return entity.delete(ref) if field.is_a?(String) # ~retro-compatibility to ease transition aroud Connec! idmaps rework. Should be removed eventually.
         id_hash = field.find { |id| id[:provider] == organization.oauth_provider && id[:realm] == organization.oauth_uid }
         if id_hash
           entity[ref] = id_hash['id']
