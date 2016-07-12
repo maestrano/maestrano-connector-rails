@@ -1,3 +1,8 @@
+## 1.2.3
+
+### Fixes
+* Fix Connec! version that was not cached scoped by tenant
+
 ## 1.2.2
 
 ### Fixes
