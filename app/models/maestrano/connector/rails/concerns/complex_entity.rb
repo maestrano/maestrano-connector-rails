@@ -137,7 +137,7 @@ module Maestrano::Connector::Rails::Concerns::ComplexEntity
   end
 
   def instantiate_sub_entity_instance(entity_name)
-    "Entities::SubEntities::#{entity_name.titleize.split.join}".constantize.new(@organization, @connec_client, @external_client, @opts)
+    self.class.instantiate_sub_entity_instance(entity_name, @organization, @connec_client, @external_client, @opts)
   end
 
   # -------------------------------------------------------------
@@ -153,6 +153,10 @@ module Maestrano::Connector::Rails::Concerns::ComplexEntity
     # with proc.call(entities_name[1] == entity_name)
     def build_hash_with_entities(entities_name, entity_name, proc, entities)
       Hash[*entities_name.collect { |name| proc.call(name) == entity_name ? [name, entities] : [name, []] }.flatten(1)]
+    end
+
+    def instantiate_sub_entity_instance(entity_name, organization, connec_client, external_client, opts)
+      "Entities::SubEntities::#{entity_name.titleize.split.join}".constantize.new(organization, connec_client, external_client, opts)
     end
   end
 end

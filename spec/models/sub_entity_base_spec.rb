@@ -115,6 +115,17 @@ describe Maestrano::Connector::Rails::SubEntityBase do
             subject.map_to('Name', {})
           end
         end
+
+        context 'when connec_matching_fields' do
+          before {
+            expect(AMapper).to receive(:denormalize).and_return({opts: {a: 2}})
+            allow(subject.class).to receive(:connec_matching_fields).and_return('matching_fields')
+          }
+
+          it 'adds the matching_fields in the entity opts' do
+            expect(subject.map_to('Name', {})).to eql({id: [Maestrano::Connector::Rails::ConnecHelper.id_hash('this id', organization)], opts: {a: 2, matching_fields: 'matching_fields'}}.with_indifferent_access)
+          end
+        end
       end
 
       context 'when not external' do
@@ -125,10 +136,6 @@ describe Maestrano::Connector::Rails::SubEntityBase do
         it 'calls the mapper normalize' do
           expect(AMapper).to receive(:normalize).and_return({})
           subject.map_to('Name', {})
-        end
-
-        it 'preserve the __connec_id' do
-          expect(subject.map_to('Name', {__connec_id: 'connec id'})).to eql({__connec_id: 'connec id'}.with_indifferent_access)
         end
       end
     end

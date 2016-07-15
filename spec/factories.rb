@@ -19,9 +19,9 @@ FactoryGirl.define do
   end
 
   factory :idmap, class: Maestrano::Connector::Rails::IdMap do
-    connec_id '6798-ada6-te43'
+    sequence(:connec_id) { |n| "#{n}6798-ada6-te43#{n}" }
     connec_entity 'person'
-    external_id '4567ada66'
+    sequence(:external_id) { |n| "#{n}4567ada66#{n}" } 
     external_entity 'contact'
     last_push_to_external 2.day.ago
     last_push_to_connec 1.day.ago
