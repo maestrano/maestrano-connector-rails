@@ -10,16 +10,16 @@ describe 'complex entities workflow' do
     end
     def connec_model_to_external_model(connec_hash_of_entities)
       organizations = connec_hash_of_entities['CompOrganization']
-      modeled_connec_entities = {'CompOrganization' => { 'CompSupplier' => [], 'CompCustomer' => [] }}
+      modelled_connec_entities = {'CompOrganization' => { 'CompSupplier' => [], 'CompCustomer' => [] }}
 
       organizations.each do |organization|
         if organization['is_supplier']
-          modeled_connec_entities['CompOrganization']['CompSupplier'] << organization
+          modelled_connec_entities['CompOrganization']['CompSupplier'] << organization
         else
-          modeled_connec_entities['CompOrganization']['CompCustomer'] << organization
+          modelled_connec_entities['CompOrganization']['CompCustomer'] << organization
         end
       end
-      return modeled_connec_entities
+      return modelled_connec_entities
     end
     def external_model_to_connec_model(external_hash_of_entities)
       return {'CompCustomer' => {'CompOrganization' => external_hash_of_entities['CompCustomer']}, 'CompSupplier' => {'CompOrganization' => external_hash_of_entities['CompSupplier']}}

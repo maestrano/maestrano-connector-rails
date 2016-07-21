@@ -77,36 +77,36 @@ module Maestrano::Connector::Rails::Concerns::ComplexEntity
   end
 
   def consolidate_and_map_data(connec_entities, external_entities)
-    modeled_external_entities = external_model_to_connec_model(external_entities)
-    modeled_connec_entities = connec_model_to_external_model(connec_entities)
+    modelled_external_entities = external_model_to_connec_model(external_entities)
+    modelled_connec_entities = connec_model_to_external_model(connec_entities)
 
-    mapped_connec_entities = consolidate_and_map_connec_entities(modeled_connec_entities, modeled_external_entities)
-    mapped_external_entities = consolidate_and_map_external_entities(modeled_external_entities)
+    mapped_connec_entities = consolidate_and_map_connec_entities(modelled_connec_entities, modelled_external_entities)
+    mapped_external_entities = consolidate_and_map_external_entities(modelled_external_entities)
 
     {connec_entities: mapped_connec_entities, external_entities: mapped_external_entities}
   end
 
-  def consolidate_and_map_connec_entities(modeled_connec_entities, modeled_external_entities)
-    modeled_connec_entities.each do |connec_entity_name, entities_in_external_model|
+  def consolidate_and_map_connec_entities(modelled_connec_entities, modelled_external_entities)
+    modelled_connec_entities.each do |connec_entity_name, entities_in_external_model|
       entities_in_external_model.each do |external_entity_name, entities|
         sub_entity_instance = instantiate_sub_entity_instance(connec_entity_name)
-        equivalent_external_entities = (modeled_external_entities[external_entity_name] && modeled_external_entities[external_entity_name][connec_entity_name]) || []
+        equivalent_external_entities = (modelled_external_entities[external_entity_name] && modelled_external_entities[external_entity_name][connec_entity_name]) || []
 
         entities_in_external_model[external_entity_name] = sub_entity_instance.consolidate_and_map_connec_entities(entities, equivalent_external_entities, sub_entity_instance.class.references[external_entity_name] || [], external_entity_name)
       end
     end
-    modeled_connec_entities
+    modelled_connec_entities
   end
 
-  def consolidate_and_map_external_entities(modeled_external_entities)
-    modeled_external_entities.each do |external_entity_name, entities_in_connec_model|
+  def consolidate_and_map_external_entities(modelled_external_entities)
+    modelled_external_entities.each do |external_entity_name, entities_in_connec_model|
       entities_in_connec_model.each do |connec_entity_name, entities|
         sub_entity_instance = instantiate_sub_entity_instance(external_entity_name)
 
         entities_in_connec_model[connec_entity_name] = sub_entity_instance.consolidate_and_map_external_entities(entities, connec_entity_name)
       end
     end
-    modeled_external_entities
+    modelled_external_entities
   end
 
   # input : {
