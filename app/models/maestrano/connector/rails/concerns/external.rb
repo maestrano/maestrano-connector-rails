@@ -10,6 +10,10 @@ module Maestrano::Connector::Rails::Concerns::External
       raise 'Not implemented'
     end
 
+    def create_account_link(organization = nil)
+      raise 'Not implemented'
+    end
+
     # Return an array of all the entities that the connector can synchronize
     # If you add new entities, you need to generate
     # a migration to add them to existing organizations
