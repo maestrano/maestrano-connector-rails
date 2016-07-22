@@ -509,7 +509,7 @@ describe Maestrano::Connector::Rails::Entity do
       end
 
       describe 'get_external_entities' do
-        it { expect{ subject.get_external_entities(nil) }.to raise_error('Not implemented') }
+        it { expect{ subject.get_external_entities('') }.to raise_error('Not implemented') }
       end
 
       describe 'push_entities_to_external' do

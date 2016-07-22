@@ -15,7 +15,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
     # organization_and_id can be either:
     # * {connec_id: 'id', organization_id: 'id'}
     # * {external_id: 'id', organization_id: 'id'}
-    # Needs to include either connec_entity or external_entity for complex entities
+    # Needs to include either connec_entity or external_entity for sub entities
     def find_or_create_idmap(organization_and_id)
       Maestrano::Connector::Rails::IdMap.find_or_create_by(names_hash.merge(organization_and_id))
     end
@@ -239,13 +239,13 @@ module Maestrano::Connector::Rails::Concerns::Entity
   # ----------------------------------------------
   #                 External methods
   # ----------------------------------------------
-  def get_external_entities_wrapper(last_synchronization_date = nil)
+  def get_external_entities_wrapper(entity_name = self.class.external_entity_name, last_synchronization_date = nil)
     return [] if @opts[:__skip_external] || !self.class.can_read_external?
-    get_external_entities(last_synchronization_date)
+    get_external_entities(entity_name, last_synchronization_date)
   end
 
-  def get_external_entities(last_synchronization_date = nil)
-    Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, "Fetching #{Maestrano::Connector::Rails::External.external_name} #{self.class.external_entity_name.pluralize}")
+  def get_external_entities(external_entity_name, last_synchronization_date = nil)
+    Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, "Fetching #{Maestrano::Connector::Rails::External.external_name} #{external_entity_name.pluralize}")
     raise 'Not implemented'
   end
 

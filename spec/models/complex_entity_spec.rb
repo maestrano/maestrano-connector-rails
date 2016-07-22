@@ -81,8 +81,8 @@ describe Maestrano::Connector::Rails::ComplexEntity do
         }
 
         it 'calls get_external_entities on each connec sub complex entities' do
-          expect_any_instance_of(Entities::SubEntities::ScE1).to receive(:get_external_entities_wrapper).with(nil)
-          expect_any_instance_of(Entities::SubEntities::ScE2).to receive(:get_external_entities_wrapper).with(nil)
+          expect_any_instance_of(Entities::SubEntities::ScE1).to receive(:get_external_entities_wrapper).with('sc_e1', nil)
+          expect_any_instance_of(Entities::SubEntities::ScE2).to receive(:get_external_entities_wrapper).with('ScE2', nil)
           subject.get_external_entities_wrapper(nil)
         end
 
@@ -131,6 +131,8 @@ describe Maestrano::Connector::Rails::ComplexEntity do
           let(:connec_name) { 'connec1' }
           let(:modelled_external_entities) { {external_name => {connec_name => [entity]}} }
           before {
+            allow(subject.class).to receive(:connec_entities_names).and_return(['connec1'])
+            allow(subject.class).to receive(:external_entities_names).and_return(['sc_e1'])
             allow(Entities::SubEntities::ScE1).to receive(:external?).and_return(true)
             allow(Entities::SubEntities::ScE1).to receive(:entity_name).and_return(external_name)
             allow(Entities::SubEntities::ScE1).to receive(:id_from_external_entity_hash).and_return(id)
@@ -196,6 +198,8 @@ describe Maestrano::Connector::Rails::ComplexEntity do
           let(:external_name) { 'ext1' }
           let(:id_refs_only_connec_entity) { {a: 1} }
           before{
+            allow(subject.class).to receive(:connec_entities_names).and_return(['sc_e1'])
+            allow(subject.class).to receive(:external_entities_names).and_return(['ext1'])
             allow(Entities::SubEntities::ScE1).to receive(:external?).and_return(false)
             allow(Entities::SubEntities::ScE1).to receive(:entity_name).and_return(connec_name)
             allow_any_instance_of(Entities::SubEntities::ScE1).to receive(:map_to).with(external_name, entity).and_return(mapped_entity)
@@ -312,6 +316,11 @@ describe Maestrano::Connector::Rails::ComplexEntity do
           }
         }
 
+        before {
+          allow(subject.class).to receive(:external_entities_names).and_return(['sc_e1', 'ScE2'])
+          allow(subject.class).to receive(:connec_entities_names).and_return(['Connec1', 'connec2'])
+        }
+
         it 'calls push_entities_to_connec on each sub complex entity' do
           expect_any_instance_of(Entities::SubEntities::ScE1).to receive(:push_entities_to_connec_to).once.with([mapped_entity_with_idmap], 'Connec1')
           expect_any_instance_of(Entities::SubEntities::ScE2).to receive(:push_entities_to_connec_to).twice
@@ -342,6 +351,11 @@ describe Maestrano::Connector::Rails::ComplexEntity do
             'sc_e1' => {'ext1' => [mapped_entity_with_idmap]},
             'ScE2' => {'ext1' => [mapped_entity_with_idmap, mapped_entity_with_idmap], 'ext2' => [mapped_entity_with_idmap]}
           }
+        }
+
+        before {
+          allow(subject.class).to receive(:external_entities_names).and_return(['ext1', 'ext2'])
+          allow(subject.class).to receive(:connec_entities_names).and_return(['sc_e1', 'ScE2'])
         }
 
         it 'calls push_entities_to_connec on each sub complex entity' do

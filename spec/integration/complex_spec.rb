@@ -273,8 +273,8 @@ describe 'complex entities workflow' do
   end
 
   it 'sends two objects to connec, two objects to external and send back one id to connec' do
-    expect_any_instance_of(Entities::SubEntities::CompOrganization).to receive(:create_external_entity).once.and_return({})
-    expect_any_instance_of(Entities::SubEntities::CompOrganization).to receive(:update_external_entity).once
+    expect_any_instance_of(Entities::SubEntities::CompOrganization).to receive(:create_external_entity).once.with(mapped_connec_org1, 'CompSupplier').and_return({})
+    expect_any_instance_of(Entities::SubEntities::CompOrganization).to receive(:update_external_entity).once.with(mapped_connec_org2, connec_org2_ext_id, 'CompCustomer')
     expect(connec_client).to receive(:batch).exactly(3).times.and_return(ActionDispatch::Response.new(201, {}, {results: []}.to_json, {}), ActionDispatch::Response.new(200, {}, {results: []}.to_json, {}))
     subject
   end
