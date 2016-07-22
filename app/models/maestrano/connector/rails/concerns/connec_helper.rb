@@ -94,7 +94,7 @@ module Maestrano::Connector::Rails::Concerns::ConnecHelper
         field.each do |f|
           fold_references_helper(f, array_of_refs.dup, organization)
         end
-      when HashWithIndifferentAccess
+      when Hash
         fold_references_helper(entity[ref], array_of_refs, organization)
       else
         id = field
@@ -132,14 +132,14 @@ module Maestrano::Connector::Rails::Concerns::ConnecHelper
             bool &= unfold_references_helper(f, array_of_refs.dup, organization)
           end
           bool
-        when HashWithIndifferentAccess
+        when Hash
           unfold_references_helper(entity[ref], array_of_refs, organization)
         end
       end
     end
 
     # Transforms the references into an hash {record_references: [], id_references: []}
-    # References can either be an array (only record refenreces), or a hash
+    # References can either be an array (only record references), or a hash
     def format_references(references)
       return {record_references: references, id_references: []} if references.is_a?(Array)
       references[:record_references] ||= []
@@ -172,7 +172,7 @@ module Maestrano::Connector::Rails::Concerns::ConnecHelper
           entity_hash[key].each do |hash|
             filter_connec_entity_for_id_refs_helper(hash, children)
           end
-        when HashWithIndifferentAccess
+        when Hash
           filter_connec_entity_for_id_refs_helper(entity_hash[key], children)
         end
       end
@@ -229,7 +229,7 @@ module Maestrano::Connector::Rails::Concerns::ConnecHelper
           field.each_with_index do |f, index|
             merge_id_hashes_helper(f, array_of_refs.dup, src, path + [ref, index])
           end
-        when HashWithIndifferentAccess
+        when Hash
           merge_id_hashes_helper(field, array_of_refs, src, path + [ref])
         end
       end
