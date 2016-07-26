@@ -148,7 +148,7 @@ describe 'singleton workflow' do
         it 'does the mapping correctly' do
           idmap = Entities::SingletonIntegration.create_idmap(organization_id: organization.id, external_id: ext_comp_id, connec_id: 'some connec id')
           allow(Entities::SingletonIntegration).to receive(:create_idmap).and_return(idmap)
-          expect_any_instance_of(Entities::SingletonIntegration).to receive(:push_entities_to_external).with([{entity: {name: 'My awesome company'}, idmap: idmap}])
+          expect_any_instance_of(Entities::SingletonIntegration).to receive(:push_entities_to_external).with([{entity: {name: 'My awesome company'}, idmap: idmap, id_refs_only_connec_entity: {}}])
           subject
         end
 
@@ -207,7 +207,7 @@ describe 'singleton workflow' do
         end
 
         it 'does the mapping correctly' do
-          expect_any_instance_of(Entities::SingletonIntegration).to receive(:push_entities_to_external).with([{entity: mapped_connec_entity, idmap: idmap}])
+          expect_any_instance_of(Entities::SingletonIntegration).to receive(:push_entities_to_external).with([{entity: mapped_connec_entity, idmap: idmap, id_refs_only_connec_entity: {}}])
           subject
         end
 
@@ -263,7 +263,7 @@ describe 'singleton workflow' do
     end
 
     it 'does the mapping correctly' do
-      expect_any_instance_of(Entities::SingletonIntegration).to receive(:push_entities_to_external).with([{entity: mapped_connec_entity, idmap: idmap}])
+      expect_any_instance_of(Entities::SingletonIntegration).to receive(:push_entities_to_external).with([{entity: mapped_connec_entity, idmap: idmap, id_refs_only_connec_entity: {}}])
       subject
     end
   end

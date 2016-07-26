@@ -194,18 +194,19 @@ describe Maestrano::Connector::Rails::ComplexEntity do
           let(:modeled_external_entities) { {} }
           let(:connec_name) { 'sc_e1' }
           let(:external_name) { 'ext1' }
+          let(:id_refs_only_connec_entity) { {a: 1} }
           before{
             allow(Entities::SubEntities::ScE1).to receive(:external?).and_return(false)
             allow(Entities::SubEntities::ScE1).to receive(:entity_name).and_return(connec_name)
             allow_any_instance_of(Entities::SubEntities::ScE1).to receive(:map_to).with(external_name, entity).and_return(mapped_entity)
             allow(Entities::SubEntities::ScE1).to receive(:object_name_from_connec_entity_hash).and_return(human_name)
-            allow(Maestrano::Connector::Rails::ConnecHelper).to receive(:unfold_references).and_return(entity.merge(__connec_id: connec_id))
+            allow(Maestrano::Connector::Rails::ConnecHelper).to receive(:unfold_references).and_return({entity: entity, connec_id: connec_id, id_refs_only_connec_entity: id_refs_only_connec_entity})
           }
 
           context 'when idmaps do not exist' do
             it 'creates the idmaps with a name and returns the mapped entities with their idmaps' do
               expect{
-                expect(subject.consolidate_and_map_connec_entities(modeled_connec_entities, {})).to eql({connec_name => {external_name => [{entity: {mapped: 'entity'}, idmap: Maestrano::Connector::Rails::IdMap.first}]}})
+                expect(subject.consolidate_and_map_connec_entities(modeled_connec_entities, {})).to eql({connec_name => {external_name => [{entity: {mapped: 'entity'}, idmap: Maestrano::Connector::Rails::IdMap.first, id_refs_only_connec_entity: id_refs_only_connec_entity}]}})
               }.to change{ Maestrano::Connector::Rails::IdMap.count }.by(1)
               expect(Maestrano::Connector::Rails::IdMap.last.name).to eql(human_name)
             end
@@ -221,7 +222,7 @@ describe Maestrano::Connector::Rails::ComplexEntity do
             end
 
             it 'returns the entity with its idmap' do
-              expect(subject.consolidate_and_map_connec_entities(modeled_connec_entities, {})).to eql({connec_name => {external_name => [{entity: {mapped: 'entity'}, idmap: idmap1}]}})
+              expect(subject.consolidate_and_map_connec_entities(modeled_connec_entities, {})).to eql({connec_name => {external_name => [{entity: {mapped: 'entity'}, idmap: idmap1, id_refs_only_connec_entity: id_refs_only_connec_entity}]}})
             end
 
             context 'when external inactive' do
@@ -264,7 +265,7 @@ describe Maestrano::Connector::Rails::ComplexEntity do
                 context 'with connec preemption true' do
                   it 'keeps the entity and discards the external one' do
                     subject.instance_variable_set(:@opts, {connec_preemption: true})
-                    expect(subject.consolidate_and_map_connec_entities(modeled_connec_entities, modeled_external_entities)).to eql({connec_name => {external_name => [{entity: {mapped: 'entity'}, idmap: Maestrano::Connector::Rails::IdMap.first}]}})
+                    expect(subject.consolidate_and_map_connec_entities(modeled_connec_entities, modeled_external_entities)).to eql({connec_name => {external_name => [{entity: {mapped: 'entity'}, idmap: Maestrano::Connector::Rails::IdMap.first, id_refs_only_connec_entity: id_refs_only_connec_entity}]}})
                     expect(modeled_external_entities[external_name][connec_name]).to be_empty
                   end
                 end
@@ -280,7 +281,7 @@ describe Maestrano::Connector::Rails::ComplexEntity do
                   let(:date) { 1.day.ago } 
 
                   it 'keeps the entity and discards the external one' do
-                    expect(subject.consolidate_and_map_connec_entities(modeled_connec_entities, modeled_external_entities)).to eql({connec_name => {external_name => [{entity: {mapped: 'entity'}, idmap: Maestrano::Connector::Rails::IdMap.first}]}})
+                    expect(subject.consolidate_and_map_connec_entities(modeled_connec_entities, modeled_external_entities)).to eql({connec_name => {external_name => [{entity: {mapped: 'entity'}, idmap: Maestrano::Connector::Rails::IdMap.first, id_refs_only_connec_entity: id_refs_only_connec_entity}]}})
                     expect(modeled_external_entities[external_name][connec_name]).to be_empty
                   end
                 end

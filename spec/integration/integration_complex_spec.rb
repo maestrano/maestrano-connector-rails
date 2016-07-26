@@ -228,7 +228,7 @@ describe 'complex entities workflow' do
 
   it 'handles the idmap correctly' do
     allow(connec_client).to receive(:batch).and_return(ActionDispatch::Response.new(201, {}, {results: []}.to_json, {}))
-    allow_any_instance_of(Entities::SubEntities::CompOrganization).to receive(:create_external_entity).and_return(connec_org1_ext_id)
+    allow_any_instance_of(Entities::SubEntities::CompOrganization).to receive(:create_external_entity).and_return({'id' => connec_org1_ext_id})
     allow_any_instance_of(Entities::SubEntities::CompOrganization).to receive(:update_external_entity).and_return(nil)
     expect{
       subject
@@ -267,13 +267,13 @@ describe 'complex entities workflow' do
     org1_idmap = Entities::SubEntities::CompOrganization.create_idmap(organization_id: organization.id, external_id: connec_org1_ext_id, external_entity: 'compsupplier')
     org2_idmap = Entities::SubEntities::CompOrganization.create_idmap(organization_id: organization.id, external_id: connec_org2_ext_id, external_entity: 'compcustomer')
     allow(Maestrano::Connector::Rails::IdMap).to receive(:create).and_return(org1_idmap, org2_idmap, cust_idmap)
-    expect_any_instance_of(Entities::CustomerAndSupplier).to receive(:push_entities_to_external).with({'CompOrganization' => {'CompSupplier' => [{entity: mapped_connec_org1, idmap: org1_idmap}], 'CompCustomer' => [{entity: mapped_connec_org2, idmap: org2_idmap}]}})
-    expect_any_instance_of(Entities::CustomerAndSupplier).to receive(:push_entities_to_connec).with({'CompCustomer' => {'CompOrganization' => [{entity: mapped_ext_customer, idmap: cust_idmap}]}, 'CompSupplier' => {'CompOrganization' => [{entity: mapped_ext_supplier, idmap: supplier_idmap}]}})
+    expect_any_instance_of(Entities::CustomerAndSupplier).to receive(:push_entities_to_external).with({'CompOrganization' => {'CompSupplier' => [{entity: mapped_connec_org1.with_indifferent_access, idmap: org1_idmap, id_refs_only_connec_entity: {}}], 'CompCustomer' => [{entity: mapped_connec_org2.with_indifferent_access, idmap: org2_idmap, id_refs_only_connec_entity: {}}]}})
+    expect_any_instance_of(Entities::CustomerAndSupplier).to receive(:push_entities_to_connec).with({'CompCustomer' => {'CompOrganization' => [{entity: mapped_ext_customer.with_indifferent_access, idmap: cust_idmap}]}, 'CompSupplier' => {'CompOrganization' => [{entity: mapped_ext_supplier.with_indifferent_access, idmap: supplier_idmap}]}})
     subject
   end
 
   it 'sends two objects to connec, two objects to external and send back one id to connec' do
-    expect_any_instance_of(Entities::SubEntities::CompOrganization).to receive(:create_external_entity).once
+    expect_any_instance_of(Entities::SubEntities::CompOrganization).to receive(:create_external_entity).once.and_return({})
     expect_any_instance_of(Entities::SubEntities::CompOrganization).to receive(:update_external_entity).once
     expect(connec_client).to receive(:batch).exactly(3).times.and_return(ActionDispatch::Response.new(201, {}, {results: []}.to_json, {}), ActionDispatch::Response.new(200, {}, {results: []}.to_json, {}))
     subject

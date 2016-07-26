@@ -58,17 +58,27 @@ module Maestrano::Connector::Rails::Concerns::SubEntityBase
 
       folded_entity
     else
-      connec_id = entity[:__connec_id]
-      mapped_entity = mapper.normalize(entity)
-      (connec_id ? mapped_entity.merge(__connec_id: connec_id) : mapped_entity).with_indifferent_access
+      mapper.normalize(entity).with_indifferent_access
     end
   end
 
-  def map_connec_entity_with_idmap(connec_entity, external_entity_name, idmap)
-    {entity: map_to(external_entity_name, connec_entity), idmap: idmap}
+  def map_connec_entity_with_idmap(connec_entity, external_entity_name, idmap, id_refs_only_connec_entity)
+    {entity: map_to(external_entity_name, connec_entity), idmap: idmap, id_refs_only_connec_entity: id_refs_only_connec_entity}
   end
 
   def map_external_entity_with_idmap(external_entity, connec_entity_name, idmap)
     {entity: map_to(connec_entity_name, external_entity), idmap: idmap}
+  end
+
+  # Maps the entity received from external after a creation or an update and complete the received ids with the connec ones
+  def map_and_complete_hash_with_connec_ids(external_hash, external_entity_name, connec_hash)
+    return nil if connec_hash.empty?
+
+    external_entity_instance = Maestrano::Connector::Rails::ComplexEntity.instantiate_sub_entity_instance(external_entity_name, @organization, @connec_client, @external_client, @opts)
+
+    mapped_external_hash = external_entity_instance.map_to(self.class.connec_entity_name, external_hash)
+    id_references = Maestrano::Connector::Rails::ConnecHelper.format_references(self.class.references[external_entity_name])
+
+    Maestrano::Connector::Rails::ConnecHelper.merge_id_hashes(connec_hash, mapped_external_hash, id_references[:id_references])
   end
 end
