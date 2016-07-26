@@ -81,8 +81,8 @@ describe Maestrano::Connector::Rails::ComplexEntity do
         }
 
         it 'calls get_external_entities on each connec sub complex entities' do
-          expect_any_instance_of(Entities::SubEntities::ScE1).to receive(:get_external_entities_wrapper).with('sc_e1', nil)
-          expect_any_instance_of(Entities::SubEntities::ScE2).to receive(:get_external_entities_wrapper).with('ScE2', nil)
+          expect_any_instance_of(Entities::SubEntities::ScE1).to receive(:get_external_entities_wrapper).with(nil, 'sc_e1')
+          expect_any_instance_of(Entities::SubEntities::ScE2).to receive(:get_external_entities_wrapper).with(nil, 'ScE2')
           subject.get_external_entities_wrapper(nil)
         end
 

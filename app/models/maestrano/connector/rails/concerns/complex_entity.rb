@@ -79,12 +79,12 @@ module Maestrano::Connector::Rails::Concerns::ComplexEntity
     entities
   end
 
-  def get_external_entities_wrapper(last_synchronization_date = nil)
+  def get_external_entities_wrapper(last_synchronization_date = nil, entity_name = '')
     entities = ActiveSupport::HashWithIndifferentAccess.new
 
     self.class.formatted_external_entities_names.each do |external_entity_name, external_class_name|
       sub_entity_instance = instantiate_sub_entity_instance(external_class_name)
-      entities[external_entity_name] = sub_entity_instance.get_external_entities_wrapper(external_entity_name, last_synchronization_date)
+      entities[external_entity_name] = sub_entity_instance.get_external_entities_wrapper(last_synchronization_date, external_entity_name)
     end
     entities
   end

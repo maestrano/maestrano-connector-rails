@@ -35,7 +35,7 @@
             - if is_admin
               = link_to "Link to ApplicationName", "/auth/ApplicationName/request?org_uid=#{@organization.uid}", class: 'btn btn-warning btn-lg'
               %br
-              %small You can #{link_to 'create an account', Maestrano::Connector::Rails::External.create_account_link(current_organization || nil)} if you don't have one
+              %small If you don’t have an account #{link_to 'create yours here', Maestrano::Connector::Rails::External.create_account_link(current_organization || nil)}
 
       .spacer1
 

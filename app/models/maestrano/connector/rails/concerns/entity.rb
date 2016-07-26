@@ -116,6 +116,10 @@ module Maestrano::Connector::Rails::Concerns::Entity
       can_write_connec?
     end
 
+    def can_update_connec?
+      true
+    end
+
     def can_write_connec?
       true
     end
@@ -221,6 +225,10 @@ module Maestrano::Connector::Rails::Concerns::Entity
 
     Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, "Sending #{Maestrano::Connector::Rails::External.external_name} #{self.class.external_entity_name.pluralize} to Connec! #{connec_entity_name.pluralize}")
 
+    unless self.class.can_update_connec?
+      mapped_external_entities_with_idmaps.select! { |mapped_external_entity_with_idmap| !mapped_external_entity_with_idmap[:idmap].connec_id }
+    end
+
     proc = ->(mapped_external_entity_with_idmap) { batch_op('post', mapped_external_entity_with_idmap[:entity], nil, self.class.normalize_connec_entity_name(connec_entity_name)) }
     batch_calls(mapped_external_entities_with_idmaps, proc, connec_entity_name)
   end
@@ -239,7 +247,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
   # ----------------------------------------------
   #                 External methods
   # ----------------------------------------------
-  def get_external_entities_wrapper(entity_name = self.class.external_entity_name, last_synchronization_date = nil)
+  def get_external_entities_wrapper(last_synchronization_date = nil, entity_name = self.class.external_entity_name)
     return [] if @opts[:__skip_external] || !self.class.can_read_external?
     get_external_entities(entity_name, last_synchronization_date)
   end
