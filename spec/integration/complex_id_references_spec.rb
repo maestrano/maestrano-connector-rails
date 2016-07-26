@@ -2,75 +2,75 @@ require 'spec_helper'
 
 describe 'complex id references' do
 
-  class Entities::Payment < Maestrano::Connector::Rails::ComplexEntity
+  class Entities::IdPayment < Maestrano::Connector::Rails::ComplexEntity
     def self.connec_entities_names
-      %w(Payment)
+      %w(IdPayment)
     end
     def self.external_entities_names
-      %w(Bill)
+      %w(IdBill)
     end
     def connec_model_to_external_model(connec_hash_of_entities)
-      {'Payment' => {'Bill' => connec_hash_of_entities['Payment']}}
+      {'IdPayment' => {'IdBill' => connec_hash_of_entities['IdPayment']}}
     end
     def external_model_to_connec_model(external_hash_of_entities)
-      {'Bill' => {'Payment' => external_hash_of_entities['Bill']}}
+      {'IdBill' => {'IdPayment' => external_hash_of_entities['IdBill']}}
     end
   end
 
   module Entities::SubEntities
   end
-  class Entities::SubEntities::Payment < Maestrano::Connector::Rails::SubEntityBase
+  class Entities::SubEntities::IdPayment < Maestrano::Connector::Rails::SubEntityBase
     def self.external?
       false
     end
     def self.entity_name
-      'Payment'
+      'IdPayment'
     end
     def self.mapper_classes
       {
-        'Bill' => ::PaymentMapper
+        'IdBill' => ::IdPaymentMapper
       }
     end
     def self.object_name_from_connec_entity_hash(entity)
       entity['title']
     end
     def self.references
-      {'Bill' => {record_references: %w(organization_id), id_references: %w(lines/id)}}
+      {'IdBill' => {record_references: %w(organization_id), id_references: %w(lines/id)}}
     end
     def self.id_from_external_entity_hash(entity)
       entity['ID']
     end
   end
 
-  class Entities::SubEntities::Bill < Maestrano::Connector::Rails::SubEntityBase
+  class Entities::SubEntities::IdBill < Maestrano::Connector::Rails::SubEntityBase
     def self.external?
       true
     end
     def self.entity_name
-      'Bill'
+      'IdBill'
     end
     def self.mapper_classes
-      {'Payment' => ::PaymentMapper}
+      {'IdPayment' => ::IdPaymentMapper}
     end
     def self.id_from_external_entity_hash(entity)
       entity['ID']
     end
     def self.references
-      {'Payment' => {record_references: %w(organization_id), id_references: %w(lines/id)}}
+      {'IdPayment' => {record_references: %w(organization_id), id_references: %w(lines/id)}}
     end
   end
 
-  class LineMapper
+  class IdLineMapper
     extend HashMapper
     map from('id'), to('ID')
     map from('amount'), to('Price')
   end
 
-  class PaymentMapper
+  class IdPaymentMapper
     extend HashMapper
     map from('title'), to('Title')
     map from('organization_id'), to('AccountId')
-    map from('lines'), to('Line'), using: LineMapper
+    map from('lines'), to('Line'), using: IdLineMapper
   end
 
   let(:provider) { 'provider' }
@@ -89,17 +89,19 @@ describe 'complex id references' do
   let(:payment_title) { 'This is a payment' }
 
   before {
-    allow(connec_client).to receive(:get).and_return(ActionDispatch::Response.new(200, {}, {payments: [connec_payment]}.to_json, {}))
+    allow(Maestrano::Connector::Rails::External).to receive(:entities_list).and_return(%w(id_payment))
+
+    allow(connec_client).to receive(:get).and_return(ActionDispatch::Response.new(200, {}, {idpayments: [connec_payment]}.to_json, {}))
     allow(connec_client).to receive(:batch).and_return(ActionDispatch::Response.new(200, {}, {results: [{status: 200, body: {payments: {}}}]}.to_json, {}))
 
-    allow_any_instance_of(Entities::SubEntities::Bill).to receive(:get_external_entities).and_return([])
+    allow_any_instance_of(Entities::SubEntities::IdBill).to receive(:get_external_entities).and_return([])
   }
 
-  subject { Maestrano::Connector::Rails::SynchronizationJob.new.sync_entity('payment', organization, connec_client, external_client, organization.last_synchronization_date, {}) }
+  subject { Maestrano::Connector::Rails::SynchronizationJob.new.sync_entity('id_payment', organization, connec_client, external_client, organization.last_synchronization_date, {}) }
 
   describe 'a creation from connec' do
     before {
-      allow_any_instance_of(Entities::SubEntities::Payment).to receive(:create_external_entity).and_return(entity_received_after_creation)
+      allow_any_instance_of(Entities::SubEntities::IdPayment).to receive(:create_external_entity).and_return(entity_received_after_creation)
     }
 
     let(:connec_payment) {
@@ -177,10 +179,10 @@ describe 'complex id references' do
         :ops=> [
           {
             :method=>"put",
-            :url=>"/api/v2/#{organization.uid}/payments/#{connec_payment_id}",
+            :url=>"/api/v2/#{organization.uid}/idpayments/#{connec_payment_id}",
             :params=>
             {
-              :payments=>{
+              :idpayments=>{
                 'id' => [
                   {
                     'id' => ext_payment_id,
@@ -231,8 +233,8 @@ describe 'complex id references' do
       }.to change{ Maestrano::Connector::Rails::IdMap.count }.by(1)
       idmap = Maestrano::Connector::Rails::IdMap.last
       expect(idmap.name).to eql(payment_title)
-      expect(idmap.connec_entity).to eql('payment')
-      expect(idmap.external_entity).to eql('bill')
+      expect(idmap.connec_entity).to eql('idpayment')
+      expect(idmap.external_entity).to eql('idbill')
       expect(idmap.message).to be_nil
       expect(idmap.external_id).to eql(ext_payment_id)
       expect(idmap.connec_id).to eql(connec_payment_id)

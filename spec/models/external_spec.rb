@@ -20,4 +20,8 @@ describe Maestrano::Connector::Rails::External do
   describe 'entities_list' do
     it { expect{ subject.entities_list }.to raise_error(RuntimeError) }
   end
+
+  describe 'create_account_link' do
+    it { expect{ subject.create_account_link }.to raise_error(RuntimeError) }
+  end
 end

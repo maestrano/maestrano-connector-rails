@@ -335,7 +335,7 @@ describe Maestrano::Connector::Rails::Entity do
 
       describe 'push_entities_to_connec_to' do
         let(:idmap1) { create(:idmap, organization: organization) }
-        let(:idmap2) { create(:idmap, organization: organization, last_push_to_connec: nil) }
+        let(:idmap2) { create(:idmap, organization: organization, connec_id: nil) }
         let(:entity1) { {name: 'John'} }
         let(:entity2) { {name: 'Jane'} }
         let(:entity_with_idmap1) { {entity: entity1, idmap: idmap1} }
@@ -349,6 +349,18 @@ describe Maestrano::Connector::Rails::Entity do
 
           it 'does nothing' do
             expect(subject).to_not receive(:batch_op)
+            subject.push_entities_to_connec_to(entities_with_idmaps, connec_name)
+          end
+        end
+
+        context 'when no update' do
+          before {
+            allow(subject.class).to receive(:can_update_connec?).and_return(false)
+            allow(connec_client).to receive(:batch).and_return(ActionDispatch::Response.new(200, {}, {results: []}.to_json, {}))
+          }
+
+          it 'filters out the one with a connec_id' do
+            expect(subject).to receive(:batch_op).once.with('post', entity2, nil, 'people')
             subject.push_entities_to_connec_to(entities_with_idmaps, connec_name)
           end
         end
@@ -509,7 +521,7 @@ describe Maestrano::Connector::Rails::Entity do
       end
 
       describe 'get_external_entities' do
-        it { expect{ subject.get_external_entities(nil) }.to raise_error('Not implemented') }
+        it { expect{ subject.get_external_entities('') }.to raise_error('Not implemented') }
       end
 
       describe 'push_entities_to_external' do

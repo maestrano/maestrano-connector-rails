@@ -74,7 +74,10 @@ module Maestrano::Connector::Rails::Concerns::SubEntityBase
   def map_and_complete_hash_with_connec_ids(external_hash, external_entity_name, connec_hash)
     return nil if connec_hash.empty?
 
-    external_entity_instance = Maestrano::Connector::Rails::ComplexEntity.instantiate_sub_entity_instance(external_entity_name, @organization, @connec_client, @external_client, @opts)
+    # As we don't know to which complex entity this sub entity is related to, we have to do a full scan of the entities to find the right one
+    # Because we need the external_entities_names
+    external_entity_instance = Maestrano::Connector::Rails::ComplexEntity.find_complex_entity_and_instantiate_external_sub_entity_instance(external_entity_name, @organization, @connec_client, @external_client, @opts)
+    return nil unless external_entity_instance
 
     mapped_external_hash = external_entity_instance.map_to(self.class.connec_entity_name, external_hash)
     id_references = Maestrano::Connector::Rails::ConnecHelper.format_references(self.class.references[external_entity_name])

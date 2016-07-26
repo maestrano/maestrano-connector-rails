@@ -32,7 +32,10 @@
           - if @organization.oauth_uid
             = link_to "Disconnect", signout_omniauth_path(organization_id: @organization.id), class: "btn btn-warning btn-lg #{is_admin ? '' : 'disabled'}"
           - else
-            = link_to "Link to ApplicationName", "/auth/ApplicationName/request?org_uid=#{@organization.uid}", class: "btn btn-warning btn-lg" if is_admin
+            - if is_admin
+              = link_to "Link to ApplicationName", "/auth/ApplicationName/request?org_uid=#{@organization.uid}", class: 'btn btn-warning btn-lg'
+              %br
+              %small If you don’t have an account #{link_to 'create yours here', Maestrano::Connector::Rails::External.create_account_link(current_organization || nil)}
 
       .spacer1
 
@@ -53,10 +56,10 @@
                       %input{type: "checkbox", id: "#{k}", name: "#{k}", checked: v}
                     .col-md-6{style: 'padding-top: 5px;'}
                       %label{:for => "#{k}"} #{k.to_s.humanize.pluralize}
-                    -if is_admin
+                    - if is_admin
                       .col-md-5.text-right
                         - if v && @organization.oauth_uid && @organization.sync_enabled
-                          = link_to "Force a synchronization for #{k.to_s.humanize.pluralize} only", home_synchronize_path(opts: {only_entities: [k.to_s]}), method: :post, class: "btn btn-warning btn-sm"
+                          = link_to "Force a synchronization for #{k.to_s.humanize.pluralize} only", home_synchronize_path(opts: {only_entities: [k.to_s]}), method: :post, class: 'btn btn-warning btn-sm'
             .spacer1
             .row
               .col-md-4
@@ -82,5 +85,5 @@
     - else
       .row
         .col-md-4.col-md-offset-4.center
-          = link_to "Link your Maestrano account", Maestrano::Connector::Rails::Engine.routes.url_helpers.default_maestrano_auth_saml_index_path(tenant: :default), class: 'btn btn-warning'
+          = link_to 'Link your Maestrano account', Maestrano::Connector::Rails::Engine.routes.url_helpers.default_maestrano_auth_saml_index_path(tenant: :default), class: 'btn btn-warning'
 
