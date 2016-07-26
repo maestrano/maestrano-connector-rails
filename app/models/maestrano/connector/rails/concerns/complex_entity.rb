@@ -30,6 +30,20 @@ module Maestrano::Connector::Rails::Concerns::ComplexEntity
     def count_entities(entities)
       entities.values.map(&:size).max
     end
+
+    def public_connec_entity_name
+      public_name(formatted_connec_entities_names)
+    end
+
+    def public_external_entity_name
+      public_name(formatted_external_entities_names)
+    end
+
+    def public_name(formatted_names)
+      names = formatted_names.keys.map(&:pluralize)
+      return names.first.humanize if names.size == 1
+      (names[0..-2].join(', ') + " and #{names.last}").humanize
+    end
   end
 
   # input :  {

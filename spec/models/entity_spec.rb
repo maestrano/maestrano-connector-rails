@@ -116,6 +116,20 @@ describe Maestrano::Connector::Rails::Entity do
         expect(subject.count_entities([*1..27])).to eql(27)
       end
     end
+
+    describe 'public_connec_entity_name' do
+      it 'returns the connec_entity_name' do
+        allow(subject).to receive(:connec_entity_name).and_return('tree')
+        expect(subject.public_connec_entity_name).to eql('trees')
+      end
+    end
+
+    describe 'public_external_entity_name' do
+      it 'returns the external_entity_name' do
+        allow(subject).to receive(:external_entity_name).and_return('tree')
+        expect(subject.public_external_entity_name).to eql('trees')
+      end
+    end
   end
 
   describe 'instance methods' do

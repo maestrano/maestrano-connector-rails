@@ -44,6 +44,19 @@ module Maestrano::Connector::Rails
     #===================================
     serialize :synchronized_entities
 
+    def displayable_synchronized_entities
+      result = {}
+      synchronized_entities.each do |entity, boolean|
+        begin
+          clazz = "Entities::#{entity.to_s.titleize.split.join}".constantize
+        rescue
+          next
+        end
+        result[entity] = {value: boolean, connec_name: clazz.public_connec_entity_name, external_name: clazz.public_external_entity_name}
+      end
+      result
+    end
+
     def add_member(user)
       user_organization_rels.create(user: user) if tenant == user.tenant && !member?(user)
     end

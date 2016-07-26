@@ -134,6 +134,14 @@ module Maestrano::Connector::Rails::Concerns::Entity
     def count_entities(entities)
       entities.size
     end
+
+    def public_connec_entity_name
+      connec_entity_name.pluralize
+    end
+
+    def public_external_entity_name
+      external_entity_name.pluralize
+    end
   end
 
   # ==============================================
