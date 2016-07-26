@@ -36,11 +36,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
     end
 
     def normalize_connec_entity_name(name)
-      if singleton?
-        name.parameterize('_')
-      else
-        name.parameterize('_').pluralize
-      end
+      singleton? ? name.parameterize('_') : name.parameterize('_').pluralize
     end
 
     # ----------------------------------------------

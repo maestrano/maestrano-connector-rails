@@ -49,7 +49,7 @@ module Maestrano::Connector::Rails
     end
 
     def member?(user)
-      user_organization_rels.where(user_id: user.id).count > 0
+      user_organization_rels.where(user_id: user.id).count.positive?
     end
 
     def remove_member(user)
