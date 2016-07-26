@@ -1,3 +1,16 @@
+## 1.3.0
+* Methods `create_external_entity` and `update_external_entity` should now returns the created/updated entity
+* Home page should now include a link populated from `external.rb` to create an account 
+
+### Features
+* Add support for references to Connec! sub entities' ids
+* Add support for support for sub_entities having the same name
+* Re-introduct `can_update_connec?` method
+* Add method for a `create an account` link
+
+### Fixes
+* Fix error format on the synchronizations endpoint
+
 ## 1.2.3
 
 ### Fixes
