@@ -17,6 +17,12 @@ class Maestrano::Connector::Rails::External
     # client_secret: ENV['']
   end
 
+  def self.create_account_link(organization = nil)
+    # TODO
+    # Returns a link to the sign up page of the external application
+    '#'
+  end
+
   # Return an array of all the entities that the connector can synchronize
   # If you add new entities, you need to generate
   # a migration to add them to existing organizations

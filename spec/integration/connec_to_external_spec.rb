@@ -23,6 +23,10 @@ describe 'connec to the external application' do
       entity['first_name']
     end
 
+    def self.id_from_external_entity_hash(entity)
+      entity['ID']
+    end
+
     class PersonMapper
       extend HashMapper
       map from('organization_id'), to('AccountId')
@@ -83,7 +87,7 @@ describe 'connec to the external application' do
 
   describe 'a new record created in connec with all references known' do
     before {
-      allow_any_instance_of(Entities::ConnecToExternal).to receive(:create_external_entity).and_return(ext_contact_id)
+      allow_any_instance_of(Entities::ConnecToExternal).to receive(:create_external_entity).and_return({'ID' => ext_contact_id})
     }
 
     let(:mapped_entity) {
@@ -133,7 +137,7 @@ describe 'connec to the external application' do
     it 'does the mapping correctly' do
       idmap = Entities::ConnecToExternal.create_idmap(organization_id: organization.id, external_id: ext_contact_id, connec_id: "23daf041-e18e-0133-7b6a-15461b913fab")
       allow(Entities::ConnecToExternal).to receive(:find_or_create_idmap).and_return(idmap)
-      expect_any_instance_of(Entities::ConnecToExternal).to receive(:push_entities_to_external).with([{entity: mapped_entity, idmap: idmap}])
+      expect_any_instance_of(Entities::ConnecToExternal).to receive(:push_entities_to_external).with([{entity: mapped_entity.with_indifferent_access, idmap: idmap, id_refs_only_connec_entity: {}}])
       subject
     end
 
@@ -165,7 +169,7 @@ describe 'connec to the external application' do
     end
 
     it 'does the mapping correctly' do
-      expect_any_instance_of(Entities::ConnecToExternal).to receive(:push_entities_to_external).with([{entity: mapped_entity, idmap: idmap}])
+      expect_any_instance_of(Entities::ConnecToExternal).to receive(:push_entities_to_external).with([{entity: mapped_entity.with_indifferent_access, idmap: idmap, id_refs_only_connec_entity: {}}])
       subject
     end
 

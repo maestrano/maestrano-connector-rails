@@ -1,6 +1,6 @@
 # TODO
 # This file is provided as an example and should be removed
-# See README for explanation
+# See documentation (https://maestrano.atlassian.net/wiki/display/DEV/Mapping+and+synchronization) for explanation
 # class Entities::ContactAndLead < Maestrano::Connector::Rails::ComplexEntity
 #   def self.connec_entities_names
 #     %w(person)
@@ -25,16 +25,16 @@
 #   #          }
 #   def connec_model_to_external_model(connec_hash_of_entities)
 #     people = connec_hash_of_entities['person']
-#     modeled_connec_entities = {'person' => { 'lead' => [], 'contact' => [] }}
+#     modelled_connec_entities = {'person' => { 'lead' => [], 'contact' => [] }}
 
 #     people.each do |person|
 #       if person['is_lead']
-#         modeled_connec_entities['person']['lead'] << person
+#         modelled_connec_entities['person']['lead'] << person
 #       else
-#         modeled_connec_entities['person']['contact'] << person
+#         modelled_connec_entities['person']['contact'] << person
 #       end
 #     end
-#     return modeled_connec_entities
+#     return modelled_connec_entities
 #   end
 
 #   # input :  {
