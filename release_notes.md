@@ -1,3 +1,8 @@
+## 1.3.1
+
+### Fixes
+* Fix method in organization class that caused issue with authentication
+
 ## 1.3.0
 * Methods `create_external_entity` and `update_external_entity` should now returns the created/updated entity
 * Home page should now include a link populated from `external.rb` to create an account 
