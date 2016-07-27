@@ -22,6 +22,42 @@ describe Maestrano::Connector::Rails::ComplexEntity do
           expect(subject.count_entities(entities)).to eql(39)
         end
       end
+
+      describe 'public_connec_entity_name' do
+        it 'calls public name' do
+          allow(subject).to receive(:formatted_connec_entities_names).and_return(a: 2)
+          expect(subject).to receive(:public_name).with(a: 2)
+          subject.public_connec_entity_name
+        end
+      end
+      describe 'public_external_entity_name' do
+        it 'calls public name' do
+          allow(subject).to receive(:formatted_external_entities_names).and_return(a: 2)
+          expect(subject).to receive(:public_name).with(a: 2)
+          subject.public_external_entity_name
+        end
+      end
+
+
+      describe 'public_name' do
+        context 'when one entity' do
+          it 'returns the pluralized entity name' do
+            expect(subject.public_name({'sales_order' => 'Sales order'})).to eql('Sales orders')
+          end
+        end
+
+        context 'when two entities' do
+          it 'returns the pluralized entity names separeted by a and' do
+            expect(subject.public_name({'Sales order' => 'Sales order', 'Purchase order' => 'Purchase order'})).to eql('Sales orders and purchase orders')
+          end
+        end
+
+        context 'when more than two' do
+          it 'returns the pluralized entity names separeted by commas and a and' do
+            expect(subject.public_name({'Sales order' => 'Sales order', 'Purchase order' => 'Purchase order', 'Order' => 'Order'})).to eql('Sales orders, purchase orders and orders')
+          end
+        end
+      end
   end
 
   describe 'instance methods' do
