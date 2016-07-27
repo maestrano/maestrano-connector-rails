@@ -1,3 +1,8 @@
+## 1.3.2
+
+### Features
+* Improve display of entity names on the home page. You'll need to change your home view and controller as well as add some things in the layout and javascript files
+
 ## 1.3.1
 
 ### Fixes
