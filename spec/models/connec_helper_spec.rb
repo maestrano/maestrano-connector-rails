@@ -19,7 +19,7 @@ describe Maestrano::Connector::Rails::ConnecHelper do
     let!(:organization) { create(:organization, tenant: 'default') }
     let!(:organization2) { create(:organization, tenant: 'default2') }
     before {
-      allow(Maestrano::Connec::Client).to receive(:get).and_return(ActionDispatch::Response.new(200, {}, {ci_build_number: '111', ci_branch: '1.1', ci_commit: '111'}.to_json, {}), ActionDispatch::Response.new(200, {}, {ci_build_number: '112', ci_branch: '1.2', ci_commit: '112'}.to_json, {}))
+      allow(Maestrano::Connec::Client).to receive(:get).and_return(ActionDispatch::Response.new(200, {}, {ci_build_number: '111', ci_branch: 'v1.1', ci_commit: '111'}.to_json, {}), ActionDispatch::Response.new(200, {}, {ci_build_number: '112', ci_branch: 'v1.2', ci_commit: '112'}.to_json, {}))
     }
 
     it 'returns the connec_version' do

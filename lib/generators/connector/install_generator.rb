@@ -10,7 +10,6 @@ module Connector
       def include_helpers
         sentinel = 'class ApplicationController < ActionController::Base'
         code_lines = [
-          "helper Maestrano::Connector::Rails::Engine.helpers",
           "include Maestrano::Connector::Rails::SessionHelper"
         ]
 
