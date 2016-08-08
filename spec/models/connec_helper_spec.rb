@@ -29,7 +29,28 @@ describe Maestrano::Connector::Rails::ConnecHelper do
       expect(subject.connec_version(organization)).to eql('1.1')
       expect(subject.connec_version(organization2)).to eql('1.2')
     end
+  end
 
+  describe 'connec_version_lt?' do
+    before {
+      allow(subject).to receive(:connec_version).and_return('1.1.0')
+    }
+
+    it 'returns true if the current version is gt the parameter' do
+      expect(subject.connec_version_lt?('1.0.1', nil)).to be false
+    end
+
+    it 'returns false if the current version is lt the parameter' do
+      expect(subject.connec_version_lt?('1.2.1', nil)).to be true
+    end
+    
+    it 'returns false if the current version is eq the parameter' do
+      expect(subject.connec_version_lt?('1.1.0', nil)).to be false
+    end
+
+    it 'returns true if something fails' do
+      expect(subject.connec_version_lt?('lala', nil)).to be true
+    end
   end
 
   describe 'unfold_references' do
