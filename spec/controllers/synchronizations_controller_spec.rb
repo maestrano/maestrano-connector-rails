@@ -4,9 +4,10 @@ describe Maestrano::SynchronizationsController, type: :controller do
   routes { Maestrano::Connector::Rails::Engine.routes }
 
   let(:uid) { 'cld-aaaa' }
+  let(:tenant) { 'default' }
 
   describe 'show' do
-    subject { get :show, id: uid }
+    subject { get :show, id: uid, tenant: tenant }
 
 
     context 'without authentication' do
@@ -26,11 +27,22 @@ describe Maestrano::SynchronizationsController, type: :controller do
       }
 
       context 'when organization is not found' do
-        let!(:organization) { create(:organization, uid: 'cld-bbbb') }
+        context 'bad uid' do
+          let!(:organization) { create(:organization, uid: 'cld-bbbb') }
 
-        it 'is a 404' do
-          subject
-          expect(response.status).to eq(404)
+          it 'is a 404' do
+            subject
+            expect(response.status).to eq(404)
+          end
+        end
+
+        context 'bad tenant' do
+          let!(:organization) { create(:organization, uid: uid, tenant: 'another_tenant') }
+
+          it 'is a 404' do
+            subject
+            expect(response.status).to eq(404)
+          end
         end
       end
 
@@ -77,7 +89,7 @@ describe Maestrano::SynchronizationsController, type: :controller do
 
   describe 'create' do
     let(:opts) { {'only_entities' => ['customer']} }
-    subject { post :create, group_id: uid, opts: opts }
+    subject { post :create, group_id: uid, opts: opts, tenant: tenant }
 
 
     context 'without authentication' do
@@ -102,6 +114,15 @@ describe Maestrano::SynchronizationsController, type: :controller do
         it 'is a 404' do
           subject
           expect(response.status).to eq(404)
+        end
+
+        context 'bad tenant' do
+          let!(:organization) { create(:organization, uid: uid, tenant: 'another_tenant') }
+
+          it 'is a 404' do
+            subject
+            expect(response.status).to eq(404)
+          end
         end
       end
 
@@ -122,7 +143,7 @@ describe Maestrano::SynchronizationsController, type: :controller do
   end
 
   describe 'toggle_sync' do
-    subject { put :toggle_sync, group_id: uid }
+    subject { put :toggle_sync, group_id: uid, tenant: tenant }
 
 
     context 'without authentication' do
@@ -147,6 +168,15 @@ describe Maestrano::SynchronizationsController, type: :controller do
         it 'is a 404' do
           subject
           expect(response.status).to eq(404)
+        end
+
+        context 'bad tenant' do
+          let!(:organization) { create(:organization, uid: uid, tenant: 'another_tenant') }
+
+          it 'is a 404' do
+            subject
+            expect(response.status).to eq(404)
+          end
         end
       end
 

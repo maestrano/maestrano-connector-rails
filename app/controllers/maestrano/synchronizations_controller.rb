@@ -1,7 +1,8 @@
 class Maestrano::SynchronizationsController < Maestrano::Rails::WebHookController
   def show
+    tenant = params[:tenant]
     uid = params[:id]
-    organization = Maestrano::Connector::Rails::Organization.find_by_uid(uid)
+    organization = Maestrano::Connector::Rails::Organization.find_by_uid_and_tenant(uid, tenant)
     return render json: {errors: [{message: "Organization not found", code: 404}]}, status: :not_found unless organization
 
     h = {
@@ -22,9 +23,10 @@ class Maestrano::SynchronizationsController < Maestrano::Rails::WebHookControlle
   end
 
   def create
+    tenant = params[:tenant]
     uid = params[:group_id]
     opts = params[:opts] || {}
-    organization = Maestrano::Connector::Rails::Organization.find_by_uid(uid)
+    organization = Maestrano::Connector::Rails::Organization.find_by_uid_and_tenant(uid, tenant)
     return render json: {errors: [{message: "Organization not found", code: 404}]}, status: :not_found unless organization
 
     Maestrano::Connector::Rails::SynchronizationJob.perform_later(organization, opts.with_indifferent_access)
@@ -32,8 +34,9 @@ class Maestrano::SynchronizationsController < Maestrano::Rails::WebHookControlle
   end
 
   def toggle_sync
+    tenant = params[:tenant]
     uid = params[:group_id]
-    organization = Maestrano::Connector::Rails::Organization.find_by_uid(uid)
+    organization = Maestrano::Connector::Rails::Organization.find_by_uid_and_tenant(uid, tenant)
     return render json: {errors: [{message: "Organization not found", code: 404}]}, status: :not_found unless organization
 
     organization.toggle(:sync_enabled)
