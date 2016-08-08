@@ -1,3 +1,18 @@
+## 1.3.4
+`maestrano.rb` file should be updated with new synchronization paths.
+
+## Features
+* `connec_version_lt?` method
+
+## Fixes
+* Fixes multi-tenancy of synchronization endpoints
+* Fixes display of singleton entity
+
+## 1.3.3
+
+## Fixes
+* Fixes `connec_version` method
+
 ## 1.3.2
 
 ### Features
