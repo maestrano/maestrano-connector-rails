@@ -28,6 +28,15 @@ module Maestrano::Connector::Rails::Concerns::ConnecHelper
       @@connec_version
     end
 
+    def connec_version_lt?(version, organization)
+      version = Gem::Version.new(version)
+      current_version = Gem::Version.new(connec_version(organization))
+
+      current_version < version
+    rescue
+      true
+    end
+
     # Replaces the arrays of id received from Connec! by the id of the external application
     # Returns a hash {entity: {}, connec_id: '', id_refs_only_connec_entity: {}}
     # If an array has no id for this oauth_provider and oauth_uid but has one for connec, it returns a nil entity (skip the record)

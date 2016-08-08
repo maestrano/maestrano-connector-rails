@@ -118,14 +118,25 @@ describe Maestrano::Connector::Rails::Entity do
     end
 
     describe 'public_connec_entity_name' do
-      it 'returns the connec_entity_name' do
+      it 'returns the pluralized connec_entity_name' do
         allow(subject).to receive(:connec_entity_name).and_return('tree')
         expect(subject.public_connec_entity_name).to eql('trees')
+      end
+
+      context 'when singleton' do
+        before {
+          allow(subject).to receive(:singleton?).and_return(true)
+        }
+
+        it 'returns the connec_entity_name' do
+          allow(subject).to receive(:connec_entity_name).and_return('tree')
+          expect(subject.public_connec_entity_name).to eql('tree')
+        end
       end
     end
 
     describe 'public_external_entity_name' do
-      it 'returns the external_entity_name' do
+      it 'returns the pluralized external_entity_name' do
         allow(subject).to receive(:external_entity_name).and_return('tree')
         expect(subject.public_external_entity_name).to eql('trees')
       end

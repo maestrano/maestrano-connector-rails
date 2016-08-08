@@ -7,11 +7,14 @@ Maestrano::Connector::Rails::Engine.routes.draw do
     match 'signout', to: 'sessions#destroy', as: 'signout', via: [:get, :post]
     post 'connec/notifications/:tenant' => 'connec#notifications'
 
-    resources :synchronizations, only: [:show, :create] do
-      collection do
-        put :toggle_sync
+    resources :dependancies, only: [:index]
+
+    scope ':tenant' do
+      resources :synchronizations, only: [:show, :create] do
+        collection do
+          put :toggle_sync
+        end
       end
     end
-    resources :dependancies, only: [:index]
   end
 end

@@ -136,7 +136,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
     end
 
     def public_connec_entity_name
-      connec_entity_name.pluralize
+      singleton? ? connec_entity_name : connec_entity_name.pluralize
     end
 
     def public_external_entity_name
