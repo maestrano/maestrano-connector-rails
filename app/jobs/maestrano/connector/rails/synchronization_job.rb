@@ -76,6 +76,7 @@ module Maestrano::Connector::Rails
       limit = Settings.first_sync_batch_size || 50
       skip = 0
       entities_count = limit
+      last_first_record = nil
 
       h = {__limit: limit}
       external ? h[:__skip_connec] = true : h[:__skip_external] = true
@@ -89,7 +90,17 @@ module Maestrano::Connector::Rails
       # No more entities to fetch
       while entities_count == limit
         entity_instance.opts_merge!(__skip: skip)
-        entities_count = perform_sync(entity_instance, last_synchronization_date, external)
+
+        perform_hash = perform_sync(entity_instance, last_synchronization_date, external)
+        entities_count = perform_hash[:count]
+
+        # Safety: if the connector does not implement batched calls but has exactly limit entities
+        # There is a risk of infinite loop
+        # We're comparing the first record to check that it is different
+        first_record = perform_hash[:first]
+        break if last_first_record && Digest::MD5.hexdigest(first_record.to_s) == Digest::MD5.hexdigest(last_first_record.to_s)
+        last_first_record = first_record
+
         skip += limit
       end
     end
@@ -110,7 +121,7 @@ module Maestrano::Connector::Rails
         entity_instance.push_entities_to_connec(mapped_entities[:external_entities])
         entity_instance.after_sync(last_synchronization_date)
         
-        external ? entity_instance.class.count_entities(external_entities) : entity_instance.class.count_entities(connec_entities)
+        entity_instance.class.count_and_first(external ? external_entities : connec_entities)
       end
   end
 end

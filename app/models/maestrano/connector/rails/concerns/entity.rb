@@ -131,8 +131,8 @@ module Maestrano::Connector::Rails::Concerns::Entity
     # ----------------------------------------------
     #                 Helper methods
     # ----------------------------------------------
-    def count_entities(entities)
-      entities.size
+    def count_and_first(entities)
+      {count: entities.size, first: entities.first}
     end
 
     def public_connec_entity_name
@@ -359,7 +359,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
   end
 
   def consolidate_and_map_connec_entities(connec_entities, external_entities, references, external_entity_name)
-    connec_entities.map{|entity|
+    connec_entities.map { |entity|
       # Entity has been created before date filtering limit
       next nil if before_date_filtering_limit?(entity, false) && !@opts[:full_sync]
 
