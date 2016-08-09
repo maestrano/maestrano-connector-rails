@@ -100,7 +100,7 @@ after_bundle do
   end
   copy_file 'settings/settings.yml', 'config/settings.yml'
 
-  copy_file 'application.yml.sample', 'config/application.yml.sample'
+  copy_file 'application-sample.yml', 'config/application-sample.yml'
 
   application do <<-RUBY
     config.generators do |g|
