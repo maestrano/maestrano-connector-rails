@@ -97,8 +97,8 @@ module Maestrano::Connector::Rails
         # Safety: if the connector does not implement batched calls but has exactly limit entities
         # There is a risk of infinite loop
         # We're comparing the first record to check that it is different
-        first_record = perform_hash[:first]
-        break if last_first_record && Digest::MD5.hexdigest(first_record.to_s) == Digest::MD5.hexdigest(last_first_record.to_s)
+        first_record = Digest::MD5.hexdigest(perform_hash[:first].to_s)
+        break if last_first_record && first_record == last_first_record
         last_first_record = first_record
 
         skip += limit

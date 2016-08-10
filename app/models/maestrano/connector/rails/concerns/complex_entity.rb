@@ -27,6 +27,8 @@ module Maestrano::Connector::Rails::Concerns::ComplexEntity
       names.index_by { |name| name }.with_indifferent_access
     end
 
+    # For complex entities, we take the size of the biggest array
+    # And the first record we can find (even if it's not in the first array)
     def count_and_first(entities)
       {count: entities.values.map(&:size).max, first: entities.values.flatten.first}
     end
