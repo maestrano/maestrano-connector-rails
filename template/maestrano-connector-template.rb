@@ -1,19 +1,19 @@
-def current_directory
-  @current_directory ||=
-      if __FILE__ =~ %r{\Ahttps?://}
-        tempdir = Dir.mktmpdir("maestrano-connector-rails-")
-        at_exit { FileUtils.remove_entry(tempdir) }
-        git :clone => "--quiet https://github.com/maestrano/maestrano-connector-rails/ #{tempdir}"
-
-        "#{tempdir}/template"
-      else
-        File.expand_path(File.dirname(__FILE__))
-      end
-end
-
 # def current_directory
-#   File.expand_path(File.dirname(__FILE__))
+#   @current_directory ||=
+#       if __FILE__ =~ %r{\Ahttps?://}
+#         tempdir = Dir.mktmpdir("maestrano-connector-rails-")
+#         at_exit { FileUtils.remove_entry(tempdir) }
+#         git :clone => "--quiet https://github.com/maestrano/maestrano-connector-rails/ #{tempdir}"
+#
+#         "#{tempdir}/template"
+#       else
+#         File.expand_path(File.dirname(__FILE__))
+#       end
 # end
+
+def current_directory
+  File.expand_path(File.dirname(__FILE__))
+end
 
 # Add the current directory to the path Thor uses
 # to look up files
@@ -40,7 +40,7 @@ gem 'puma'
 gem 'tzinfo-data', platforms: [:mingw, :mswin, :jruby]
 gem 'uglifier', '>= 1.3.0'
 
-gem 'maestrano-connector-rails'
+gem 'maestrano-connector-rails', path: '../../../maestrano-projects/maestrano-connector-rails'
 
 gem_group :production, :uat do
   gem 'activerecord-jdbcpostgresql-adapter', :platforms => :jruby
