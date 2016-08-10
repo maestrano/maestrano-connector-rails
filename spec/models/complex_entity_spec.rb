@@ -12,14 +12,14 @@ describe Maestrano::Connector::Rails::ComplexEntity do
         it { expect{ subject.external_entities_names }.to raise_error('Not implemented') }
       end
 
-      describe 'count_entities' do
-        it 'returns the biggest array size' do
+      describe 'count_and_first' do
+        it 'returns the biggest array size and the first element of the first non empty array' do
           entities = {
+            'items' => [],
             'people' => [*1..27],
-            'organizations' => [*1..39],
-            'items' => []
+            'organizations' => [*3..39]
           }
-          expect(subject.count_entities(entities)).to eql(39)
+          expect(subject.count_and_first(entities)).to eql(count: 37, first: 1)
         end
       end
 

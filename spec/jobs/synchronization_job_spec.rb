@@ -154,11 +154,15 @@ describe Maestrano::Connector::Rails::SynchronizationJob do
       let(:batch_limit) { 50 }
 
       context 'non complex entity' do
+        let(:external_entities1) { [] }
+        let(:external_entities2) { [] }
+        let(:connec_entities1) { [] }
+        let(:connec_entities2) { [] }
         before {
           class Entities::Person < Maestrano::Connector::Rails::Entity
           end
-          allow_any_instance_of(Entities::Person).to receive(:get_connec_entities).and_return([])
-          allow_any_instance_of(Entities::Person).to receive(:get_external_entities_wrapper).and_return([])
+          allow_any_instance_of(Entities::Person).to receive(:get_connec_entities).and_return(connec_entities1, connec_entities2)
+          allow_any_instance_of(Entities::Person).to receive(:get_external_entities_wrapper).and_return(external_entities1, external_entities2)
           allow_any_instance_of(Entities::Person).to receive(:consolidate_and_map_data).and_return({})
           allow_any_instance_of(Entities::Person).to receive(:push_entities_to_external)
           allow_any_instance_of(Entities::Person).to receive(:push_entities_to_connec)
@@ -166,20 +170,23 @@ describe Maestrano::Connector::Rails::SynchronizationJob do
 
         context 'with pagination' do
           context 'with more than 50 entities' do
+            let(:external_entities1) { [*1..50] }
+            let(:external_entities2) { [*51..60] }
+            
             it 'calls perform_sync several time' do
-              allow(subject).to receive(:perform_sync).and_return(batch_limit, 0)
               expect_any_instance_of(Entities::Person).to receive(:opts_merge!).twice
-              expect(subject).to receive(:perform_sync).twice
+              expect(subject).to receive(:perform_sync).twice.and_call_original
               
               subject.first_sync_entity('person', organization, nil, nil, nil, {}, true)
             end
           end
 
           context 'with less than 50 entities' do
+            let(:external_entities1) { [*1..40] }
+
             it 'calls perform_sync once' do
-              allow(subject).to receive(:perform_sync).and_return(batch_limit - 10)
               expect_any_instance_of(Entities::Person).to receive(:opts_merge!).once.with({__skip: 0})
-              expect(subject).to receive(:perform_sync).once
+              expect(subject).to receive(:perform_sync).once.and_call_original
               
               subject.first_sync_entity('person', organization, nil, nil, nil, {}, true)
             end
@@ -187,12 +194,27 @@ describe Maestrano::Connector::Rails::SynchronizationJob do
         end
 
         context 'without pagination' do
-          it 'calls perform_sync once' do
-            allow(subject).to receive(:perform_sync).and_return(batch_limit + 10)
-            expect_any_instance_of(Entities::Person).to receive(:opts_merge!).once.with({__skip: 0})
-            expect(subject).to receive(:perform_sync).once
-            
-            subject.first_sync_entity('person', organization, nil, nil, nil, {}, true)
+          context 'when more than 50 entities' do
+            let(:external_entities1) { [*1..60] }
+
+            it 'calls perform_sync once' do
+              expect_any_instance_of(Entities::Person).to receive(:opts_merge!).once.with({__skip: 0})
+              expect(subject).to receive(:perform_sync).once.and_call_original
+              
+              subject.first_sync_entity('person', organization, nil, nil, nil, {}, true)
+            end
+          end
+
+          context 'when exactly 50 entities' do
+            let(:external_entities1) { [*1..50] }
+            let(:external_entities1) { [*1..50] }
+
+            it 'calls perform_sync twice but no infinite loop' do
+              expect_any_instance_of(Entities::Person).to receive(:opts_merge!).twice
+              expect(subject).to receive(:perform_sync).twice.and_call_original
+
+              subject.first_sync_entity('person', organization, nil, nil, nil, {}, true)
+            end
           end
         end
       end
