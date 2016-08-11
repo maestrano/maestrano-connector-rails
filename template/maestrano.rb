@@ -1,6 +1,5 @@
 %w(default maestrano-uat).each do |tenant|
   Maestrano[tenant].configure do |config|
-
     # ==> Environment configuration
     # The environment to connect to.
     # If set to 'production' then all Single Sign-On (SSO) and API requests
@@ -140,7 +139,7 @@
     #
     # == Subscriptions
     # This is the list of entities (organizations,people,invoices etc.) for which you want to be
-    # notified upon creation/update in Connec!™
+    # notified upon creation/update in Connec! Copyright.
     config.webhook.connec.subscriptions = {
       accounts: false,
       company: false,

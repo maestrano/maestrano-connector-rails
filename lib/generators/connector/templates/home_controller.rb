@@ -11,20 +11,20 @@ class HomeController < ApplicationController
       old_sync_state = organization.sync_enabled
 
       organization.synchronized_entities.keys.each do |entity|
-        organization.synchronized_entities[entity] = !!params["#{entity}"]
+        organization.synchronized_entities[entity] = !params[entity.to_s].nil?
       end
       organization.sync_enabled = organization.synchronized_entities.values.any?
 
       unless organization.historical_data
-        historical_data = !!params['historical-data']
+        historical_data = !params['historical-data'].nil?
         if historical_data
           organization.date_filtering_limit = nil
           organization.historical_data = true
         else
-          organization.date_filtering_limit ||= Time.now
+          organization.date_filtering_limit ||= Time.now.getlocal
         end
       end
-      
+
       organization.save
 
       if !old_sync_state && organization.sync_enabled
@@ -48,5 +48,4 @@ class HomeController < ApplicationController
   def redirect_to_external
     redirect_to 'https://path/to/external/app'
   end
-
 end

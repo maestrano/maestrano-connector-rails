@@ -111,9 +111,9 @@ describe Maestrano::Connector::Rails::Entity do
       it { expect(subject.connec_matching_fields).to be_nil }
     end
 
-    describe 'count_entities' do
-      it 'returns the array size' do
-        expect(subject.count_entities([*1..27])).to eql(27)
+    describe 'count_and_first' do
+      it 'returns the array size and the first element' do
+        expect(subject.count_and_first([*1..27])).to eql(count: 27, first: 1)
       end
     end
 

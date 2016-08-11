@@ -1,8 +1,7 @@
 FactoryGirl.define do
-
   factory :organization, class: Maestrano::Connector::Rails::Organization do
-    name "My company"
-    tenant "default"
+    name 'My company'
+    tenant 'default'
     sequence(:uid) { |n| "cld-11#{n}" }
     oauth_uid 'sfuiy765'
     oauth_provider 'this_app'
@@ -12,7 +11,7 @@ FactoryGirl.define do
     connec_entity 'person'
     external_id '4567ada66'
     external_entity 'contact'
-    last_push_to_external 2.day.ago
+    last_push_to_external 2.days
     last_push_to_connec 1.day.ago
     association :organization
   end

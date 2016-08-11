@@ -1,14 +1,14 @@
 def current_directory
   @current_directory ||=
-      if __FILE__ =~ %r{\Ahttps?://}
-        tempdir = Dir.mktmpdir("maestrano-connector-rails-")
-        at_exit { FileUtils.remove_entry(tempdir) }
-        git :clone => "--quiet https://github.com/maestrano/maestrano-connector-rails/ #{tempdir}"
+    if __FILE__ =~ %r{\Ahttps?://}
+      tempdir = Dir.mktmpdir('maestrano-connector-rails-')
+      at_exit { FileUtils.remove_entry(tempdir) }
+      git clone: "--quiet https://github.com/maestrano/maestrano-connector-rails/ #{tempdir}"
 
-        "#{tempdir}/template"
-      else
-        File.expand_path(File.dirname(__FILE__))
-      end
+      "#{tempdir}/template"
+    else
+      File.expand_path(File.dirname(__FILE__))
+    end
 end
 
 # def current_directory
@@ -29,7 +29,7 @@ run 'touch Gemfile'
 
 add_source 'https://rubygems.org'
 
-if yes?("Use JRuby? [y/n]")
+if yes?('Use JRuby? [y/n]')
   run 'echo "ruby \'2.2.3\', :engine => \'jruby\', :engine_version => \'9.0.5.0\'" | cat - Gemfile > temp && mv temp Gemfile'
 end
 
@@ -43,14 +43,14 @@ gem 'uglifier', '>= 1.3.0'
 gem 'maestrano-connector-rails'
 
 gem_group :production, :uat do
-  gem 'activerecord-jdbcpostgresql-adapter', :platforms => :jruby
-  gem 'pg', :platforms => :ruby
+  gem 'activerecord-jdbcpostgresql-adapter', platforms: :jruby
+  gem 'pg', platforms: :ruby
   gem 'rails_12factor'
 end
 
 gem_group :test, :develpment do
-  gem 'activerecord-jdbcsqlite3-adapter', :platforms => :jruby
-  gem 'sqlite3', :platforms => :ruby
+  gem 'activerecord-jdbcsqlite3-adapter', platforms: :jruby
+  gem 'sqlite3', platforms: :ruby
 end
 
 gem_group :test do
@@ -63,7 +63,6 @@ end
 
 remove_file '.gitignore'
 copy_file 'gitignore', '.gitignore'
-
 
 #
 # Cleanup
@@ -100,15 +99,16 @@ after_bundle do
   end
   copy_file 'settings/settings.yml', 'config/settings.yml'
 
-  copy_file 'application.yml.sample', 'config/application.yml.sample'
+  copy_file 'application-sample.yml', 'config/application-sample.yml'
 
-  application do <<-RUBY
-    config.generators do |g|
-      g.test_framework :rspec, fixture: false
-      g.view_specs false
-      g.helper_specs false
-    end
-  RUBY
+  application do
+    <<-RUBY
+      config.generators do |g|
+        g.test_framework :rspec, fixture: false
+        g.view_specs false
+        g.helper_specs false
+      end
+    RUBY
   end
 
   run 'bundle exec rails g connector:install'
@@ -121,6 +121,6 @@ after_bundle do
 
   # Init repo and commit
   git :init
-  git add: "."
+  git add: '.'
   git commit: "-a -m 'Initial commit'"
 end
