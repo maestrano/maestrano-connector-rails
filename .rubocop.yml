@@ -12,8 +12,8 @@ AllCops:
     - 'db/migrate/*'
     - 'bin/*'
     - 'spec/**/*'
-    - 'template/**/*'
-    - 'lib/generators/connector/**/*'
+    - 'lib/generators/connector/templates/entity.rb'
+    - 'lib/generators/connector/templates/external.rb'
 
 # Enabled disabled Cops
 Style/CollectionMethods:
