@@ -47,10 +47,11 @@ html, body
       font-weight:    $navbar-font-weight
 
       a
-        font-size:         $normal
-      a:hover, a:focus
-        color:             $navbar-links
-        text-decoration:   $navbar-links-decoration
+        font-size:         $text-size-normal
+
+        &:hover, &:focus
+          color:             $navbar-links
+          text-decoration:   $navbar-links-decoration
 
 // Reduce the height of the navbar if on mobile device
 @media(min-width: 768px)

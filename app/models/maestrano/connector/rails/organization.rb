@@ -86,6 +86,18 @@ module Maestrano::Connector::Rails
       self.save
     end
 
+    def check_historical_data(checkbox_ticked)
+      return if self.historical_data
+      # checkbox_ticked is a boolean
+      if checkbox_ticked
+        self.date_filtering_limit = nil
+        self.historical_data = true
+      else
+        self.date_filtering_limit ||= Time.now.getlocal
+      end
+      self.save
+    end
+
     def last_three_synchronizations_failed?
       arr = synchronizations.last(3).map(&:error?)
       arr.count == 3 && arr.uniq == [true]

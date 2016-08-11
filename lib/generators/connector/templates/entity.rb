@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 class Maestrano::Connector::Rails::Entity < Maestrano::Connector::Rails::EntityBase
   include Maestrano::Connector::Rails::Concerns::Entity
 

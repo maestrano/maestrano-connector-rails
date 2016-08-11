@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 class Maestrano::Connector::Rails::External
   include Maestrano::Connector::Rails::Concerns::External
 
