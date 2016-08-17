@@ -48,7 +48,7 @@ Lint/UnusedMethodArgument:
 Metrics/AbcSize:
   # The ABC size is a calculated magnitude, so this number can be a Fixnum or
   # a Float.
-  Max: 22
+  Max: 27
 
 # RSpec/FilePath:
 #   Exclude:
