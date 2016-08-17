@@ -78,6 +78,26 @@ module Maestrano::Connector::Rails
       save!
     end
 
+    def clear_omniauth
+      self.oauth_uid = nil
+      self.oauth_token = nil
+      self.refresh_token = nil
+      self.sync_enabled = false
+      self.save
+    end
+
+    def check_historical_data(checkbox_ticked)
+      return if self.historical_data
+      # checkbox_ticked is a boolean
+      if checkbox_ticked
+        self.date_filtering_limit = nil
+        self.historical_data = true
+      else
+        self.date_filtering_limit ||= Time.now.getlocal
+      end
+      self.save
+    end
+
     def last_three_synchronizations_failed?
       arr = synchronizations.last(3).map(&:error?)
       arr.count == 3 && arr.uniq == [true]

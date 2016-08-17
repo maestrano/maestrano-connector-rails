@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # TODO
 # This file is provided as an example and should be removed
 # See documentation (https://maestrano.atlassian.net/wiki/display/DEV/Mapping+and+synchronization) for explanation

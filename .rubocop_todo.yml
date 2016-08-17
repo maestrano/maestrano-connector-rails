@@ -12,23 +12,6 @@ Lint/AssignmentInCondition:
   Exclude:
     - 'app/jobs/maestrano/connector/rails/push_to_connec_job.rb'
 
-# Offense count: 1
-# Cop supports --auto-correct.
-# Configuration parameters: IgnoreEmptyBlocks, AllowUnusedKeywordArguments.
-Lint/UnusedBlockArgument:
-  Exclude:
-    - 'app/jobs/maestrano/connector/rails/synchronization_job.rb'
-
-# Offense count: 17
-# Cop supports --auto-correct.
-# Configuration parameters: AllowUnusedKeywordArguments, IgnoreEmptyMethods.
-Lint/UnusedMethodArgument:
-  Exclude:
-    - 'app/jobs/maestrano/connector/rails/all_synchronizations_job.rb'
-    - 'app/models/maestrano/connector/rails/concerns/complex_entity.rb'
-    - 'app/models/maestrano/connector/rails/concerns/entity.rb'
-    - 'app/models/maestrano/connector/rails/concerns/external.rb'
-
 # Offense count: 23
 Metrics/AbcSize:
   Max: 70

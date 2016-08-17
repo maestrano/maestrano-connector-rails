@@ -1,7 +1,7 @@
 module Connector
   module Generators
     class InstallGenerator < ::Rails::Generators::Base
-      source_root File.expand_path("../templates", __FILE__)
+      source_root File.expand_path('../templates', __FILE__)
 
       def maestrano_generator
         generate 'maestrano:initializer'
@@ -10,7 +10,7 @@ module Connector
       def include_helpers
         sentinel = 'class ApplicationController < ActionController::Base'
         code_lines = [
-          "include Maestrano::Connector::Rails::SessionHelper"
+          'include Maestrano::Connector::Rails::SessionHelper'
         ]
 
         in_root do
