@@ -17,6 +17,14 @@
 #     ExampleEntityMapper
 #   end
 
+# This method is optional. It is needed only if a mandatory field
+# is missing in Connec! and has to be pushed with a default value on creation.
+# Refer to the FAQ section for more details.
+
+#   def self.creation_mapper_class
+#     CreationExampleEntityMapper
+#   end
+
 #   def self.object_name_from_connec_entity_hash(entity)
 #     "#{entity['first_name']} #{entity['last_name']}"
 #   end
@@ -25,6 +33,13 @@
 #     "#{entity['FirstName']} #{entity['LastName']}"
 #   end
 
+# end
+
+# class CreationExampleEntityMapper < ExampleEntityMapper
+#
+#   after_normalize do |input, output|
+#     output[:missing_connec_field] = "Default Value"
+#   end
 # end
 
 # class ExampleEntityMapper

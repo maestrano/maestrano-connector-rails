@@ -7,10 +7,10 @@ describe Maestrano::Connector::Rails::Entity do
 
     # IdMap methods
     describe 'idmaps methods' do
-      before {
+      before do
         allow(subject).to receive(:connec_entity_name).and_return('Ab')
         allow(subject).to receive(:external_entity_name).and_return('Ab')
-      }
+      end
       let(:n_hash) { {connec_entity: 'ab', external_entity: 'ab'} }
 
       it { expect(subject.names_hash).to eql(n_hash) }
@@ -32,13 +32,13 @@ describe Maestrano::Connector::Rails::Entity do
     end
 
     describe 'normalized_connec_entity_name' do
-      before {
+      before do
         allow(subject).to receive(:connec_entity_name).and_return(connec_name)
-      }
+      end
       context 'for a singleton resource' do
-        before {
+        before do
           allow(subject).to receive(:singleton?).and_return(true)
-        }
+        end
 
         context 'for a simple name' do
           let(:connec_name) { 'Person' }
@@ -52,9 +52,9 @@ describe Maestrano::Connector::Rails::Entity do
       end
 
       context 'for a non singleton resource' do
-        before {
+        before do
           allow(subject).to receive(:singleton?).and_return(false)
-        }
+        end
 
         context 'for a simple name' do
           let(:connec_name) { 'Person' }
@@ -124,9 +124,9 @@ describe Maestrano::Connector::Rails::Entity do
       end
 
       context 'when singleton' do
-        before {
+        before do
           allow(subject).to receive(:singleton?).and_return(true)
-        }
+        end
 
         it 'returns the connec_entity_name' do
           allow(subject).to receive(:connec_entity_name).and_return('tree')
@@ -151,30 +151,38 @@ describe Maestrano::Connector::Rails::Entity do
     subject { Maestrano::Connector::Rails::Entity.new(organization, connec_client, external_client, opts) }
     let(:connec_name) { 'Person' }
     let(:external_name) { 'external_name' }
-    before {
+    before do
       allow(subject.class).to receive(:connec_entity_name).and_return(connec_name)
       allow(subject.class).to receive(:external_entity_name).and_return(external_name)
-    }
+    end
 
     describe 'Mapper methods' do
-      before(:each) {
+      before(:each) do
         class AMapper
           extend HashMapper
         end
         allow(subject.class).to receive(:mapper_class).and_return(AMapper)
-      }
+        allow(subject.class).to receive(:creation_mapper_class).and_call_original
+      end
 
       describe 'map_to_external' do
         it 'calls the mapper normalize' do
           expect(AMapper).to receive(:normalize).with({}).and_return({})
           subject.map_to_external({})
         end
+
+        it 'calls the creation_mapper normalize if passed true as second argument' do
+          expect(subject.class).to receive(:creation_mapper_class)
+          #if not overridden #creation_mapper_class calls #mapper_class
+          expect(AMapper).to receive(:normalize).with({}).and_return({})
+          subject.map_to_external({}, true)
+        end
       end
 
       describe 'map_to_connec' do
-        before {
+        before do
           allow(subject.class).to receive(:id_from_external_entity_hash).and_return('this id')
-        }
+        end
         it 'calls the mapper denormalize' do
           expect(AMapper).to receive(:denormalize).with({}).and_return({})
           subject.map_to_connec({})
@@ -207,10 +215,10 @@ describe Maestrano::Connector::Rails::Entity do
 
       describe 'get_connec_entities' do
         describe 'when write only' do
-          before {
+          before do
             allow(subject.class).to receive(:can_read_connec?).and_return(false)
             allow(connec_client).to receive(:get).and_return(ActionDispatch::Response.new(200, {}, {people: [{first_name: 'Lea'}]}.to_json, {}))
-          }
+          end
 
           it { expect(subject.get_connec_entities(nil)).to eql([]) }
         end
@@ -222,10 +230,10 @@ describe Maestrano::Connector::Rails::Entity do
 
         describe 'with response' do
           context 'for a singleton resource' do
-            before {
+            before do
               allow(connec_client).to receive(:get).and_return(ActionDispatch::Response.new(200, {}, {person: []}.to_json, {}))
               allow(subject.class).to receive(:singleton?).and_return(true)
-            }
+            end
 
             it 'calls get with a singularize url' do
               expect(connec_client).to receive(:get).with("#{connec_name.downcase}?")
@@ -234,15 +242,15 @@ describe Maestrano::Connector::Rails::Entity do
           end
 
           context 'for a non singleton resource' do
-            before {
+            before do
               allow(connec_client).to receive(:get).and_return(ActionDispatch::Response.new(200, {}, {people: []}.to_json, {}))
-            }
+            end
 
             context 'with limit and skip opts' do
               let(:opts) { {__skip: 100, __limit: 50} }
-              before {
+              before do
                 allow(connec_client).to receive(:get).and_return(ActionDispatch::Response.new(200, {}, {people: [], pagination: {next: "https://api-connec.maestrano.com/api/v2/cld-dkg601/people?%24skip=10&%24top=10"}}.to_json, {}), ActionDispatch::Response.new(200, {}, {people: []}.to_json, {}))
-              }
+              end
 
               it 'performs a size limited date and do not paginate' do
                 uri_param = {"$filter" => "updated_at gt '#{sync.updated_at.iso8601}'", "$skip" => 100, "$top" => 50}.to_query
@@ -298,9 +306,9 @@ describe Maestrano::Connector::Rails::Entity do
             end
 
             context 'with pagination' do
-              before {
+              before do
                 allow(connec_client).to receive(:get).and_return(ActionDispatch::Response.new(200, {}, {people: [], pagination: {next: "https://api-connec.maestrano.com/api/v2/cld-dkg601/people?%24skip=10&%24top=10"}}.to_json, {}), ActionDispatch::Response.new(200, {}, {people: []}.to_json, {}))
-              }
+              end
 
               it 'calls get multiple times' do
                 expect(connec_client).to receive(:get).with('people?')
@@ -322,30 +330,30 @@ describe Maestrano::Connector::Rails::Entity do
 
         describe 'failures' do
           context 'when no response' do
-            before {
+            before do
               allow(connec_client).to receive(:get).and_return(ActionDispatch::Response.new(200, {}, nil, {}))
-            }
+            end
             it { expect{ subject.get_connec_entities(nil) }.to raise_error(RuntimeError) }
           end
 
           context 'when invalid response' do
-            before {
+            before do
               allow(connec_client).to receive(:get).and_return(ActionDispatch::Response.new(200, {}, {not_an_entity: []}.to_json, {}))
-            }
+            end
             it { expect{ subject.get_connec_entities(nil) }.to raise_error(RuntimeError) }
           end
 
           context 'when no response in pagination' do
-            before {
+            before do
               allow(connec_client).to receive(:get).and_return(ActionDispatch::Response.new(200, {}, {people: [], pagination: {next: "https://api-connec.maestrano.com/api/v2/cld-dkg601/people?%24skip=10&%24top=10"}}.to_json, {}), ActionDispatch::Response.new(200, {}, nil, {}))
-            }
+            end
             it { expect{ subject.get_connec_entities(nil) }.to raise_error(RuntimeError) }
           end
 
           context 'when invalid response in pagination' do
-            before {
+            before do
               allow(connec_client).to receive(:get).and_return(ActionDispatch::Response.new(200, {}, {people: [], pagination: {next: "https://api-connec.maestrano.com/api/v2/cld-dkg601/people?%24skip=10&%24top=10"}}.to_json, {}), ActionDispatch::Response.new(200, {}, {not_an_entity: []}.to_json, {}))
-            }
+            end
             it { expect{ subject.get_connec_entities(nil) }.to raise_error(RuntimeError) }
           end
         end
@@ -368,9 +376,9 @@ describe Maestrano::Connector::Rails::Entity do
         let(:entities_with_idmaps) { [entity_with_idmap1, entity_with_idmap2] }
 
         context 'when read only' do
-          before {
+          before do
             allow(subject.class).to receive(:can_write_connec?).and_return(false)
-          }
+          end
 
           it 'does nothing' do
             expect(subject).to_not receive(:batch_op)
@@ -379,10 +387,10 @@ describe Maestrano::Connector::Rails::Entity do
         end
 
         context 'when no update' do
-          before {
+          before do
             allow(subject.class).to receive(:can_update_connec?).and_return(false)
             allow(connec_client).to receive(:batch).and_return(ActionDispatch::Response.new(200, {}, {results: []}.to_json, {}))
-          }
+          end
 
           it 'filters out the one with a connec_id' do
             expect(subject).to receive(:batch_op).once.with('post', entity2, nil, 'people')
@@ -393,9 +401,9 @@ describe Maestrano::Connector::Rails::Entity do
         context 'without errors' do
           let(:result200) { {status: 200, body: {connec_name.downcase.pluralize.to_sym => {id: [{provider: 'connec', id: 'id1'}]}}} }
           let(:result201) { {status: 201, body: {connec_name.downcase.pluralize.to_sym => {id: [{provider: 'connec', id: 'id2'}]}}} }
-          before {
+          before do
             allow(connec_client).to receive(:batch).and_return(ActionDispatch::Response.new(200, {}, {results: [result200, result201]}.to_json, {}))
-          }
+          end
 
           let(:batch_request) {
             {
@@ -441,13 +449,13 @@ describe Maestrano::Connector::Rails::Entity do
             let(:results) { [] }
 
             context 'when 100 entities' do
-              before {
+              before do
                 100.times do
                   entities << entity_with_idmap1
                   results << result200
                 end
                 allow(connec_client).to receive(:batch).and_return(ActionDispatch::Response.new(200, {}, {results: results}.to_json, {}))
-              }
+              end
 
               it 'does one call' do
                 expect(connec_client).to receive(:batch).once
@@ -456,14 +464,14 @@ describe Maestrano::Connector::Rails::Entity do
             end
 
             context 'when more than 100 entities' do
-              before {
+              before do
                 100.times do
                   entities << entity_with_idmap1
                   results << result200
                 end
                 entities << entity_with_idmap2
                 allow(connec_client).to receive(:batch).and_return(ActionDispatch::Response.new(200, {}, {results: results}.to_json, {}), ActionDispatch::Response.new(200, {}, {results: [result201]}.to_json, {}))
-              }
+              end
 
               it 'does several call' do
                 expect(connec_client).to receive(:batch).twice
@@ -482,9 +490,9 @@ describe Maestrano::Connector::Rails::Entity do
         context 'with errors' do
           let(:err_msg) { 'Not Found' }
           let(:result400) { {status: 400, body: err_msg} }
-          before {
+          before do
             allow(connec_client).to receive(:batch).and_return(ActionDispatch::Response.new(200, {}, {results: [result400, result400]}.to_json, {}))
-          }
+          end
 
           it 'stores the errr in the idmap' do
             subject.push_entities_to_connec_to(entities_with_idmaps, '')
@@ -506,9 +514,9 @@ describe Maestrano::Connector::Rails::Entity do
 
     # External methods
     describe 'external methods' do
-      before {
+      before do
         allow(subject.class).to receive(:id_from_external_entity_hash).and_return('id')
-      }
+      end
       let(:idmap1) { create(:idmap, organization: organization) }
       let(:idmap2) { create(:idmap, organization: organization, external_id: nil, external_entity: nil, last_push_to_external: nil) }
       let(:entity1) { {name: 'John'} }
@@ -571,11 +579,11 @@ describe Maestrano::Connector::Rails::Entity do
         end
 
         describe 'ids' do
-          before {
+          before do
             allow(subject.class).to receive(:id_from_external_entity_hash).and_return('id')
             allow(subject).to receive(:create_external_entity).and_return({'id' => 'id'})
             allow(subject).to receive(:update_external_entity).and_return(nil)
-          }
+          end
 
           context 'when ids to send to connec' do
             let(:batch_param) {
@@ -589,9 +597,9 @@ describe Maestrano::Connector::Rails::Entity do
           end
 
           context 'when no id to send to connec' do
-            before {
+            before do
               idmap2.update(external_id: 'id')
-            }
+            end
 
             it 'does not do a call on connec' do
               expect(connec_client).to_not receive(:batch)
@@ -725,17 +733,17 @@ describe Maestrano::Connector::Rails::Entity do
     describe 'consolidate_and_map methods' do
       let(:id) { '56882' }
       let(:date) { 2.hour.ago }
-      before {
+      before do
         allow(subject.class).to receive(:id_from_external_entity_hash).and_return(id)
         allow(subject.class).to receive(:last_update_date_from_external_entity_hash).and_return(date)
         allow(subject.class).to receive(:creation_date_from_external_entity_hash).and_return(date)
-      }
+      end
 
       describe 'consolidate_and_map_data' do
         context 'singleton' do
-          before {
+          before do
             allow(subject.class).to receive(:singleton?).and_return(true)
-          }
+          end
 
           it 'returns the consolidate_and_map_singleton method result' do
             expect(subject).to receive(:consolidate_and_map_singleton).with({}, {}).and_return({result: 1})
@@ -754,12 +762,12 @@ describe Maestrano::Connector::Rails::Entity do
 
       describe 'consolidate_and_map_singleton' do
         let(:connec_id) { [{'id' => 'lala', 'provider' => 'connec', 'realm' => 'realm'}] }
-        before {
+        before do
           allow(subject).to receive(:map_to_connec).and_return({map: 'connec'})
           allow(subject).to receive(:map_to_external).and_return({map: 'external'})
           allow(subject.class).to receive(:object_name_from_connec_entity_hash).and_return('connec human name')
           allow(subject.class).to receive(:object_name_from_external_entity_hash).and_return('external human name')
-        }
+        end
 
         it { expect(subject.consolidate_and_map_singleton([], [])).to eql({connec_entities: [], external_entities: []}) }
 
@@ -899,9 +907,9 @@ describe Maestrano::Connector::Rails::Entity do
           end
 
           context 'when before date_filtering_limit' do
-            before {
+            before do
               organization.update(date_filtering_limit: 5.minutes.ago)
-            }
+            end
 
             it 'discards the entity' do
               expect(subject.consolidate_and_map_connec_entities(entities, [], [], external_name)).to eql([])
@@ -922,9 +930,9 @@ describe Maestrano::Connector::Rails::Entity do
           let(:entities) { [entity1] }
           let(:external_entity_1) { {'id' => id1} }
           let(:external_entities) { [external_entity_1] }
-          before {
+          before do
             allow(subject.class).to receive(:id_from_external_entity_hash).and_return(id1)
-          }
+          end
 
           context 'with opts' do
             context 'with connec preemption false' do
@@ -945,9 +953,9 @@ describe Maestrano::Connector::Rails::Entity do
           end
 
           context 'without opts' do
-            before {
+            before do
               allow(subject.class).to receive(:last_update_date_from_external_entity_hash).and_return(external_date)
-            }
+            end
 
             context 'with connec one more recent' do
               let(:external_date) { 1.year.ago }
@@ -976,11 +984,11 @@ describe Maestrano::Connector::Rails::Entity do
         let(:entity) { {'id' => id, 'name' => 'Jane'} }
         let(:id) { 'id' }
         let(:external_human_name) { 'external human name' }
-        before {
+        before do
           allow(subject.class).to receive(:id_from_external_entity_hash).and_return(id)
           allow(subject.class).to receive(:object_name_from_external_entity_hash).and_return(external_human_name)
           allow(subject).to receive(:map_to_connec).and_return({mapped: 'ext_entity'})
-        }
+        end
 
         context 'when idmap exists' do
           let!(:idmap) { create(:idmap, organization: organization, connec_entity: connec_name.downcase, external_entity: external_name.downcase, external_id: id) }
@@ -1004,9 +1012,9 @@ describe Maestrano::Connector::Rails::Entity do
           end
 
           context 'when entity is inactive' do
-            before {
+            before do
               allow(subject.class).to receive(:inactive_from_external_entity_hash?).and_return(true)
-            }
+            end
 
             it 'discards the entity' do
               expect(subject.consolidate_and_map_external_entities([entity], connec_name)).to eql([])
@@ -1035,9 +1043,9 @@ describe Maestrano::Connector::Rails::Entity do
           end
 
           context 'when before date_filtering_limit' do
-            before {
+            before do
               organization.update(date_filtering_limit: 5.minutes.ago)
-            }
+            end
 
             it 'discards the entity' do
               expect(subject.consolidate_and_map_external_entities([entity], connec_name)).to eql([])
