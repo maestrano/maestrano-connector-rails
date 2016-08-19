@@ -1,3 +1,12 @@
+## 1.3.5
+
+## Features
+* Improve generated files
+* Adds a built-in way to handle error when updating a deleted record
+
+## Fixes
+* Adds safety against potential infinite loop
+
 ## 1.3.4
 `maestrano.rb` file should be updated with new synchronization paths.
 
