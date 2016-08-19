@@ -1,17 +1,20 @@
-# require: rubocop-rspec
-inherit_from: .rubocop_todo.yml
-
 Rails:
   Enabled: true
 
 AllCops:
   TargetRubyVersion: 2.3
   Exclude:
-    - 'maestrano-connector-rails.gemspec'
     - 'db/schema.rb'
     - 'db/migrate/*'
+    - 'db/seeds.rb'
     - 'bin/*'
+    - 'Gemfile'
+    - 'Rakefile'
+    - 'config.ru'
     - 'spec/**/*'
+    - 'config/**/*'
+    - 'app/helpers/application_helper.rb'
+    - 'app/controllers/application_controller.rb'
 
 # Enabled disabled Cops
 Style/CollectionMethods:
@@ -41,6 +44,11 @@ Lint/UnusedBlockArgument:
 # Checks for unused method arguments.
 Lint/UnusedMethodArgument:
   Enabled: false
+
+Metrics/AbcSize:
+  # The ABC size is a calculated magnitude, so this number can be a Fixnum or
+  # a Float.
+  Max: 27
 
 # RSpec/FilePath:
 #   Exclude:

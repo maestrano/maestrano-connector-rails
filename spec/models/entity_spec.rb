@@ -6,7 +6,7 @@ describe Maestrano::Connector::Rails::Entity do
     subject { Maestrano::Connector::Rails::Entity }
 
     # IdMap methods
-    describe 'idmaps mehtods' do
+    describe 'idmaps methods' do
       before {
         allow(subject).to receive(:connec_entity_name).and_return('Ab')
         allow(subject).to receive(:external_entity_name).and_return('Ab')
@@ -111,9 +111,9 @@ describe Maestrano::Connector::Rails::Entity do
       it { expect(subject.connec_matching_fields).to be_nil }
     end
 
-    describe 'count_entities' do
-      it 'returns the array size' do
-        expect(subject.count_entities([*1..27])).to eql(27)
+    describe 'count_and_first' do
+      it 'returns the array size and the first element' do
+        expect(subject.count_and_first([*1..27])).to eql(count: 27, first: 1)
       end
     end
 
@@ -452,7 +452,7 @@ describe Maestrano::Connector::Rails::Entity do
               it 'does one call' do
                 expect(connec_client).to receive(:batch).once
                 subject.push_entities_to_connec_to(entities, connec_name)
-              end              
+              end
             end
 
             context 'when more than 100 entities' do
@@ -700,6 +700,12 @@ describe Maestrano::Connector::Rails::Entity do
             subject.push_entity_to_external(entity_with_idmap2, external_name)
             expect(idmap2.reload.message).to include(msg.truncate(255))
           end
+
+          it 'can raise a custom exception' do
+            allow(subject).to receive(:update_external_entity).and_raise(Maestrano::Connector::Rails::Exceptions::EntityNotFoundError.new)
+            subject.push_entity_to_external(entity_with_idmap1, external_name)
+            expect(idmap1.reload.message).to include("The external_name record has been deleted in External app.")
+          end
         end
       end
 
@@ -724,13 +730,13 @@ describe Maestrano::Connector::Rails::Entity do
         allow(subject.class).to receive(:last_update_date_from_external_entity_hash).and_return(date)
         allow(subject.class).to receive(:creation_date_from_external_entity_hash).and_return(date)
       }
-      
+
       describe 'consolidate_and_map_data' do
         context 'singleton' do
           before {
             allow(subject.class).to receive(:singleton?).and_return(true)
           }
-          
+
           it 'returns the consolidate_and_map_singleton method result' do
             expect(subject).to receive(:consolidate_and_map_singleton).with({}, {}).and_return({result: 1})
             expect(subject.consolidate_and_map_data({}, {})).to eql({result: 1})
@@ -944,8 +950,8 @@ describe Maestrano::Connector::Rails::Entity do
             }
 
             context 'with connec one more recent' do
-              let(:external_date) { 1.year.ago } 
-              let(:date) { 1.day.ago } 
+              let(:external_date) { 1.year.ago }
+              let(:date) { 1.day.ago }
 
               it 'keeps the entity and discards the external one' do
                 expect(subject.consolidate_and_map_connec_entities(entities, external_entities, [], external_name)).to eql([{entity: {mapped: 'entity'}, idmap: Maestrano::Connector::Rails::IdMap.first, id_refs_only_connec_entity: id_refs_only_connec_entity}])
@@ -954,8 +960,8 @@ describe Maestrano::Connector::Rails::Entity do
             end
 
             context 'with external one more recent' do
-              let(:external_date) { 1.month.ago } 
-              let(:date) { 1.year.ago } 
+              let(:external_date) { 1.month.ago }
+              let(:date) { 1.year.ago }
 
               it 'discards the entity and keep the external one' do
                 expect(subject.consolidate_and_map_connec_entities(entities, external_entities, [], external_name)).to eql([])

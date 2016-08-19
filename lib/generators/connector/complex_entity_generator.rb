@@ -1,7 +1,7 @@
 module Connector
   module Generators
     class ComplexEntityGenerator < ::Rails::Generators::Base
-      source_root File.expand_path("../templates", __FILE__)
+      source_root File.expand_path('../templates', __FILE__)
 
       def copy_example_files
         copy_file 'complex_entity_example/contact_and_lead.rb', 'app/models/entities/example_contact_and_lead.rb'

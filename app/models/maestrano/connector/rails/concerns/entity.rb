@@ -131,8 +131,8 @@ module Maestrano::Connector::Rails::Concerns::Entity
     # ----------------------------------------------
     #                 Helper methods
     # ----------------------------------------------
-    def count_entities(entities)
-      entities.size
+    def count_and_first(entities)
+      {count: entities.size, first: entities.first}
     end
 
     def public_connec_entity_name
@@ -313,10 +313,16 @@ module Maestrano::Connector::Rails::Concerns::Entity
         idmap.update(last_push_to_external: Time.now, message: nil)
       end
     rescue => e
-      # Store External error
-      Maestrano::Connector::Rails::ConnectorLogger.log('error', @organization, "Error while pushing to #{Maestrano::Connector::Rails::External.external_name}: #{e}")
-      Maestrano::Connector::Rails::ConnectorLogger.log('debug', @organization, "Error while pushing backtrace: #{e.backtrace.join("\n\t")}")
-      idmap.update(message: e.message.truncate(255))
+      # TODO: improve the flexibility by adding the option for the developer to pass a custom/gem-dependent error
+      if e.class == Maestrano::Connector::Rails::Exceptions::EntityNotFoundError
+        idmap.update!(message: "The #{external_entity_name} record has been deleted in #{Maestrano::Connector::Rails::External.external_name}. Last attempt to sync on #{Time.now}", external_inactive: true)
+        Rails.logger.info "The #{idmap.external_entity} - #{idmap.external_id} record has been deleted. It is now set to inactive."
+      else
+        # Store External error
+        Maestrano::Connector::Rails::ConnectorLogger.log('error', @organization, "Error while pushing to #{Maestrano::Connector::Rails::External.external_name}: #{e}")
+        Maestrano::Connector::Rails::ConnectorLogger.log('debug', @organization, "Error while pushing backtrace: #{e.backtrace.join("\n\t")}")
+        idmap.update(message: e.message.truncate(255))
+      end
     end
     nil
   end
@@ -359,7 +365,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
   end
 
   def consolidate_and_map_connec_entities(connec_entities, external_entities, references, external_entity_name)
-    connec_entities.map{|entity|
+    connec_entities.map { |entity|
       # Entity has been created before date filtering limit
       next nil if before_date_filtering_limit?(entity, false) && !@opts[:full_sync]
 
