@@ -342,9 +342,9 @@ module Maestrano::Connector::Rails::Concerns::Entity
     return nil if connec_hash.empty?
 
     mapped_external_hash = map_to_connec(external_hash)
-    id_references = Maestrano::Connector::Rails::ConnecHelper.format_references(self.class.references)
+    references = Maestrano::Connector::Rails::ConnecHelper.format_references(self.class.references)
 
-    Maestrano::Connector::Rails::ConnecHelper.merge_id_hashes(connec_hash, mapped_external_hash, id_references[:id_references])
+    Maestrano::Connector::Rails::ConnecHelper.merge_id_hashes(connec_hash, mapped_external_hash, references[:id_references])
   end
 
   # ----------------------------------------------
