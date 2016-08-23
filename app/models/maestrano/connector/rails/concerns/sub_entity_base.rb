@@ -34,6 +34,12 @@ module Maestrano::Connector::Rails::Concerns::SubEntityBase
       {}
     end
 
+    # { 'External Entity'  => CreationLalaMapper, 'Other external entity' => CreationLiliMapper }
+    # or { 'Connec Entity'  => CreationLalaMapper, 'Other connec entity' => CreationLiliMapper }
+    def creation_mapper_classes
+      mapper_classes
+    end
+
     # {
     #   'External Entity' => ['organization_id'],
     #   'Other external entity' => ['an array of the connec reference fields']
@@ -43,8 +49,8 @@ module Maestrano::Connector::Rails::Concerns::SubEntityBase
     end
   end
 
-  def map_to(name, entity)
-    mapper = self.class.mapper_classes[name]
+  def map_to(name, entity, first_time_mapped = nil)
+    mapper = first_time_mapped ? self.class.creation_mapper_classes[name] : self.class.mapper_classes[name]
     raise "Impossible mapping from #{self.class.entity_name} to #{name}" unless mapper
 
     if self.class.external?
@@ -63,11 +69,11 @@ module Maestrano::Connector::Rails::Concerns::SubEntityBase
   end
 
   def map_connec_entity_with_idmap(connec_entity, external_entity_name, idmap, id_refs_only_connec_entity)
-    {entity: map_to(external_entity_name, connec_entity), idmap: idmap, id_refs_only_connec_entity: id_refs_only_connec_entity}
+    {entity: map_to(external_entity_name, connec_entity, idmap.last_push_to_external.nil?), idmap: idmap, id_refs_only_connec_entity: id_refs_only_connec_entity}
   end
 
   def map_external_entity_with_idmap(external_entity, connec_entity_name, idmap)
-    {entity: map_to(connec_entity_name, external_entity), idmap: idmap}
+    {entity: map_to(connec_entity_name, external_entity, idmap.last_push_to_connec.nil?), idmap: idmap}
   end
 
   # Maps the entity received from external after a creation or an update and complete the received ids with the connec ones
