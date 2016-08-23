@@ -94,6 +94,10 @@ module Maestrano::Connector::Rails::Concerns::Entity
       raise 'Not implemented'
     end
 
+    def creation_mapper_class
+      mapper_class
+    end
+
     # An array of connec fields that are references
     def references
       []
@@ -154,13 +158,15 @@ module Maestrano::Connector::Rails::Concerns::Entity
   #                 Mapper methods
   # ----------------------------------------------
   # Map a Connec! entity to the external model
-  def map_to_external(entity)
-    self.class.mapper_class.normalize(entity).with_indifferent_access
+  def map_to_external(entity, first_time_mapped = nil)
+    mapper = first_time_mapped ? self.class.creation_mapper_class : self.class.mapper_class
+    mapper.normalize(entity).with_indifferent_access
   end
 
   # Map an external entity to Connec! model
-  def map_to_connec(entity)
-    mapped_entity = self.class.mapper_class.denormalize(entity).merge(id: self.class.id_from_external_entity_hash(entity))
+  def map_to_connec(entity, first_time_mapped = nil)
+    mapper = first_time_mapped ? self.class.creation_mapper_class.denormalize(entity) : self.class.mapper_class.denormalize(entity)
+    mapped_entity = mapper.merge(id: self.class.id_from_external_entity_hash(entity))
     folded_entity = Maestrano::Connector::Rails::ConnecHelper.fold_references(mapped_entity, self.class.references, @organization)
     folded_entity[:opts] = (mapped_entity[:opts] || {}).merge(matching_fields: self.class.connec_matching_fields) if self.class.connec_matching_fields
     folded_entity
@@ -374,7 +380,6 @@ module Maestrano::Connector::Rails::Concerns::Entity
       next nil unless entity
       connec_id = unfold_hash[:connec_id]
       id_refs_only_connec_entity = unfold_hash[:id_refs_only_connec_entity]
-
       if entity['id'].blank?
         idmap = self.class.find_or_create_idmap(organization_id: @organization.id, name: self.class.object_name_from_connec_entity_hash(entity), external_entity: external_entity_name.downcase, connec_id: connec_id)
         next map_connec_entity_with_idmap(entity, external_entity_name, idmap, id_refs_only_connec_entity)
@@ -502,7 +507,13 @@ module Maestrano::Connector::Rails::Concerns::Entity
       connec_entity['updated_at'] > self.class.last_update_date_from_external_entity_hash(external_entity)
     end
 
+    # This methods try to find a external entity among all the external entities matching the connec one (same id)
+    # If it does not find any, there is no conflict, and it returns the mapped connec entity
+    # If it finds one, the conflict is solved either with options or using the entities timestamps
+    #   If the connec entity is kept, it is returned mapped and the matching external entity is discarded (deleted from the array)
+    #   Else the method returns nil, meaning the connec entity is discarded
     def solve_conflict(connec_entity, external_entities, external_entity_name, idmap, id_refs_only_connec_entity)
+      # Here the connec_entity['id'] is an external id (String) because the entity has been unfolded.
       external_entity = external_entities.find { |entity| connec_entity['id'] == self.class.id_from_external_entity_hash(entity) }
       # No conflict
       return map_connec_entity_with_idmap(connec_entity, external_entity_name, idmap, id_refs_only_connec_entity) unless external_entity
@@ -522,11 +533,11 @@ module Maestrano::Connector::Rails::Concerns::Entity
     end
 
     def map_connec_entity_with_idmap(connec_entity, external_entity_name, idmap, id_refs_only_connec_entity)
-      {entity: map_to_external(connec_entity), idmap: idmap, id_refs_only_connec_entity: id_refs_only_connec_entity}
+      {entity: map_to_external(connec_entity, idmap.last_push_to_external.nil?), idmap: idmap, id_refs_only_connec_entity: id_refs_only_connec_entity}
     end
 
     def map_external_entity_with_idmap(external_entity, connec_entity_name, idmap)
-      {entity: map_to_connec(external_entity), idmap: idmap}
+      {entity: map_to_connec(external_entity, idmap.last_push_to_connec.nil?), idmap: idmap}
     end
 
     def fetch_connec(uri, page_number)
