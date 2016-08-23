@@ -160,14 +160,24 @@ module Maestrano::Connector::Rails::Concerns::Entity
   # Map a Connec! entity to the external model
   def map_to_external(entity, first_time_mapped = nil)
     mapper = first_time_mapped ? self.class.creation_mapper_class : self.class.mapper_class
-    mapper.normalize(entity).with_indifferent_access
+    map_to_external_helper(entity, mapper)
+  end
+
+  def map_to_external_helper(entity, mapper)
+    # instance_values returns a hash with all the instance variables (http://apidock.com/rails/v4.0.2/Object/instance_values)
+    # that includes opts, organization, connec_client, external_client, and all the connector specific variables
+    mapper.normalize(entity, instance_values.with_indifferent_access).with_indifferent_access
   end
 
   # Map an external entity to Connec! model
   def map_to_connec(entity, first_time_mapped = nil)
-    mapper = first_time_mapped ? self.class.creation_mapper_class.denormalize(entity) : self.class.mapper_class.denormalize(entity)
-    mapped_entity = mapper.merge(id: self.class.id_from_external_entity_hash(entity))
-    folded_entity = Maestrano::Connector::Rails::ConnecHelper.fold_references(mapped_entity, self.class.references, @organization)
+    mapper = first_time_mapped ? self.class.creation_mapper_class : self.class.mapper_class
+    map_to_connec_helper(entity, mapper, self.class.references)
+  end
+
+  def map_to_connec_helper(entity, mapper, references)
+    mapped_entity = mapper.denormalize(entity, instance_values.with_indifferent_access).merge(id: self.class.id_from_external_entity_hash(entity))
+    folded_entity = Maestrano::Connector::Rails::ConnecHelper.fold_references(mapped_entity, references, @organization)
     folded_entity[:opts] = (mapped_entity[:opts] || {}).merge(matching_fields: self.class.connec_matching_fields) if self.class.connec_matching_fields
     folded_entity
   end

@@ -97,7 +97,7 @@ describe Maestrano::Connector::Rails::SubEntityBase do
         end
 
         it 'calls the mapper denormalize' do
-          expect(AMapper).to receive(:denormalize).and_return({})
+          expect(AMapper).to receive(:denormalize).with({}, subject.instance_values).and_return({})
           subject.map_to('Name', {})
         end
 
@@ -110,7 +110,7 @@ describe Maestrano::Connector::Rails::SubEntityBase do
 
         it 'calls the creation_mapper_classes that delegates to the mapper_classes denormalize when passed true as a third argument' do
           expect(subject.class).to receive(:creation_mapper_classes).and_call_original
-          expect(AMapper).to receive(:denormalize).and_return({})
+          expect(AMapper).to receive(:denormalize).with({}, subject.instance_values).and_return({})
           subject.map_to('Name', {}, true)
         end
 
@@ -140,13 +140,13 @@ describe Maestrano::Connector::Rails::SubEntityBase do
         end
 
         it 'calls the mapper normalize' do
-          expect(AMapper).to receive(:normalize).and_return({})
+          expect(AMapper).to receive(:normalize).with({}, subject.instance_values).and_return({})
           subject.map_to('Name', {})
         end
 
         it 'calls the creation_mapper_classes that delegates to the mapper_classes normalize when passed true as a third argument' do
           expect(subject.class).to receive(:creation_mapper_classes).and_call_original
-          expect(AMapper).to receive(:normalize).and_return({})
+          expect(AMapper).to receive(:normalize).with({}, subject.instance_values).and_return({})
           subject.map_to('Name', {}, true)
         end
       end

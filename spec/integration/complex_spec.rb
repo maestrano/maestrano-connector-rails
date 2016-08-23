@@ -350,10 +350,6 @@ describe 'complex entities workflow' do
         'CompCustomerMissingField'
       end
 
-      def self.mapper_classes
-        {'CompOrganizationMissingField' => ::CompMapper}
-      end
-
       def self.creation_mapper_classes
         {'CompOrganizationMissingField' => ::CreationCompMapper}
       end

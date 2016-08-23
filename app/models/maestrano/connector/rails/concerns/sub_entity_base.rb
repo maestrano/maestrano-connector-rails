@@ -54,17 +54,9 @@ module Maestrano::Connector::Rails::Concerns::SubEntityBase
     raise "Impossible mapping from #{self.class.entity_name} to #{name}" unless mapper
 
     if self.class.external?
-      mapped_entity = mapper.denormalize(entity).merge(id: self.class.id_from_external_entity_hash(entity))
-      folded_entity = Maestrano::Connector::Rails::ConnecHelper.fold_references(mapped_entity, self.class.references[name] || [], @organization)
-
-      if self.class.connec_matching_fields
-        folded_entity[:opts] ||= {}
-        folded_entity[:opts][:matching_fields] = self.class.connec_matching_fields
-      end
-
-      folded_entity
+      map_to_connec_helper(entity, mapper, self.class.references[name] || [])
     else
-      mapper.normalize(entity).with_indifferent_access
+      map_to_external_helper(entity, mapper)
     end
   end
 
