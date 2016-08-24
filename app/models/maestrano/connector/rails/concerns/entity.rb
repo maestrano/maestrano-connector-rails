@@ -95,7 +95,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
       raise 'Not implemented'
     end
 
-    # Optional creation only mapper, default to main mapper
+    # Optional creation only mapper, defaults to main mapper
     def creation_mapper_class
       mapper_class
     end
@@ -172,7 +172,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
 
   def map_to_external_helper(entity, mapper)
     # instance_values returns a hash with all the instance variables (http://apidock.com/rails/v4.0.2/Object/instance_values)
-    # that includes opts, organization, connec_client, external_client, and all the connector specific variables
+    # that includes opts, organization, connec_client, external_client, and all the connector and entity specific variables
     mapper.normalize(entity, instance_values.with_indifferent_access).with_indifferent_access
   end
 
@@ -261,7 +261,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
 
     Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, "Sending #{Maestrano::Connector::Rails::External.external_name} #{self.class.external_entity_name.pluralize} to Connec! #{connec_entity_name.pluralize}")
 
-    # As we're doing only push, we use the idmaps to filter out updates
+    # As we're doing only POST, we use the idmaps to filter out updates
     unless self.class.can_update_connec?
       mapped_external_entities_with_idmaps.select! { |mapped_external_entity_with_idmap| !mapped_external_entity_with_idmap[:idmap].connec_id }
     end
