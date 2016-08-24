@@ -1,25 +1,36 @@
+## 1.4.0
+
+### Breaking changes
+* `map_to`, `map_to_connec` and `map_to_external` method have changed and now take two arguments.
+Additionally you should be able to remove all overloading to those methods using the new argument in hash mapper. See [documentation](https://maestrano.atlassian.net/wiki/display/DEV/Mapping+and+synchronization#Mappingandsynchronization-FAQ) for more details
+
+### Features
+* Possibility to use an extended mapper for creation only
+* Possibility to pass additional arguments to hash mapper to use in the after/before hooks
+
 ## 1.3.5
 
-## Features
+
+### Features
 * Improve generated files
 * Adds a built-in way to handle error when updating a deleted record
 
-## Fixes
+### Fixes
 * Adds safety against potential infinite loop
 
 ## 1.3.4
 `maestrano.rb` file should be updated with new synchronization paths.
 
-## Features
+### Features
 * `connec_version_lt?` method
 
-## Fixes
+### Fixes
 * Fixes multi-tenancy of synchronization endpoints
 * Fixes display of singleton entity
 
 ## 1.3.3
 
-## Fixes
+### Fixes
 * Fixes `connec_version` method
 
 ## 1.3.2
