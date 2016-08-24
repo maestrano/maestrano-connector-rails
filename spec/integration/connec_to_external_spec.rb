@@ -27,8 +27,18 @@ describe 'connec to the external application' do
       entity['ID']
     end
 
+    def before_sync(last_synchronization_date)
+      @elephant_count = 8
+    end
+
     class PersonMapper
       extend HashMapper
+
+      after_normalize do |input, output, opts|
+        output[:Count] = opts[:elephant_count]
+        output
+      end
+
       map from('organization_id'), to('AccountId')
       map from('first_name'), to('FirstName')
     end
@@ -41,13 +51,17 @@ describe 'connec to the external application' do
   let(:external_client) { Object.new }
   let(:ext_org_id) { 'ext org id' }
   let(:ext_contact_id) { 'ext contact id' }
+  let(:ext_contact_id2) { 'ext contact id 2' }
+  let(:connec_id1) { "23daf041-e18e-0133-7b6a-15461b913fab"}
+  let(:connec_id2) { "11daf041-e18e-0133-7b6a-15461b913yyy"}
+
   let(:person1) {
     {
       "id" => [
         {
           "realm" => "org-fg4a",
           "provider" => "connec",
-          "id" => "23daf041-e18e-0133-7b6a-15461b913fab"
+          "id" => connec_id1
         }
       ],
       "code" => "PE3",
@@ -75,13 +89,12 @@ describe 'connec to the external application' do
   }
   let(:person) { person1 }
 
-
-  before {
+  before do
     allow(connec_client).to receive(:get).and_return(ActionDispatch::Response.new(200, {}, {people: [person]}.to_json, {}))
     allow(connec_client).to receive(:batch).and_return(ActionDispatch::Response.new(200, {}, {results: [{status: 200, body: {people: {}}}]}.to_json, {}))
 
     allow_any_instance_of(Entities::ConnecToExternal).to receive(:get_external_entities).and_return([])
-  }
+  end
 
   subject { Maestrano::Connector::Rails::SynchronizationJob.new.sync_entity('connec_to_external', organization, connec_client, external_client, organization.last_synchronization_date, {}) }
 
@@ -93,7 +106,8 @@ describe 'connec to the external application' do
     let(:mapped_entity) {
       {
         AccountId: ext_org_id,
-        FirstName: 'John'
+        FirstName: 'John',
+        Count: 8
       }
     }
 
@@ -102,8 +116,8 @@ describe 'connec to the external application' do
         :sequential=>true,
         :ops=> [
           {
-            :method=>"put", 
-            :url=>"/api/v2/#{organization.uid}/people/23daf041-e18e-0133-7b6a-15461b913fab", 
+            :method=>"put",
+            :url=>"/api/v2/#{organization.uid}/people/23daf041-e18e-0133-7b6a-15461b913fab",
             :params=>
             {
               :people=>{
@@ -157,7 +171,8 @@ describe 'connec to the external application' do
     let(:mapped_entity) {
       {
         AccountId: ext_org_id,
-        FirstName: 'Jane'
+        FirstName: 'Jane',
+        Count: 8
       }
     }
 
@@ -177,12 +192,11 @@ describe 'connec to the external application' do
       expect(connec_client).to_not receive(:batch)
       subject
     end
-
   end
 
   describe 'a creation from connec with references missing' do
     let(:person) { person1.merge("organization_id" => [{"realm"=>"org-fg4a", "provider"=>"connec", "id"=>"2305c5e0-e18e-0133-890f-07d4de9f9781"}]) }
-    
+
     it 'pushes nothing and creates no idmap' do
       expect_any_instance_of(Entities::ConnecToExternal).to_not receive(:create_external_entity)
       expect_any_instance_of(Entities::ConnecToExternal).to_not receive(:update_external_entity)
@@ -210,5 +224,98 @@ describe 'connec to the external application' do
         subject
       }.to_not change{ Maestrano::Connector::Rails::IdMap.count }
     end
+  end
+
+  describe 'a creation from connec where the creation_only_mapper has to be used' do
+    #idmap.last_push_to_external is nil
+    before do
+      allow_any_instance_of(Entities::ConnecToExternalMissingField).to receive(:get_external_entities).and_return([])
+    end
+
+    subject { Maestrano::Connector::Rails::SynchronizationJob.new.sync_entity('connec_to_external_missing_field', organization, connec_client, external_client, organization.last_synchronization_date, {}) }
+
+    class Entities::ConnecToExternalMissingField < Entities::ConnecToExternal
+
+      def self.creation_mapper_class
+        CreationPersonMapper
+      end
+
+      class CreationPersonMapper < PersonMapper
+        after_normalize do |input, output|
+          output[:missing_connec_field] = "Default"
+          output
+        end
+      end
+    end
+
+    describe 'a new record created in connec with all references known' do
+      before {
+        allow(connec_client).to receive(:get).and_return(ActionDispatch::Response.new(200, {}, {people: [person2]}.to_json, {}))
+        allow(connec_client).to receive(:batch).and_return(ActionDispatch::Response.new(200, {}, {results: [{status: 200, body: {people: {}}}]}.to_json, {}))
+
+        allow_any_instance_of(Entities::ConnecToExternalMissingField).to receive(:create_external_entity).and_return({'ID' => ext_contact_id2})
+      }
+
+      let(:person2) { person1.merge('first_name' => 'Jack', 'id' => [{"realm" => "org-fg4a", "provider" => "connec", "id" => connec_id2 }]) }
+
+      let(:mapped_entity_missing_field) {
+        {
+          AccountId: ext_org_id,
+          FirstName: 'Jack',
+          missing_connec_field: "Default",
+          Count: 8
+        }
+      }
+
+      let(:batch_params) {
+        {
+          :sequential=>true,
+          :ops=> [
+            {
+              :method=>"put",
+              :url=>"/api/v2/#{organization.uid}/people/11daf041-e18e-0133-7b6a-15461b913yyy",
+              :params=>
+              {
+                :people=>{
+                  id: [
+                    {
+                      :id=>"ext contact id 2",
+                      :provider=>"provider",
+                      :realm=>"oauth uid"
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+
+      it 'handles the idmap correctly' do
+        expect{
+          subject
+        }.to change{ Maestrano::Connector::Rails::IdMap.count }.by(1)
+        idmap = Maestrano::Connector::Rails::IdMap.last
+        expect(idmap.name).to eql('Jack')
+        expect(idmap.connec_entity).to eql('person')
+        expect(idmap.external_entity).to eql('contact')
+        expect(idmap.message).to be_nil
+        expect(idmap.external_id).to eql(ext_contact_id2)
+        expect(idmap.connec_id).to eql("11daf041-e18e-0133-7b6a-15461b913yyy")
+      end
+
+      it 'does the mapping correctly' do
+        idmap = Entities::ConnecToExternalMissingField.create_idmap(organization_id: organization.id, external_id: ext_contact_id, connec_id: "23daf041-e18e-0133-7b6a-15461b913yyy")
+        allow(Entities::ConnecToExternalMissingField).to receive(:find_or_create_idmap).and_return(idmap)
+        expect_any_instance_of(Entities::ConnecToExternalMissingField).to receive(:push_entities_to_external).with([{entity: mapped_entity_missing_field.with_indifferent_access, idmap: idmap, id_refs_only_connec_entity: {}}])
+        subject
+      end
+
+      it 'send the external id to connec' do
+        expect(connec_client).to receive(:batch).with(batch_params)
+        subject
+      end
+    end
+
   end
 end
