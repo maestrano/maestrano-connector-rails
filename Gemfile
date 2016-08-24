@@ -3,7 +3,7 @@ source 'http://rubygems.org'
 # Add dependencies required to use your gem here.
 gem 'rails', '~> 4.2'
 gem 'maestrano-rails'
-gem 'hash_mapper'
+gem 'hash_mapper', '>= 0.2.2'
 gem 'haml-rails'
 gem 'bootstrap-sass'
 gem 'autoprefixer-rails'

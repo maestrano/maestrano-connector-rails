@@ -4,7 +4,7 @@ describe Maestrano::Connector::Rails::ComplexEntity do
 
   describe 'class methods' do
     subject { Maestrano::Connector::Rails::ComplexEntity }
-    
+
       describe 'connec_entities_names' do
         it { expect{ subject.connec_entities_names }.to raise_error('Not implemented') }
       end
@@ -233,17 +233,18 @@ describe Maestrano::Connector::Rails::ComplexEntity do
           let(:connec_name) { 'sc_e1' }
           let(:external_name) { 'ext1' }
           let(:id_refs_only_connec_entity) { {a: 1} }
-          before{
+          before do
             allow(subject.class).to receive(:connec_entities_names).and_return(['sc_e1'])
             allow(subject.class).to receive(:external_entities_names).and_return(['ext1'])
             allow(Entities::SubEntities::ScE1).to receive(:external?).and_return(false)
             allow(Entities::SubEntities::ScE1).to receive(:entity_name).and_return(connec_name)
-            allow_any_instance_of(Entities::SubEntities::ScE1).to receive(:map_to).with(external_name, entity).and_return(mapped_entity)
+            allow_any_instance_of(Entities::SubEntities::ScE1).to receive(:map_to).with(external_name, entity, first_time_synch).and_return(mapped_entity)
             allow(Entities::SubEntities::ScE1).to receive(:object_name_from_connec_entity_hash).and_return(human_name)
             allow(Maestrano::Connector::Rails::ConnecHelper).to receive(:unfold_references).and_return({entity: entity, connec_id: connec_id, id_refs_only_connec_entity: id_refs_only_connec_entity})
-          }
+          end
 
           context 'when idmaps do not exist' do
+            let(:first_time_synch) { true }
             it 'creates the idmaps with a name and returns the mapped entities with their idmaps' do
               expect{
                 expect(subject.consolidate_and_map_connec_entities(modelled_connec_entities, {})).to eql({connec_name => {external_name => [{entity: {mapped: 'entity'}, idmap: Maestrano::Connector::Rails::IdMap.first, id_refs_only_connec_entity: id_refs_only_connec_entity}]}})
@@ -253,6 +254,7 @@ describe Maestrano::Connector::Rails::ComplexEntity do
           end
 
           context 'when idmap exists' do
+            let!(:first_time_synch) { false }
             let!(:idmap1) { create(:idmap, organization: organization, connec_entity: connec_name.downcase, external_entity: external_name.downcase, external_id: id, connec_id: connec_id) }
 
             it 'does not create an idmap' do
@@ -280,7 +282,9 @@ describe Maestrano::Connector::Rails::ComplexEntity do
             end
 
             context 'when last_push_to_external is recent' do
-              before { idmap1.update(last_push_to_external: 2.second.ago) }
+              before do
+                idmap1.update(last_push_to_external: 2.second.ago)
+              end
               it 'discards the entity' do
                 expect(subject.consolidate_and_map_connec_entities(modelled_connec_entities, {})).to eql({connec_name => {external_name => []}})
               end
@@ -317,8 +321,8 @@ describe Maestrano::Connector::Rails::ComplexEntity do
                 }
 
                 context 'with connec one more recent' do
-                  let(:external_date) { 1.year.ago } 
-                  let(:date) { 1.day.ago } 
+                  let(:external_date) { 1.year.ago }
+                  let(:date) { 1.day.ago }
 
                   it 'keeps the entity and discards the external one' do
                     expect(subject.consolidate_and_map_connec_entities(modelled_connec_entities, modelled_external_entities)).to eql({connec_name => {external_name => [{entity: {mapped: 'entity'}, idmap: Maestrano::Connector::Rails::IdMap.first, id_refs_only_connec_entity: id_refs_only_connec_entity}]}})
@@ -327,8 +331,8 @@ describe Maestrano::Connector::Rails::ComplexEntity do
                 end
 
                 context 'with external one more recent' do
-                  let(:external_date) { 1.month.ago } 
-                  let(:date) { 1.year.ago } 
+                  let(:external_date) { 1.month.ago }
+                  let(:date) { 1.year.ago }
 
                   it 'discards the entity and keep the external one' do
                     expect(subject.consolidate_and_map_connec_entities(modelled_connec_entities, modelled_external_entities)).to eql({connec_name => {external_name => []}})
