@@ -19,8 +19,8 @@ Jeweler::Tasks.new do |gem|
   gem.license = 'MIT'
   gem.summary = 'Rails framework to build connector with Maestrano'
   gem.description = 'Maestrano is the next generation marketplace for SME applications. See https://maestrano.com for details.'
-  gem.email = 'pierre.berard@maestrano.com'
-  gem.authors = ['Pierre Berard']
+  gem.email = 'developers@maestrano.com'
+  gem.authors = ['Maestrano', 'Pierre Berard', 'Marco Bagnasco']
   # dependencies defined in Gemfile
 end
 Jeweler::RubygemsDotOrgTasks.new
