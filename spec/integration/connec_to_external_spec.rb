@@ -27,8 +27,18 @@ describe 'connec to the external application' do
       entity['ID']
     end
 
+    def before_sync(last_synchronization_date)
+      @elephant_count = 8
+    end
+
     class PersonMapper
       extend HashMapper
+
+      after_normalize do |input, output, opts|
+        output[:Count] = opts[:elephant_count]
+        output
+      end
+
       map from('organization_id'), to('AccountId')
       map from('first_name'), to('FirstName')
     end
@@ -96,7 +106,8 @@ describe 'connec to the external application' do
     let(:mapped_entity) {
       {
         AccountId: ext_org_id,
-        FirstName: 'John'
+        FirstName: 'John',
+        Count: 8
       }
     }
 
@@ -160,7 +171,8 @@ describe 'connec to the external application' do
     let(:mapped_entity) {
       {
         AccountId: ext_org_id,
-        FirstName: 'Jane'
+        FirstName: 'Jane',
+        Count: 8
       }
     }
 
@@ -250,7 +262,8 @@ describe 'connec to the external application' do
         {
           AccountId: ext_org_id,
           FirstName: 'Jack',
-          missing_connec_field: "Default"
+          missing_connec_field: "Default",
+          Count: 8
         }
       }
 

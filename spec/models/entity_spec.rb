@@ -167,14 +167,14 @@ describe Maestrano::Connector::Rails::Entity do
 
       describe 'map_to_external' do
         it 'calls the mapper normalize' do
-          expect(AMapper).to receive(:normalize).with({}).and_return({})
+          expect(AMapper).to receive(:normalize).with({}, subject.instance_values).and_return({})
           subject.map_to_external({})
         end
 
         it 'calls the creation_mapper normalize if passed true as second argument' do
           expect(subject.class).to receive(:creation_mapper_class)
           #if not overridden #creation_mapper_class calls #mapper_class
-          expect(AMapper).to receive(:normalize).with({}).and_return({})
+          expect(AMapper).to receive(:normalize).with({}, subject.instance_values).and_return({})
           subject.map_to_external({}, true)
         end
       end
@@ -184,8 +184,15 @@ describe Maestrano::Connector::Rails::Entity do
           allow(subject.class).to receive(:id_from_external_entity_hash).and_return('this id')
         end
         it 'calls the mapper denormalize' do
-          expect(AMapper).to receive(:denormalize).with({}).and_return({})
+          expect(AMapper).to receive(:denormalize).with({}, subject.instance_values).and_return({})
           subject.map_to_connec({})
+        end
+
+        it 'calls the creation_mapper denormalize if passed true as second argument' do
+          expect(subject.class).to receive(:creation_mapper_class)
+          #if not overridden #creation_mapper_class calls #mapper_class
+          expect(AMapper).to receive(:denormalize).with({}, subject.instance_values).and_return({})
+          subject.map_to_connec({}, true)
         end
 
         it 'calls for reference folding' do
