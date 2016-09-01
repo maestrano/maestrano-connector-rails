@@ -2,7 +2,7 @@ source 'http://rubygems.org'
 
 # Add dependencies required to use your gem here.
 gem 'rails'
-gem 'maestrano-rails', '1.0.0.pre.RC2'
+gem 'maestrano-rails', '1.0.0.pre.RC3'
 
 gem 'hash_mapper', '>= 0.2.2'
 gem 'haml-rails'
