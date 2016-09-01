@@ -28,8 +28,8 @@ group :development do
   gem 'simplecov', '>= 0'
   gem 'rspec-rails'
   gem 'factory_girl_rails'
-  gem 'activerecord-jdbcsqlite3-adapter', :platforms => :jruby
-  gem 'sqlite3', :platforms => :ruby
+  gem 'activerecord-jdbcsqlite3-adapter', platforms: :jruby
+  gem 'sqlite3', platforms: :ruby
   gem 'shoulda-matchers'
   gem 'rubocop'
   gem 'timecop'
