@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.require_paths = ["lib"]
   s.authors = ["Maestrano", "Pierre Berard", "Marco Bagnasco"]
-  s.date = "2016-08-24"
+  s.date = "2016-09-01"
   s.description = "Maestrano is the next generation marketplace for SME applications. See https://maestrano.com for details."
   s.email = "developers@maestrano.com"
   s.executables = ["rails"]
