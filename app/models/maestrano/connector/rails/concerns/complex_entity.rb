@@ -111,7 +111,6 @@ module Maestrano::Connector::Rails::Concerns::ComplexEntity
 
     mapped_connec_entities = consolidate_and_map_connec_entities(modelled_connec_entities, modelled_external_entities)
     mapped_external_entities = consolidate_and_map_external_entities(modelled_external_entities)
-
     {connec_entities: mapped_connec_entities, external_entities: mapped_external_entities}
   end
 
@@ -119,6 +118,7 @@ module Maestrano::Connector::Rails::Concerns::ComplexEntity
     modelled_connec_entities.each do |connec_entity_name, entities_in_external_model|
       entities_in_external_model.each do |external_entity_name, entities|
         sub_entity_instance = instantiate_sub_entity_instance(self.class.formatted_connec_entities_names[connec_entity_name])
+
         equivalent_external_entities = (modelled_external_entities[external_entity_name] && modelled_external_entities[external_entity_name][connec_entity_name]) || []
 
         entities_in_external_model[external_entity_name] = sub_entity_instance.consolidate_and_map_connec_entities(entities, equivalent_external_entities, sub_entity_instance.class.references[external_entity_name] || [], external_entity_name)

@@ -237,7 +237,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
         next_page = response_hash['pagination']['next'].gsub(/^(.*)\/#{self.class.normalized_connec_entity_name}/, self.class.normalized_connec_entity_name)
 
         response_hash = fetch_connec(next_page, page_number)
-        entities << response_hash[self.class.normalized_connec_entity_name]
+        entities.concat response_hash[self.class.normalized_connec_entity_name]
       end
     end
 
@@ -432,7 +432,9 @@ module Maestrano::Connector::Rails::Concerns::Entity
       # Unfold the id arrays
       # From that point on, the connec_entity contains only string of external ids
       unfold_hash = Maestrano::Connector::Rails::ConnecHelper.unfold_references(entity, references, @organization)
+
       entity = unfold_hash[:entity]
+
       next nil unless entity # discard if at least one record reference is missing
       connec_id = unfold_hash[:connec_id]
       id_refs_only_connec_entity = unfold_hash[:id_refs_only_connec_entity]
@@ -571,7 +573,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
       connec_entity['updated_at'] > self.class.last_update_date_from_external_entity_hash(external_entity)
     end
 
-    # This methods try to find a external entity among all the external entities matching the connec one (same id)
+    # This methods try to find a external entity among all the external entities matching the connec (mapped) one (same id)
     # If it does not find any, there is no conflict, and it returns the mapped connec entity
     # If it finds one, the conflict is solved either with options or using the entities timestamps
     #   If the connec entity is kept, it is returned mapped and the matching external entity is discarded (deleted from the array)

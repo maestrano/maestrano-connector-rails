@@ -92,6 +92,7 @@ module Maestrano::Connector::Rails
       if checkbox_ticked
         self.date_filtering_limit = nil
         self.historical_data = true
+        SynchronizationJob.perform_later(self, full_sync: true)
       else
         self.date_filtering_limit ||= Time.now.getlocal
       end
