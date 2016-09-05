@@ -24,7 +24,6 @@ class Maestrano::ConnecController < Maestrano::Rails::WebHookController
           if entity_class_hash[:is_complex]
             connec_hash_of_entities = Maestrano::Connector::Rails::ComplexEntity.build_hash_with_entities(entity_instance.class.connec_entities_names, entity_name, ->(name) { name.parameterize('_').pluralize }, [entity])
             filtered_entities = entity_instance.filter_connec_entities(connec_hash_of_entities)
-
             empty_external_hash = Maestrano::Connector::Rails::ComplexEntity.build_empty_hash(entity_instance.class.external_entities_names)
             mapped_entity = entity_instance.consolidate_and_map_data(filtered_entities, empty_external_hash)
           else
