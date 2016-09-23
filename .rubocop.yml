@@ -20,6 +20,9 @@ Style/CollectionMethods:
 Metrics/LineLength:
   Max: 320
 
+Metrics/MethodLength:
+  Max: 50
+
 Style/IndentationConsistency:
   EnforcedStyle: rails
 
