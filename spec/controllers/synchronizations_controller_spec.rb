@@ -61,6 +61,7 @@ describe Maestrano::SynchronizationsController, type: :controller do
               JSON.parse({
                 group_id: organization.uid,
                 sync_enabled: organization.sync_enabled,
+                status: 'DISABLED'
               }.to_json)
             )
           end
@@ -78,7 +79,7 @@ describe Maestrano::SynchronizationsController, type: :controller do
                 sync_enabled: organization.sync_enabled,
                 status: sync2.status,
                 message: sync2.message,
-                updated_at: sync2.updated_at   
+                updated_at: sync2.updated_at
               }.to_json)
             )
           end
@@ -135,7 +136,7 @@ describe Maestrano::SynchronizationsController, type: :controller do
         end
 
         it 'queues a sync' do
-          expect(Maestrano::Connector::Rails::SynchronizationJob).to receive(:perform_later).with(organization, opts)
+          expect(Maestrano::Connector::Rails::SynchronizationJob).to receive(:perform_later).with(organization.id, opts)
           subject
         end
       end

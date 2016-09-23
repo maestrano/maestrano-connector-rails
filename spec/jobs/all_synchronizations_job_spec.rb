@@ -14,9 +14,9 @@ describe Maestrano::Connector::Rails::AllSynchronizationsJob do
 
   describe 'perform' do
     it 'does not calls sync entity' do
-      expect(Maestrano::Connector::Rails::SynchronizationJob).to_not receive(:perform_later).with(organization_not_linked, anything)
-      expect(Maestrano::Connector::Rails::SynchronizationJob).to_not receive(:perform_later).with(organization_not_active, anything)
-      expect(Maestrano::Connector::Rails::SynchronizationJob).to receive(:perform_later).with(organization_to_process, anything)
+      expect(Maestrano::Connector::Rails::SynchronizationJob).to_not receive(:perform_later).with(organization_not_linked.id, anything)
+      expect(Maestrano::Connector::Rails::SynchronizationJob).to_not receive(:perform_later).with(organization_not_active.id, anything)
+      expect(Maestrano::Connector::Rails::SynchronizationJob).to receive(:perform_later).with(organization_to_process.id, anything)
 
       subject
     end

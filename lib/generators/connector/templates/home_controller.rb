@@ -23,7 +23,7 @@ class HomeController < ApplicationController
 
   def synchronize
     return redirect_to(:back) unless is_admin
-    Maestrano::Connector::Rails::SynchronizationJob.perform_later(current_organization, (params['opts'] || {}).merge(forced: true))
+    Maestrano::Connector::Rails::SynchronizationJob.perform_later(current_organization.id, (params['opts'] || {}).merge(forced: true))
     flash[:info] = 'Synchronization requested'
     redirect_to(:back)
   end
@@ -35,7 +35,7 @@ class HomeController < ApplicationController
   private
 
     def start_synchronization(old_sync_state, organization)
-      Maestrano::Connector::Rails::SynchronizationJob.perform_later(organization, {})
+      Maestrano::Connector::Rails::SynchronizationJob.perform_later(organization.id, {})
       flash[:info] = 'Congrats, you\'re all set up! Your data are now being synced'
     end
 end
