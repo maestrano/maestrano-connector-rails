@@ -111,11 +111,15 @@ module Maestrano::Connector::Rails
 
     def self.find_job(organization_id)
       queue = Sidekiq::Queue.new(:default)
-      queue.select { |job| organization_id == job.item['args'][0]['arguments'].first }.first
+      queue.find do |job|
+        organization_id == job.item['args'][0]['arguments'].first
+      end
     end
 
     def self.find_running_job(organization_id)
-      Sidekiq::Workers.new.find { |_, _, work| work['queue'] == 'sync_job' && work['payload']['args'][0]['arguments'] == organization_id }
+      Sidekiq::Workers.new.find do |_, _, work|
+        work['queue'] == 'default' && work['payload']['args'][0]['arguments'].first == organization_id
+      end
     rescue
       nil
     end
