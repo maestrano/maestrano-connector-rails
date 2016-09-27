@@ -17,10 +17,13 @@ class Maestrano::SynchronizationsController < Maestrano::Rails::WebHookControlle
     organization = Maestrano::Connector::Rails::Organization.find_by_uid_and_tenant(uid, tenant)
     return render json: {errors: [{message: 'Organization not found', code: 404}]}, status: :not_found unless organization
 
-    status = Maestrano::Connector::Rails::SynchronizationJob.find_running_job(organization.id) ? 'RUNNING' : 'ENQUEUED'
+    status = organization_status(organization)
 
+    unless status == 'RUNNING' || status == 'ENQUEUED'
+      Maestrano::Connector::Rails::SynchronizationJob.perform_later(organization.id, opts.with_indifferent_access)
+      status = 'ENQUEUED'
+    end
 
-    Maestrano::Connector::Rails::SynchronizationJob.perform_later(organization.id, opts.with_indifferent_access) unless Maestrano::Connector::Rails::SynchronizationJob.enqueued?(organization.id)
     render_organization_sync(organization, status, 201)
   end
 
