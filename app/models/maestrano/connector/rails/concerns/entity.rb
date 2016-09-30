@@ -312,7 +312,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
 
     Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, "Sending Connec! #{self.class.connec_entity_name.pluralize} to #{Maestrano::Connector::Rails::External.external_name} #{external_entity_name.pluralize}")
 
-    entities_to_send_to_connec = mapped_connec_entities_with_idmaps.map{ |mapped_connec_entity_with_idmap|
+    entities_to_send_to_connec = mapped_connec_entities_with_idmaps.map { |mapped_connec_entity_with_idmap|
       push_entity_to_external(mapped_connec_entity_with_idmap, external_entity_name)
     }.compact
 
@@ -324,7 +324,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
     # with either only the id, or the id + id references
     proc = lambda do |entity|
       id = {id: [Maestrano::Connector::Rails::ConnecHelper.id_hash(entity[:idmap].external_id, @organization)]}
-      body = entity[:completed_hash] ? entity[:completed_hash].merge(id) : id
+      body = entity[:completed_hash]&.merge(id) || id
       batch_op('put', body, entity[:idmap].connec_id, self.class.normalized_connec_entity_name)
     end
     batch_calls(entities_to_send_to_connec, proc, self.class.connec_entity_name, true)
