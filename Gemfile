@@ -3,6 +3,7 @@ source 'http://rubygems.org'
 # Add dependencies required to use your gem here.
 gem 'rails', '~> 4.2'
 gem 'maestrano-rails'
+
 gem 'hash_mapper', '>= 0.2.2'
 gem 'haml-rails'
 gem 'bootstrap-sass'
@@ -14,7 +15,7 @@ gem 'figaro'
 gem 'sidekiq'
 # The missing unique jobs for sidekiq
 gem 'sidekiq-unique-jobs'
-gem 'sinatra', require: nil
+gem 'sinatra', require: false
 gem 'sidekiq-cron'
 gem 'slim'
 
