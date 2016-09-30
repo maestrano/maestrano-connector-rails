@@ -1,8 +1,8 @@
 source 'http://rubygems.org'
 
 # Add dependencies required to use your gem here.
-gem 'rails'
-gem 'maestrano-rails', '1.0.0.pre.RC2'
+gem 'rails', '~> 4.2'
+gem 'maestrano-rails'
 
 gem 'hash_mapper', '>= 0.2.2'
 gem 'haml-rails'
@@ -15,7 +15,7 @@ gem 'figaro'
 gem 'sidekiq'
 # The missing unique jobs for sidekiq
 gem 'sidekiq-unique-jobs'
-gem 'sinatra', require: nil
+gem 'sinatra', require: false
 gem 'sidekiq-cron'
 gem 'slim'
 
@@ -28,8 +28,7 @@ group :development do
   gem 'simplecov', '>= 0'
   gem 'rspec-rails'
   gem 'factory_girl_rails'
-  gem 'activerecord-jdbcsqlite3-adapter', platforms: :jruby
-  gem 'sqlite3', platforms: :ruby
+  gem 'sqlite3'
   gem 'shoulda-matchers'
   gem 'rubocop'
   gem 'timecop'
