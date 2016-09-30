@@ -9,7 +9,7 @@ module Maestrano::Connector::Rails
     #  * :connec_preemption => true|false : preemption is always|never given to connec in case of conflict (if not set, the most recently updated entity is kept)
     def perform(organization_id, opts = {})
       organization = Maestrano::Connector::Rails::Organization.find(organization_id)
-      return unless organization && organization.sync_enabled
+      return unless organization&.sync_enabled
       # Check if previous synchronization is still running
       if Synchronization.where(organization_id: organization.id, status: 'RUNNING').where(created_at: (30.minutes.ago..Time.now)).exists?
         ConnectorLogger.log('info', organization, 'Synchronization skipped: Previous synchronization is still running')

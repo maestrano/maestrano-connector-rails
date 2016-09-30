@@ -9,7 +9,7 @@ class Maestrano::ConnecController < Maestrano::Rails::WebHookController
 
         entities.each do |entity|
           organization = Maestrano::Connector::Rails::Organization.find_by_uid_and_tenant(entity[:group_id], params[:tenant])
-          next Rails.logger.warn "Received notification from Connec! for unknown group or group without oauth: #{entity['group_id']} (tenant: #{params[:tenant]})" unless organization && organization.oauth_uid
+          next Rails.logger.warn "Received notification from Connec! for unknown group or group without oauth: #{entity['group_id']} (tenant: #{params[:tenant]})" unless organization&.oauth_uid
           next unless organization.sync_enabled && organization.synchronized_entities[entity_class_hash[:name].to_sym]
 
           Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Received entity from Connec! webhook: Entity=#{entity_name}, Data=#{entity}")
