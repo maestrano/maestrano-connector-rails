@@ -3,7 +3,7 @@ require 'spec_helper'
 describe Maestrano::Connector::Rails::SynchronizationJob do
   let(:organization) { create(:organization) }
   let(:opts) { {} }
-  subject { Maestrano::Connector::Rails::SynchronizationJob.perform_now(organization, opts) }
+  subject { Maestrano::Connector::Rails::SynchronizationJob.perform_now(organization.id, opts) }
 
   def does_not_perform
     expect_any_instance_of(Maestrano::Connector::Rails::SynchronizationJob).to_not receive(:sync_entity)
@@ -20,7 +20,7 @@ describe Maestrano::Connector::Rails::SynchronizationJob do
     end
 
     context 'with sync_enabled set to true' do
-      before { organization.update(sync_enabled: true)} 
+      before { organization.update(sync_enabled: true)}
 
       context 'with a sync still running for less than 30 minutes' do
         let!(:running_sync) { create(:synchronization, organization: organization, status: 'RUNNING', created_at: 29.minutes.ago) }
@@ -77,11 +77,12 @@ describe Maestrano::Connector::Rails::SynchronizationJob do
 
       context 'subsequent sync' do
         let!(:old_sync) { create(:synchronization, partial: false, status: 'SUCCESS', organization: organization) }
-        
+
         it { performes }
 
         it 'calls sync entity on all the organization synchronized entities set to true' do
           organization.synchronized_entities[organization.synchronized_entities.keys.first] = false
+          organization.save
           expect_any_instance_of(Maestrano::Connector::Rails::SynchronizationJob).to receive(:sync_entity).exactly(organization.synchronized_entities.count - 1).times
 
           subject
@@ -172,11 +173,11 @@ describe Maestrano::Connector::Rails::SynchronizationJob do
           context 'with more than 50 entities' do
             let(:external_entities1) { [*1..50] }
             let(:external_entities2) { [*51..60] }
-            
+
             it 'calls perform_sync several time' do
               expect_any_instance_of(Entities::Person).to receive(:opts_merge!).twice
               expect(subject).to receive(:perform_sync).twice.and_call_original
-              
+
               subject.first_sync_entity('person', organization, nil, nil, nil, {}, true)
             end
           end
@@ -187,7 +188,7 @@ describe Maestrano::Connector::Rails::SynchronizationJob do
             it 'calls perform_sync once' do
               expect_any_instance_of(Entities::Person).to receive(:opts_merge!).once.with({__skip: 0})
               expect(subject).to receive(:perform_sync).once.and_call_original
-              
+
               subject.first_sync_entity('person', organization, nil, nil, nil, {}, true)
             end
           end
@@ -200,7 +201,7 @@ describe Maestrano::Connector::Rails::SynchronizationJob do
             it 'calls perform_sync once' do
               expect_any_instance_of(Entities::Person).to receive(:opts_merge!).once.with({__skip: 0})
               expect(subject).to receive(:perform_sync).once.and_call_original
-              
+
               subject.first_sync_entity('person', organization, nil, nil, nil, {}, true)
             end
           end

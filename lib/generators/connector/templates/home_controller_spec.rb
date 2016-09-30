@@ -87,7 +87,7 @@ describe HomeController, type: :controller do
         subject { post :synchronize, opts: {'opts' => 'some_opts'} }
 
         it 'calls perform_later with opts' do
-          expect(Maestrano::Connector::Rails::SynchronizationJob).to receive(:perform_later).with(organization, 'opts' => 'some_opts', forced: true)
+          expect(Maestrano::Connector::Rails::SynchronizationJob).to receive(:perform_later).with(organization.id, 'opts' => 'some_opts', forced: true)
           subject
         end
       end
@@ -96,7 +96,7 @@ describe HomeController, type: :controller do
         subject { post :synchronize }
 
         it 'calls perform_later with empty opts hash' do
-          expect(Maestrano::Connector::Rails::SynchronizationJob).to receive(:perform_later).with(organization, forced: true)
+          expect(Maestrano::Connector::Rails::SynchronizationJob).to receive(:perform_later).with(organization.id, forced: true)
           subject
         end
       end
