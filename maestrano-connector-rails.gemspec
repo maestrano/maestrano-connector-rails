@@ -109,6 +109,7 @@ Gem::Specification.new do |s|
     "lib/generators/connector/templates/synchronizations_index.haml",
     "lib/maestrano/connector/rails.rb",
     "lib/maestrano_connector_rails.rb",
+    "maestrano-connector-rails.gemspec",
     "maestrano.png",
     "release_notes.md",
     "spec/controllers/connec_controller_spec.rb",
