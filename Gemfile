@@ -2,7 +2,8 @@ source 'http://rubygems.org'
 
 # Add dependencies required to use your gem here.
 gem 'rails', '~> 4.2'
-gem 'maestrano-rails'
+
+gem 'maestrano-rails', '1.0.0.pre.RC7'
 
 gem 'hash_mapper', '>= 0.2.2'
 gem 'haml-rails'
@@ -28,7 +29,8 @@ group :development do
   gem 'simplecov', '>= 0'
   gem 'rspec-rails'
   gem 'factory_girl_rails'
-  gem 'sqlite3'
+  gem 'activerecord-jdbcsqlite3-adapter', platforms: :jruby
+  gem 'sqlite3', platforms: :ruby
   gem 'shoulda-matchers'
   gem 'rubocop'
   gem 'timecop'
