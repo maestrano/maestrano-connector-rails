@@ -34,4 +34,5 @@ group :development do
   gem 'shoulda-matchers'
   gem 'rubocop'
   gem 'timecop'
+  gem 'github_changelog_generator'
 end
