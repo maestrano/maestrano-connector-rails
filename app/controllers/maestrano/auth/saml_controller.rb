@@ -12,6 +12,9 @@ class Maestrano::Auth::SamlController < Maestrano::Rails::SamlBaseController
     params[:tenant] ||= 'default'
     user = Maestrano::Connector::Rails::User.find_or_create_for_maestrano(user_auth_hash, params[:tenant])
     organization = Maestrano::Connector::Rails::Organization.find_or_create_for_maestrano(group_auth_hash, params[:tenant])
+
+    Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "user authentication, user_uid=\"#{user.uid}\"")
+
     if user && organization
       organization.add_member(user) unless organization.member?(user)
 

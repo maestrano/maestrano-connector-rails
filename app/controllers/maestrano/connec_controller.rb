@@ -1,18 +1,27 @@
 class Maestrano::ConnecController < Maestrano::Rails::WebHookController
   def notifications
-    Rails.logger.debug "Received notification from Connec!: #{params}"
-
     begin
       params.except(:tenant, :controller, :action, :connec).each do |entity_name, entities|
         entity_class_hash = find_entity_class(entity_name)
-        next Rails.logger.info "Received notification from Connec! for unknow entity: #{entity_name}" unless entity_class_hash
+        next Maestrano::Connector::Rails::ConnectorLogger.log('info', nil, "Received notification from Connec! for unknow entity: #{entity_name}") unless entity_class_hash
 
         entities.each do |entity|
           organization = Maestrano::Connector::Rails::Organization.find_by_uid_and_tenant(entity[:group_id], params[:tenant])
-          next Rails.logger.warn "Received notification from Connec! for unknown group or group without oauth: #{entity['group_id']} (tenant: #{params[:tenant]})" unless organization&.oauth_uid
-          next unless organization.sync_enabled && organization.synchronized_entities[entity_class_hash[:name].to_sym]
 
-          Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Received entity from Connec! webhook: Entity=#{entity_name}, Data=#{entity}")
+          if organization.nil?
+            next Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Received notification from Connec! for an unknown organization, organization_uid=\"#{entity[:group_id]}\", tenant=\"#{params[:tenant]}\"")
+          end
+
+          if organization.oauth_uid.blank?
+            next Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Received notification from Connec! for an organization not linked, organization_uid=\"#{entity[:group_id]}\", tenant=\"#{params[:tenant]}\"")
+          end
+
+          unless organization.sync_enabled && organization.synchronized_entities[entity_class_hash[:name].to_sym]
+            next Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Skipping notification from Connec! webhook, entity_name=\"#{entity_name}\"")
+          end
+
+          Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Processing entity from Connec! webhook, entity_name=\"#{entity_name}\", data=\"#{entity}\"")
+
           connec_client = Maestrano::Connector::Rails::ConnecHelper.get_client(organization)
           external_client = Maestrano::Connector::Rails::External.get_client(organization)
           last_synchronization_date = organization.last_synchronization_date
@@ -37,7 +46,7 @@ class Maestrano::ConnecController < Maestrano::Rails::WebHookController
         end
       end
     rescue => e
-      Rails.logger.warn("error processing notification #{e.message} - #{e.backtrace.join("\n")}")
+      Maestrano::Connector::Rails::ConnectorLogger.log('warn', nil, "error processing notification #{e.message} - #{e.backtrace.join("\n")}")
     end
 
     head 200, content_type: 'application/json'
