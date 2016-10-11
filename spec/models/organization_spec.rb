@@ -25,6 +25,12 @@ describe Maestrano::Connector::Rails::Organization do
       expect(subject.synchronized_entities).to include(entities_list.first.to_sym)
       expect(subject.synchronized_entities).to include(entities_list.last.to_sym)
     end
+
+    it 'does not allow organizations with the same oauth UID' do
+      organization1 = create(:organization, oauth_provider: 'myapp', oauth_uid: 'ABC')
+      organization2 = build(:organization, oauth_provider: 'myapp', oauth_uid: 'ABC')
+      expect(organization2).not_to be_valid
+    end
   end
 
   describe "instance methods" do
@@ -129,7 +135,7 @@ describe Maestrano::Connector::Rails::Organization do
         2.times do
           subject.synchronizations.create(status: 'ERROR')
         end
-        
+
         expect(subject.last_three_synchronizations_failed?).to be false
       end
     end
@@ -146,7 +152,7 @@ describe Maestrano::Connector::Rails::Organization do
 
     describe 'last_synchronization_date' do
       let(:date) { 2.days.ago }
-      
+
       context 'with date_filtering_limit' do
         before {
           subject.date_filtering_limit = date
