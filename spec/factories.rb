@@ -8,7 +8,7 @@ FactoryGirl.define do
     name 'My company'
     tenant 'default'
     sequence(:uid) { |n| "cld-11#{n}" }
-    oauth_uid 'sfuiy765'
+    sequence(:oauth_uid) { |n| "00#{n}" }
     oauth_provider 'this_app'
   end
 
