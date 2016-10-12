@@ -14,19 +14,17 @@ class OauthController < ApplicationController
   end
 
   def create_omniauth
-    org_uid = '' # TODO
-    organization = Maestrano::Connector::Rails::Organization.find_by_uid_and_tenant(org_uid, current_user.tenant)
-
-    return redirect_to root_url unless organization && is_admin?(current_user, organization)
+    return redirect_to root_url unless is_admin
 
     # TODO
-    # Update organization with oauth params
+    # Update current_organization with oauth params
     # Should at least set oauth_uid, oauth_token and oauth_provider
   end
 
   def destroy_omniauth
-    organization = Maestrano::Connector::Rails::Organization.find_by_id(params[:organization_id])
-    organization.clear_omniauth if organization && is_admin?(current_user, organization)
+    return redirect_to root_url unless is_admin
+
+    current_organization.clear_omniauth
 
     redirect_to root_url
   end

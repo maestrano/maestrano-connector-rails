@@ -1,3 +1,13 @@
+## 2.0.0
+
+### Features
+* Configuration driven from the [Maestrano Developer Platform](https://dev-platform.maestrano.com)
+
+### Migration guide
+* Follow migration steps up to framework version 1.5.0
+* Replace ocurrences of `@organizations` with `current_organization` in `home_index.haml`
+* Developer Platform registration to be detailed
+
 ## 1.5.0
 
 ### Breaking changes

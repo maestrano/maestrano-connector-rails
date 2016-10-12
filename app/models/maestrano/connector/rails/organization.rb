@@ -38,7 +38,7 @@ module Maestrano::Connector::Rails
     validates :name, presence: true
     validates :tenant, presence: true
     validates :uid, uniqueness: {scope: :tenant}
-    validates :oauth_uid, uniqueness: {message: 'This account has already been linked'}
+    validates :oauth_uid, uniqueness: {allow_blank: true, message: 'This account has already been linked'}
 
     #===================================
     # Serialized field
