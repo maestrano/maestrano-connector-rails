@@ -38,7 +38,7 @@ module Maestrano::Connector::Rails
     validates :name, presence: true
     validates :tenant, presence: true
     validates :uid, uniqueness: {scope: :tenant}
-    validates :oauth_uid, uniqueness: true
+    validates :oauth_uid, uniqueness: {message: 'This account has already been linked'}
 
     #===================================
     # Serialized field
@@ -76,7 +76,7 @@ module Maestrano::Connector::Rails
       self.oauth_token = auth.credentials.token
       self.refresh_token = auth.credentials.refresh_token
       self.instance_url = auth.credentials.instance_url
-      save!
+      self.save
     end
 
     def clear_omniauth
@@ -87,16 +87,17 @@ module Maestrano::Connector::Rails
       self.save
     end
 
-    def check_historical_data(checkbox_ticked)
+    # Enable historical data sharing (prior to account linking)
+    def enable_historical_data(enabled)
+      # Historical data sharing cannot be unset
       return if self.historical_data
-      # checkbox_ticked is a boolean
-      if checkbox_ticked
+
+      if enabled
         self.date_filtering_limit = nil
         self.historical_data = true
       else
         self.date_filtering_limit ||= Time.now.getlocal
       end
-      self.save
     end
 
     def last_three_synchronizations_failed?
