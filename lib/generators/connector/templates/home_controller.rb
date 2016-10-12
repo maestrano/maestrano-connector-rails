@@ -7,16 +7,19 @@ class HomeController < ApplicationController
 
   def update
     organization = Maestrano::Connector::Rails::Organization.find_by_id(params[:id])
-
     return redirect_to(:back) unless organization && is_admin?(current_user, organization)
-    old_sync_state = organization.sync_enabled
+
+    # Update list of entities to synchronize
     organization.synchronized_entities.keys.each do |entity|
       organization.synchronized_entities[entity] = params[entity.to_s].present?
     end
     organization.sync_enabled = organization.synchronized_entities.values.any?
-    organization.check_historical_data(params['historical-data'].present?)
+    organization.enable_historical_data(params['historical-data'].present?)
+    trigger_sync = organization.sync_enabled && organization.sync_enabled_changed?
+    organization.save
 
-    start_synchronization(old_sync_state, organization) unless !old_sync_state && organization.sync_enabled
+    # Trigger sync only if the sync has been enabled
+    start_synchronization(organization) if trigger_sync
 
     redirect_to(:back)
   end
@@ -28,13 +31,14 @@ class HomeController < ApplicationController
     redirect_to(:back)
   end
 
+  # Implement the redirection to the external application
   def redirect_to_external
     redirect_to 'https://path/to/external/app'
   end
 
   private
 
-    def start_synchronization(old_sync_state, organization)
+    def start_synchronization(organization)
       Maestrano::Connector::Rails::SynchronizationJob.perform_later(organization.id, {})
       flash[:info] = 'Congrats, you\'re all set up! Your data are now being synced'
     end
