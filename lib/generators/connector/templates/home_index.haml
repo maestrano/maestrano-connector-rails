@@ -6,8 +6,8 @@
       .col-md-10.col-md-offset-2
         %h2 ApplicationName Connector
         %p
-          -if @organization
-            Link your company <strong>#{@organization.name} (#{@organization.uid})</strong> to ApplicationName to get your business in synch. Check the status of your connection on this screen.
+          -if current_organization
+            Link your company <strong>#{current_organization.name} (#{current_organization.uid})</strong> to ApplicationName to get your business in synch. Check the status of your connection on this screen.
           -else
             Link your account to ApplicationName to get your business in synch. Check the status of your connection on this screen.
 
@@ -18,29 +18,29 @@
           .col-md-12.alert.alert-warning
             Only administrators can modify the application settings
 
-      .row.link-step{class: "#{@organization.oauth_uid ? 'done' : 'todo'}"}
+      .row.link-step{class: "#{current_organization.oauth_uid ? 'done' : 'todo'}"}
         .col-md-1.text-center.link-step-number
           %span.badge.link-step-badge
             1
         .col-md-6.link-step-description
           %h
-            - if @organization.oauth_uid
-              Your ApplicationName account <strong>#{@organization.oauth_name} (#{@organization.oauth_uid})</strong> is currently linked
+            - if current_organization.oauth_uid
+              Your ApplicationName account <strong>#{current_organization.oauth_name} (#{current_organization.oauth_uid})</strong> is currently linked
             - else
               Your ApplicationName account is not linked
         .col-md-2.col-md-offset-3.text-center.link-step-action
-          - if @organization.oauth_uid
-            = link_to "Disconnect", signout_omniauth_path(organization_id: @organization.id), class: "btn btn-warning btn-lg #{is_admin ? '' : 'disabled'}"
+          - if current_organization.oauth_uid
+            = link_to "Disconnect", signout_omniauth_path(organization_id: current_organization.id), class: "btn btn-warning btn-lg #{is_admin ? '' : 'disabled'}"
           - else
             - if is_admin
-              = link_to "Link to ApplicationName", "/auth/ApplicationName/request?org_uid=#{@organization.uid}", class: 'btn btn-warning btn-lg'
+              = link_to "Link to ApplicationName", "/auth/ApplicationName/request?org_uid=#{current_organization.uid}", class: 'btn btn-warning btn-lg'
               %br
               %small If you don’t have an account #{link_to 'create yours here', Maestrano::Connector::Rails::External.create_account_link(current_organization || nil)}
 
       .spacer1
 
-      .row.link-step{class: "#{(@organization.sync_enabled && @organization.synchronized_entities.values.any?) ? 'done' : 'todo'}"}
-        = form_tag home_update_path(id: @organization.id), method: :put do
+      .row.link-step{class: "#{(current_organization.sync_enabled && current_organization.synchronized_entities.values.any?) ? 'done' : 'todo'}"}
+        = form_tag home_update_path(id: current_organization.id), method: :put do
           .col-md-1.text-center.link-step-number
             %span.badge.link-step-badge 2
           .col-md-9.link-step-description
@@ -55,7 +55,7 @@
             .spacer1
             .row
               .col-md-11.col-md-offset-1
-                - @displayable_synchronized_entities.each do |k, v|
+                - current_organization.displayable_synchronized_entities.each do |k, v|
                   .row.sync-entity
                     .col-md-1.link-step-action
                       %input{type: "checkbox", id: "#{k}", name: "#{k}", checked: v[:value]}
@@ -66,7 +66,7 @@
                         #{v[:connec_name]}
                     -if is_admin
                       .col-md-3.text-right
-                        - if v && @organization.oauth_uid && @organization.sync_enabled
+                        - if v && current_organization.oauth_uid && current_organization.sync_enabled
                           = link_to 'Force a synchronization', home_synchronize_path(opts: {only_entities: [k.to_s]}), method: :post, class: 'btn btn-warning btn-sm', title: "Force a synchronization for #{v[:external_name]} only", 'data-toggle' => 'tooltip', 'data-placement' => 'right'
 
             .spacer2
@@ -77,18 +77,18 @@
               .col-md-4.col-md-offset-1
                 %label{:for => 'historical-data'} Synchronize my historical data
               .col-md-1
-                %input{type: 'checkbox', id: 'historical-data', name: 'historical-data', checked: @organization.historical_data, onchange: 'historicalDataDisplay();', disabled: @organization.historical_data}
+                %input{type: 'checkbox', id: 'historical-data', name: 'historical-data', checked: current_organization.historical_data, onchange: 'historicalDataDisplay();', disabled: current_organization.historical_data}
               .col-md-6
-                %small#historical-data-display-unchecked{style: "display: #{@organization.historical_data ? 'none' : 'block'}"} Only data created after #{(@organization.date_filtering_limit && @organization.date_filtering_limit.utc || Time.now.utc).to_formatted_s(:long_ordinal)} will be synchronized
-                %small#historical-data-display-checked{style: "display: #{!@organization.historical_data ? 'none' : 'block'}"}
+                %small#historical-data-display-unchecked{style: "display: #{current_organization.historical_data ? 'none' : 'block'}"} Only data created after #{(current_organization.date_filtering_limit && current_organization.date_filtering_limit.utc || Time.now.utc).to_formatted_s(:long_ordinal)} will be synchronized
+                %small#historical-data-display-checked{style: "display: #{!current_organization.historical_data ? 'none' : 'block'}"}
                   Synchronizing your historical data will share all data in ApplicationName. This action is not reversible. Want to know more? Check #{link_to 'here', 'https://maestrano.atlassian.net/wiki/display/UKB/How+Connec%21+manages+Historical+Data+Sharing'}
-                
+
           .spacer1
           .row
             .col-md-2.col-md-offset-10.text-center.link-step-action
-              =submit_tag "#{@organization.sync_enabled ? 'Update' : 'Start synchronizing!'}", class: "btn btn-lg btn-warning #{@organization.oauth_uid ? '' : 'disabled'} text-sm"
+              =submit_tag "#{current_organization.sync_enabled ? 'Update' : 'Start synchronizing!'}", class: "btn btn-lg btn-warning #{current_organization.oauth_uid ? '' : 'disabled'} text-sm"
 
-      -if @organization.oauth_uid && @organization.sync_enabled
+      -if current_organization.oauth_uid && current_organization.sync_enabled
         .spacer2
         .row
           .col-md-4.col-md-offset-4.text-center

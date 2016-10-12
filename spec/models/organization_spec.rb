@@ -31,6 +31,12 @@ describe Maestrano::Connector::Rails::Organization do
       organization2 = build(:organization, oauth_provider: 'myapp', oauth_uid: 'ABC')
       expect(organization2).not_to be_valid
     end
+
+    it 'allows several organizations without oauth UID' do
+      organization1 = create(:organization, oauth_provider: 'myapp', oauth_uid: nil)
+      organization2 = build(:organization, oauth_provider: 'myapp', oauth_uid: nil)
+      expect(organization2).to be_valid
+    end
   end
 
   describe "instance methods" do
