@@ -367,7 +367,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
       # TODO: improve the flexibility by adding the option for the developer to pass a custom/gem-dependent error
       if e.class == Maestrano::Connector::Rails::Exceptions::EntityNotFoundError
         idmap.update!(message: "The #{external_entity_name} record has been deleted in #{Maestrano::Connector::Rails::External.external_name}. Last attempt to sync on #{Time.now}", external_inactive: true)
-        Rails.logger.info "The #{idmap.external_entity} - #{idmap.external_id} record has been deleted. It is now set to inactive."
+        Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, "The #{idmap.external_entity} - #{idmap.external_id} record has been deleted. It is now set to inactive.")
       else
         # Store External error
         Maestrano::Connector::Rails::ConnectorLogger.log('error', @organization, "Error while pushing to #{Maestrano::Connector::Rails::External.external_name}: #{e}")
@@ -541,7 +541,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
           elsif result['status'] == 201
             batch_entities[index][:idmap].update(connec_id: result['body'][self.class.normalize_connec_entity_name(connec_entity_name)]['id'].find { |id| id['provider'] == 'connec' }['id'], last_push_to_connec: Time.now, message: nil)
           else
-            Maestrano::Connector::Rails::ConnectorLogger.log('error', @organization, "Error while pushing to Connec!: #{result['body']}")
+            Maestrano::Connector::Rails::ConnectorLogger.log('warn', @organization, "Error while pushing to Connec!: #{result['body']}")
             # TODO, better error message
             batch_entities[index][:idmap].update(message: result['body'].to_s.truncate(255))
           end

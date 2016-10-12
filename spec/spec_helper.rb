@@ -6,6 +6,7 @@ require 'factory_girl_rails'
 require 'shoulda/matchers'
 require 'simplecov'
 require 'timecop'
+require 'maestrano_connector_rails/factories.rb'
 SimpleCov.start
 
 Rails.backtrace_cleaner.remove_silencers!

@@ -27,7 +27,7 @@ module Maestrano::Connector::Rails
 
           entity_instance.after_sync(last_synchronization_date)
         else
-          Rails.logger.warn "Called push to connec job with unknow entity: #{external_entity_name}"
+          Maestrano::Connector::Rails::ConnectorLogger.log('warn', organization, "Called push to connec job with unknow entity: #{external_entity_name}")
         end
       end
     end

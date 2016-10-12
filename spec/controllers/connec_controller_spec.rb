@@ -33,9 +33,9 @@ describe Maestrano::ConnecController, type: :controller do
 
       context 'with an unexpected error' do
         let(:notifications) { {'people' => [entity]} }
-        it 'logs a warning' do
-          allow(controller).to receive(:find_entity_class).and_raise('Bruno c\'est peter')
-          expect(Rails.logger).to receive(:warn)
+        it 'does nothing' do
+          allow(controller).to receive(:find_entity_class).and_raise('Unexpected error')
+          expect(Maestrano::Connector::Rails::External).to_not receive(:get_client)
           subject
         end
       end
@@ -46,8 +46,8 @@ describe Maestrano::ConnecController, type: :controller do
           allow(Maestrano::Connector::Rails::External).to receive(:entities_list).and_return(%w())
         }
 
-        it 'logs a warning' do
-          expect(Rails.logger).to receive(:info).with('Received notification from Connec! for unknow entity: people')
+        it 'does nothing' do
+          expect(Maestrano::Connector::Rails::External).to_not receive(:get_client)
           subject
         end
       end
@@ -112,8 +112,8 @@ describe Maestrano::ConnecController, type: :controller do
 
         context 'with an invalid organization' do
           context 'with no organization' do
-            it 'logs a warning' do
-              expect(Rails.logger).to receive(:warn).with("Received notification from Connec! for unknown group or group without oauth: #{group_id} (tenant: default)")
+            it 'does nothing' do
+              expect(Maestrano::Connector::Rails::External).to_not receive(:get_client)
               subject
             end
           end
@@ -121,8 +121,8 @@ describe Maestrano::ConnecController, type: :controller do
           context 'with an organization with no oauth' do
             let!(:organization) { create(:organization, uid: group_id, oauth_uid: nil) }
 
-            it 'logs a warning' do
-              expect(Rails.logger).to receive(:warn).with("Received notification from Connec! for unknown group or group without oauth: #{group_id} (tenant: default)")
+            it 'does nothing' do
+              expect(Maestrano::Connector::Rails::External).to_not receive(:get_client).with(organization)
               subject
             end
           end
@@ -160,7 +160,6 @@ describe Maestrano::ConnecController, type: :controller do
             end
           end
         end
-
       end
     end
   end
