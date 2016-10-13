@@ -1,10 +1,9 @@
 require 'spec_helper'
 
-describe HomeController, :type => :controller do
+describe HomeController, type: :controller do
   let(:back_path) { home_index_path }
-  before(:each) do
-    request.env["HTTP_REFERER"] = back_path
-  end
+
+  before(:each) { request.env['HTTP_REFERER'] = back_path }
 
   describe 'index' do
     subject { get :index }
@@ -35,7 +34,7 @@ describe HomeController, :type => :controller do
       it 'updates organization synchronized_entities' do
         subject
         organization.reload
-        expect(organization.synchronized_entities).to eq({'people' => true, 'item' => false})
+        expect(organization.synchronized_entities).to eq('people' => true, 'item' => false)
       end
 
       it 'updates organization sync_enabled' do
@@ -86,16 +85,16 @@ describe HomeController, :type => :controller do
         subject { post :synchronize, opts: {'opts' => 'some_opts'} }
 
         it 'calls perform_later with opts' do
-          expect(Maestrano::Connector::Rails::SynchronizationJob).to receive(:perform_later).with(organization.id, {'opts' => 'some_opts', forced: true})
+          expect(Maestrano::Connector::Rails::SynchronizationJob).to receive(:perform_later).with(organization.id, 'opts' => 'some_opts', forced: true)
           subject
         end
       end
 
       context 'without opts' do
-        subject { post :synchronize}
+        subject { post :synchronize }
 
         it 'calls perform_later with empty opts hash' do
-          expect(Maestrano::Connector::Rails::SynchronizationJob).to receive(:perform_later).with(organization.id, {forced: true})
+          expect(Maestrano::Connector::Rails::SynchronizationJob).to receive(:perform_later).with(organization.id, forced: true)
           subject
         end
       end
