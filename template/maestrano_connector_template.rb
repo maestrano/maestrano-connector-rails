@@ -76,7 +76,6 @@ after_bundle do
   remove_file 'app/assets/stylesheets/application.css'
   remove_file 'config/routes.rb'
   copy_file 'spec_helper.rb', 'spec/spec_helper.rb'
-  copy_file 'factories.rb', 'spec/factories.rb'
   copy_file 'routes.rb', 'config/routes.rb'
 
   # Heroku and uat

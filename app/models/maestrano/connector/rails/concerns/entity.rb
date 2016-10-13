@@ -207,9 +207,6 @@ module Maestrano::Connector::Rails::Concerns::Entity
     query_params = {}
     query_params[:$orderby] = @opts[:$orderby] if @opts[:$orderby]
 
-    # Fetch first page
-    page_number = 0
-
     batched_fetch = @opts[:__limit] && @opts[:__skip]
     if batched_fetch
       query_params[:$top] = @opts[:__limit]
@@ -224,7 +221,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
 
     Maestrano::Connector::Rails::ConnectorLogger.log('debug', @organization, "entity=#{self.class.connec_entity_name}, fetching data with #{query_params.to_query}")
     uri = "#{self.class.normalized_connec_entity_name}?#{query_params.to_query}"
-    response_hash = fetch_connec(uri, 0)
+    response_hash = fetch_connec(uri)
     entities = response_hash[self.class.normalized_connec_entity_name]
     entities = [entities] if self.class.singleton?
 
@@ -232,11 +229,10 @@ module Maestrano::Connector::Rails::Concerns::Entity
     unless batched_fetch
       # Fetch subsequent pages
       while response_hash['pagination'] && response_hash['pagination']['next']
-        page_number += 1
         # ugly way to convert https://api-connec/api/v2/group_id/organizations?next_page_params to /organizations?next_page_params
         next_page = response_hash['pagination']['next'].gsub(/^(.*)\/#{self.class.normalized_connec_entity_name}/, self.class.normalized_connec_entity_name)
 
-        response_hash = fetch_connec(next_page, page_number)
+        response_hash = fetch_connec(next_page)
         entities.concat response_hash[self.class.normalized_connec_entity_name]
       end
     end
@@ -604,13 +600,15 @@ module Maestrano::Connector::Rails::Concerns::Entity
       {entity: map_to_connec(external_entity, idmap.last_push_to_connec.nil?), idmap: idmap}
     end
 
-    def fetch_connec(uri, page_number)
+    def fetch_connec(uri)
+      Maestrano::Connector::Rails::ConnectorLogger.log('debug', @organization, "Fetching data from connec entity=#{self.class.connec_entity_name}, url=#{uri}")
       response = @connec_client.get(uri)
-      raise "No data received from Connec! when trying to fetch page #{page_number} of #{self.class.normalized_connec_entity_name}" unless response && !response.body.blank?
+
+      raise "No data received from Connec! when trying to fetch #{self.class.normalized_connec_entity_name}" unless response && !response.body.blank?
 
       response_hash = JSON.parse(response.body)
-      Maestrano::Connector::Rails::ConnectorLogger.log('debug', @organization, "Received page #{page_number} for entity=#{self.class.connec_entity_name}, response=#{response_hash}")
-      raise "Received unrecognized Connec! data when trying to fetch page #{page_number} of #{self.class.normalized_connec_entity_name}: #{response_hash}" unless response_hash[self.class.normalized_connec_entity_name]
+      Maestrano::Connector::Rails::ConnectorLogger.log('debug', @organization, "Received response for entity=#{self.class.connec_entity_name}, response=#{response_hash}")
+      raise "Received unrecognized Connec! data when trying to fetch #{self.class.normalized_connec_entity_name}: #{response_hash}" unless response_hash[self.class.normalized_connec_entity_name]
 
       response_hash
     end

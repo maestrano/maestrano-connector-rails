@@ -8,6 +8,7 @@ require File.expand_path('../../config/environment', __FILE__)
 require 'rspec/rails'
 require 'factory_girl_rails'
 require 'shoulda/matchers'
+require 'maestrano_connector_rails/factories.rb'
 
 Rails.backtrace_cleaner.remove_silencers!
 
