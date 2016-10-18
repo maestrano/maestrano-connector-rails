@@ -79,6 +79,7 @@ Gem::Specification.new do |s|
     "db/migrate/20160614114401_add_date_filtering_limit_to_organization.rb",
     "db/migrate/20160614160654_add_encryption_on_oauth_keys.rb",
     "db/migrate/20161011005751_add_unique_index_on_organization_oauth_uid.rb",
+    "db/migrate/20161018155513_add_org_uid_to_organization.rb",
     "lib/generators/connector/USAGE",
     "lib/generators/connector/complex_entity_generator.rb",
     "lib/generators/connector/install_generator.rb",
