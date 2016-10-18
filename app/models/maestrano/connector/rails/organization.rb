@@ -4,6 +4,8 @@ module Maestrano::Connector::Rails
     maestrano_group_via :provider, :uid, :tenant do |group, maestrano|
       group.name = (maestrano.name.blank? ? 'Default Group name' : maestrano.name)
       group.tenant = 'default' # To be set from SSO parameter
+      # to not to be confused with the uid, that is actually the app_instance uid.
+      group.org_uid = maestrano.org_uid
       # group.country_alpha2 = maestrano.country
       # group.free_trial_end_at = maestrano.free_trial_end_at
       # group.some_required_field = 'some-appropriate-default-value'
