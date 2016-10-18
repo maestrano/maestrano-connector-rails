@@ -6,21 +6,10 @@ class Maestrano::ConnecController < Maestrano::Rails::WebHookController
         next Maestrano::Connector::Rails::ConnectorLogger.log('info', nil, "Received notification from Connec! for unknow entity: #{entity_name}") unless entity_class_hash
 
         entities.each do |entity|
-          organization = Maestrano::Connector::Rails::Organization.find_by_uid_and_tenant(entity[:group_id], params[:tenant])
+          organization = Maestrano::Connector::Rails::Organization.find_by(uid: entity[:group_id], tenant: params[:tenant])
 
           begin
-            if organization.nil?
-              next Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Received notification from Connec! for an unknown organization, organization_uid=\"#{entity[:group_id]}\", tenant=\"#{params[:tenant]}\"")
-            end
-
-            if organization.oauth_uid.blank?
-              next Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Received notification from Connec! for an organization not linked, organization_uid=\"#{entity[:group_id]}\", tenant=\"#{params[:tenant]}\"")
-            end
-
-            unless organization.sync_enabled && organization.synchronized_entities[entity_class_hash[:name].to_sym]
-              next Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Skipping notification from Connec! webhook, entity_name=\"#{entity_name}\"")
-            end
-
+            next unless valid_organization?(organization, entity_class_hash)
             Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Processing entity from Connec! webhook, entity_name=\"#{entity_name}\", data=\"#{entity}\"")
 
             connec_client = Maestrano::Connector::Rails::ConnecHelper.get_client(organization)
@@ -31,18 +20,9 @@ class Maestrano::ConnecController < Maestrano::Rails::WebHookController
             entity_instance.before_sync(last_synchronization_date)
 
             # Build expected input for consolidate_and_map_data
-            if entity_class_hash[:is_complex]
-              connec_hash_of_entities = Maestrano::Connector::Rails::ComplexEntity.build_hash_with_entities(entity_instance.class.connec_entities_names, entity_name, ->(name) { name.parameterize('_').pluralize }, [entity])
-              filtered_entities = entity_instance.filter_connec_entities(connec_hash_of_entities)
+            mapped_entity = map_entity(entity_class_hash, entity_instance, entity_name, entity)
 
-              empty_external_hash = Maestrano::Connector::Rails::ComplexEntity.build_empty_hash(entity_instance.class.external_entities_names)
-              mapped_entity = entity_instance.consolidate_and_map_data(filtered_entities, empty_external_hash)
-            else
-              filtered_entities = entity_instance.filter_connec_entities([entity])
-              mapped_entity = entity_instance.consolidate_and_map_data(filtered_entities, [])
-            end
             entity_instance.push_entities_to_external(mapped_entity[:connec_entities])
-
             entity_instance.after_sync(last_synchronization_date)
           rescue => e
             Maestrano::Connector::Rails::ConnectorLogger.log('warn', organization, "error processing notification entity_name=\"#{entity_name}\", message=\"#{e.message}\", #{e.backtrace.join("\n")}")
@@ -58,6 +38,25 @@ class Maestrano::ConnecController < Maestrano::Rails::WebHookController
 
   private
 
+    def valid_organization?(organization, entity_class_hash)
+      if organization.nil?
+        Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Received notification from Connec! for an unknown organization, organization_uid=\"#{entity[:group_id]}\", tenant=\"#{params[:tenant]}\"")
+        return false
+      end
+
+      if organization.oauth_uid.blank?
+        Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Received notification from Connec! for an organization not linked, organization_uid=\"#{entity[:group_id]}\", tenant=\"#{params[:tenant]}\"")
+        return false
+      end
+
+      unless organization.sync_enabled && organization.synchronized_entities[entity_class_hash[:name].to_sym]
+        Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Skipping notification from Connec! webhook, entity_name=\"#{entity_name}\"")
+        return false
+      end
+
+      true
+    end
+
     def find_entity_class(entity_name)
       Maestrano::Connector::Rails::External.entities_list.each do |entity_name_from_list|
         clazz = "Entities::#{entity_name_from_list.singularize.titleize.split.join}".constantize
@@ -69,5 +68,21 @@ class Maestrano::ConnecController < Maestrano::Rails::WebHookController
         end
       end
       nil
+    end
+
+    def map_entity(entity_class_hash, entity_instance, entity_name, entity)
+      # Build expected input for consolidate_and_map_data
+      if entity_class_hash[:is_complex]
+        connec_hash_of_entities = Maestrano::Connector::Rails::ComplexEntity.build_hash_with_entities(entity_instance.class.connec_entities_names, entity_name, ->(name) { name.parameterize('_').pluralize }, [entity])
+        filtered_entities = entity_instance.filter_connec_entities(connec_hash_of_entities)
+
+        empty_external_hash = Maestrano::Connector::Rails::ComplexEntity.build_empty_hash(entity_instance.class.external_entities_names)
+        mapped_entity = entity_instance.consolidate_and_map_data(filtered_entities, empty_external_hash)
+      else
+        filtered_entities = entity_instance.filter_connec_entities([entity])
+        mapped_entity = entity_instance.consolidate_and_map_data(filtered_entities, [])
+      end
+
+      mapped_entity
     end
 end

@@ -12,6 +12,9 @@ AllCops:
     - 'db/migrate/*'
     - 'bin/*'
     - 'spec/**/*'
+    - 'template/*'
+    - 'lib/generators/connector/templates/*'
+    - 'lib/maestrano_connector_rails/factories.rb'
 
 # Enabled disabled Cops
 Style/CollectionMethods:

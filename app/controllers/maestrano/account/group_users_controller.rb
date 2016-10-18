@@ -7,8 +7,8 @@ class Maestrano::Account::GroupUsersController < Maestrano::Rails::WebHookContro
     group_uid = params[:group_id]
 
     # Get the entities
-    user = Maestrano::Connector::Rails::User.find_by_uid_and_tenant(user_uid, params[:tenant] || 'default')
-    organization = Maestrano::Connector::Rails::Organization.find_by_uid_and_tenant(group_uid, params[:tenant] || 'default')
+    user = Maestrano::Connector::Rails::User.find_by(uid: user_uid, tenant: params[:tenant] || 'default')
+    organization = Maestrano::Connector::Rails::Organization.find_by(uid: group_uid, tenant: params[:tenant] || 'default')
 
     Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "remove user from group, user_uid=\"#{user_uid}\", group_uid=\"#{group_uid}\"")
 

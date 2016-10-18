@@ -6,7 +6,7 @@ class Maestrano::Account::GroupsController < Maestrano::Rails::WebHookController
     org_uid = params[:id]
 
     # Get entity
-    organization = Maestrano::Connector::Rails::Organization.find_by_uid_and_tenant(org_uid, params[:tenant] || 'default')
+    organization = Maestrano::Connector::Rails::Organization.find_by(uid: org_uid, tenant: params[:tenant] || 'default')
 
     Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, 'delete organization')
 
