@@ -12,10 +12,15 @@ describe Maestrano::Connector::Rails::ConnectorLogger do
     end
 
     it 'includes the organization uid and tenant' do
-      expect(organization).to receive(:uid)
-      expect(organization).to receive(:tenant)
+      expect(Rails.logger).to receive(:info).with("uid=\"#{organization.uid}\", org_uid=\"#{organization.org_uid}\", tenant=\"#{organization.tenant}\", message=\"msg\"")
+
       subject.log('info', organization, 'msg')
     end
-  end
 
+    it 'includes extra params' do
+      expect(Rails.logger).to receive(:info).with("uid=\"#{organization.uid}\", org_uid=\"#{organization.org_uid}\", tenant=\"#{organization.tenant}\", foo=\"bar\", message=\"msg\"")
+
+      subject.log('info', organization, 'msg', foo: :bar)
+    end
+  end
 end

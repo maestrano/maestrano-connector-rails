@@ -11,7 +11,7 @@ describe Maestrano::Connector::Rails::Organization do
   # Indexes
   it { should have_db_index([:uid, :tenant]) }
 
-  #Associations
+  # Associations
   it { should have_many(:user_organization_rels) }
   it { should have_many(:users) }
   it { should have_many(:id_maps).dependent(:destroy) }
@@ -113,7 +113,26 @@ describe Maestrano::Connector::Rails::Organization do
     end
 
     describe 'from_omniauth' do
-      #TODO
+      let(:saml_hash) { {provider: :maestrano, uid: 'cld-1234', info: {org_uid: 'org-abcd', name: 'My Company'}} }
+      let(:tenant) { 'mytenant' }
+
+      let(:subject) { Maestrano::Connector::Rails::Organization.find_or_create_for_maestrano(saml_hash, tenant) }
+
+      context 'with a new organization' do
+        it 'creates an organization from SAML parameters' do
+          expect(subject.name).to eql('My Company')
+          expect(subject.org_uid).to eql('org-abcd')
+          expect(subject.tenant).to eql(tenant)
+        end
+      end
+
+      context 'with an existing organization' do
+        let!(:organization) { create(:organization, provider: :maestrano, tenant: tenant, uid: 'cld-1234') }
+
+        it 'find the organization from SAML parameters' do
+          expect(subject).to eql(organization)
+        end
+      end
     end
 
     describe 'last_three_synchronizations_failed?' do
