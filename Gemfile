@@ -32,7 +32,7 @@ group :development do
   gem 'activerecord-jdbcsqlite3-adapter', platforms: :jruby
   gem 'sqlite3', platforms: :ruby
   gem 'shoulda-matchers'
-  gem 'rubocop'
+  gem 'rubocop', '~> 0.43'
   gem 'timecop'
   gem 'github_changelog_generator'
 end
