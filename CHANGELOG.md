@@ -7,6 +7,8 @@
 * Follow migration steps up to framework version 1.5.0
 * Replace ocurrences of `@organizations` with `current_organization` in `home_index.haml`
 * In spec_helper.rb add the line `require 'maestrano_connector_rails/factories.rb'`
+* Add optional hash of parameters to be logged by ConnectorLogger
+* Add Maestrano Organization UID to the logs
 
 ### Developer Platform registration to be detailed
 
