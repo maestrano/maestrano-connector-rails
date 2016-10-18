@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160614152139) do
+ActiveRecord::Schema.define(version: 20161018155513) do
 
   create_table "id_maps", force: :cascade do |t|
     t.string   "connec_id"
@@ -38,6 +38,7 @@ ActiveRecord::Schema.define(version: 20160614152139) do
     t.string   "provider"
     t.string   "uid"
     t.string   "name"
+    t.string   "org_uid"
     t.string   "tenant"
     t.string   "oauth_provider"
     t.string   "oauth_uid"

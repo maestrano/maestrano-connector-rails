@@ -3,7 +3,7 @@ module Maestrano::Connector::Rails::Concerns::ConnectorLogger
 
   module ClassMethods
     def log(level, organization, msg)
-      Rails.logger.method(level).call("organization_uid=\"#{organization&.uid}\", tenant=\"#{organization&.tenant}\"), message=\"#{msg}\"")
+      Rails.logger.method(level).call("uid=#{organization&.uid}, org_uid= #{organization&.org_uid} , tenant=#{organization&.tenant}): #{msg}")
     end
   end
 end
