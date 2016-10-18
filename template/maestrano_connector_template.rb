@@ -33,22 +33,22 @@ if yes?('Use JRuby? [y/n]')
   run 'echo "ruby \'2.2.3\', :engine => \'jruby\', :engine_version => \'9.0.5.0\'" | cat - Gemfile > temp && mv temp Gemfile'
 end
 
-gem 'rails', '~> 4.2.6'
+gem 'rails', '~> 4.2'
 gem 'turbolinks', '~> 2.5'
 gem 'jquery-rails'
-gem 'puma'
+gem 'puma', require: false
 gem 'tzinfo-data', platforms: [:mingw, :mswin, :jruby]
 gem 'uglifier', '>= 1.3.0'
 
 gem 'maestrano-connector-rails'
 
-gem_group :production, :uat do
-  gem 'activerecord-jdbcpostgresql-adapter', platforms: :jruby
-  gem 'pg', platforms: :ruby
+group :production, :uat do
+  gem 'activerecord-jdbcmysql-adapter', platforms: :jruby
+  gem 'mysql2', platforms: :ruby
   gem 'rails_12factor'
 end
 
-gem_group :test, :develpment do
+group :test, :develpment do
   gem 'activerecord-jdbcsqlite3-adapter', platforms: :jruby
   gem 'sqlite3', platforms: :ruby
   gem 'rubocop'
@@ -101,6 +101,7 @@ after_bundle do
   copy_file 'settings/settings.yml', 'config/settings.yml'
 
   copy_file 'application-sample.yml', 'config/application-sample.yml'
+  copy_file 'application-sample.yml', 'config/application.yml'
 
   application do
     <<-RUBY
@@ -116,6 +117,10 @@ after_bundle do
   run 'bundle exec figaro install'
   run 'bundle exec rake railties:install:migrations'
   run 'bundle exec rake db:migrate'
+
+  run 'bundler binstubs puma --force'
+  run 'bundler binstubs sidekiq --force'
+  run 'bundler binstubs rake --force'
 
   remove_file 'config/initializers/maestrano.rb'
   copy_file 'maestrano.rb', 'config/initializers/maestrano.rb'
