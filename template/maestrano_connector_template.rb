@@ -48,7 +48,7 @@ group :production, :uat do
   gem 'rails_12factor'
 end
 
-group :test, :develpment do
+group :test, :development do
   gem 'activerecord-jdbcsqlite3-adapter', platforms: :jruby
   gem 'sqlite3', platforms: :ruby
   gem 'rubocop'
