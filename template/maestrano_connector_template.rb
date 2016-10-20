@@ -28,27 +28,30 @@ remove_file 'Gemfile'
 run 'touch Gemfile'
 
 add_source 'https://rubygems.org'
-
-if yes?('Use JRuby? [y/n]')
-  run 'echo "ruby \'2.2.3\', :engine => \'jruby\', :engine_version => \'9.0.5.0\'" | cat - Gemfile > temp && mv temp Gemfile'
+if defined?(RUBY_ENGINE) && RUBY_ENGINE == 'jruby'
+  run 'echo "ruby \'2.3.1\', :engine => \'jruby\', :engine_version => \'9.1.5.0\'" | cat - Gemfile > temp && mv temp Gemfile'
 end
 
 gem 'rails', '~> 4.2'
 gem 'turbolinks', '~> 2.5'
 gem 'jquery-rails'
-gem 'puma', require: false
 gem 'tzinfo-data', platforms: [:mingw, :mswin, :jruby]
 gem 'uglifier', '>= 1.3.0'
 
+gem 'puma', require: false
+gem 'sinatra', require: false
+gem 'sidekiq'
+gem 'sidekiq-cron'
+
 gem 'maestrano-connector-rails'
 
-group :production, :uat do
+gem_group :production, :uat do
   gem 'activerecord-jdbcmysql-adapter', platforms: :jruby
   gem 'mysql2', platforms: :ruby
   gem 'rails_12factor'
 end
 
-group :test, :development do
+gem_group :test, :development do
   gem 'activerecord-jdbcsqlite3-adapter', platforms: :jruby
   gem 'sqlite3', platforms: :ruby
   gem 'rubocop'
@@ -101,7 +104,7 @@ after_bundle do
   copy_file 'settings/settings.yml', 'config/settings.yml'
 
   copy_file 'application-sample.yml', 'config/application-sample.yml'
-  copy_file 'application-sample.yml', 'config/application.yml'
+  copy_file 'application-sample.yml', 'config/application.yml', force: true
 
   application do
     <<-RUBY
