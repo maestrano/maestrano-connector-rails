@@ -38,7 +38,6 @@ ActiveRecord::Schema.define(version: 20161018155513) do
     t.string   "provider"
     t.string   "uid"
     t.string   "name"
-    t.string   "org_uid"
     t.string   "tenant"
     t.string   "oauth_provider"
     t.string   "oauth_uid"
@@ -51,12 +50,15 @@ ActiveRecord::Schema.define(version: 20161018155513) do
     t.datetime "updated_at",                                   null: false
     t.boolean  "sync_enabled",                 default: false
     t.datetime "date_filtering_limit"
+    t.boolean  "historical_data",              default: false
     t.string   "encrypted_oauth_token_iv"
     t.string   "encrypted_oauth_token_salt"
     t.string   "encrypted_refresh_token_iv"
     t.string   "encrypted_refresh_token_salt"
+    t.string   "org_uid"
   end
 
+  add_index "organizations", ["oauth_uid"], name: "index_organizations_on_oauth_uid", unique: true
   add_index "organizations", ["uid", "tenant"], name: "orga_uid_index"
 
   create_table "synchronizations", force: :cascade do |t|
