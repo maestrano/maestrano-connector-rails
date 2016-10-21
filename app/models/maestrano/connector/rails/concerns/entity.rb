@@ -183,6 +183,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
   end
 
   def map_to_connec_helper(entity, mapper, references)
+Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, 'MAPPING SHIT', {entity: entity, mapper: mapper.inspect})
     mapped_entity = mapper.denormalize(entity, instance_values.with_indifferent_access).merge(id: self.class.id_from_external_entity_hash(entity))
     folded_entity = Maestrano::Connector::Rails::ConnecHelper.fold_references(mapped_entity, references, @organization)
     folded_entity[:opts] = (mapped_entity[:opts] || {}).merge(matching_fields: self.class.connec_matching_fields) if self.class.connec_matching_fields
