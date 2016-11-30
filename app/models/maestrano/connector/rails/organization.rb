@@ -114,5 +114,11 @@ module Maestrano::Connector::Rails
     def last_synchronization_date
       last_successful_synchronization&.updated_at || date_filtering_limit
     end
+
+    def reset_synchronized_entities
+      synchronized_entities.slice!(*External.entities_list.map(&:to_sym))
+      External.entities_list.each { |entity| synchronized_entities[entity.to_sym] ||= false }
+      save
+    end
   end
 end
