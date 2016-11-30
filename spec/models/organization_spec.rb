@@ -207,7 +207,22 @@ describe Maestrano::Connector::Rails::Organization do
         it { expect(subject.last_synchronization_date).to eql(nil) }
       end
     end
+
+    describe '#reset_synchronized_entities' do
+      let(:organization) { create(:organization, synchronized_entities: {entity1: true, entity2: false, tomatoes: true}) }
+      subject { organization.reset_synchronized_entities }
+
+      it 'keeps only the known entities' do
+        subject
+        expect(organization.synchronized_entities).to eql(entity1: true, entity2: false)
+      end
+
+      it 'adds missing entities' do
+        organization.update_attributes(synchronized_entities: {entity1: true, tomatoes: true})
+
+        subject
+        expect(organization.synchronized_entities).to eql(entity1: true, entity2: false)
+      end
+    end
   end
-
-
 end
