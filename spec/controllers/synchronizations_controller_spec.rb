@@ -1,6 +1,7 @@
 require 'spec_helper'
 
 describe Maestrano::SynchronizationsController, type: :controller do
+
   routes { Maestrano::Connector::Rails::Engine.routes }
 
   let(:uid) { 'cld-aaaa' }

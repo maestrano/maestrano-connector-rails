@@ -6,7 +6,7 @@ SIDEKIQ_PASSWORD: password
 
 REDIS_URL: redis://localhost:6379/0/connector-myapp
 
-MNO_DEVPL_HOST: https://dev-platform.maestrano.io
+MNO_DEVPL_HOST: https://developer.maestrano.com
 MNO_DEVPL_API_PATH: /api/config/v1/marketplaces
 MNO_DEVPL_ENV_NAME: connector-myapp
 MNO_DEVPL_ENV_KEY:
