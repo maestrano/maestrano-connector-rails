@@ -11,7 +11,7 @@ describe VersionController, type: :controller do
 
     it 'returns a version hash' do
       subject
-      expect(JSON.parse(response.body)).to eql('framework_version'=>'1.2', 'env' => 'test', 'ruby_version' => RUBY_VERSION, 'ruby_engine' => RUBY_ENGINE)
+      expect(JSON.parse(response.body)).to eql('framework_version'=>'1.2', 'ci_branch' => nil, 'ci_commit' => nil, 'env' => 'test', 'ruby_version' => RUBY_VERSION, 'ruby_engine' => RUBY_ENGINE)
     end
   end
 end
