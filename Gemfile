@@ -3,7 +3,7 @@ source 'http://rubygems.org'
 # Add dependencies required to use your gem here.
 gem 'rails', '~> 4.2'
 
-gem 'maestrano-rails', '1.0.0'
+gem 'maestrano-rails', '~> 1.0.0'
 
 gem 'attr_encrypted', '~> 1.4.0'
 gem 'autoprefixer-rails'
