@@ -58,12 +58,13 @@ class Maestrano::ConnecController < Maestrano::Rails::WebHookController
     end
 
     def find_entity_class(entity_name)
+      parametrised_entity_name = entity_name.parameterize('_')
       Maestrano::Connector::Rails::External.entities_list.each do |entity_name_from_list|
         clazz = "Entities::#{entity_name_from_list.singularize.titleize.split.join}".constantize
         if clazz.methods.include?('connec_entities_names'.to_sym)
           formatted_entities_names = clazz.connec_entities_names.map { |n| n.parameterize('_').pluralize }
-          return {class: clazz, is_complex: true, name: entity_name_from_list} if formatted_entities_names.include?(entity_name)
-        elsif clazz.methods.include?('connec_entity_name'.to_sym) && clazz.normalized_connec_entity_name == entity_name
+          return {class: clazz, is_complex: true, name: entity_name_from_list} if formatted_entities_names.include?(parametrised_entity_name)
+        elsif clazz.methods.include?('connec_entity_name'.to_sym) && clazz.normalized_connec_entity_name == parametrised_entity_name
           return {class: clazz, is_complex: false, name: entity_name_from_list}
         end
       end
