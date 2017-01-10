@@ -158,6 +158,19 @@ describe Maestrano::ConnecController, type: :controller do
               expect_any_instance_of(Entities::Person).to receive(:after_sync)
               subject
             end
+
+            context 'with different entity name case and singular' do
+              let(:notifications) { {'Person' => [entity]} }
+
+              it 'process the data and push them' do
+                expect_any_instance_of(Entities::Person).to receive(:before_sync)
+                expect_any_instance_of(Entities::Person).to receive(:filter_connec_entities).and_return([entity])
+                expect_any_instance_of(Entities::Person).to receive(:consolidate_and_map_data).with([entity], []).and_return({})
+                expect_any_instance_of(Entities::Person).to receive(:push_entities_to_external)
+                expect_any_instance_of(Entities::Person).to receive(:after_sync)
+                subject
+              end
+            end
           end
         end
       end
