@@ -90,6 +90,7 @@ describe 'complex id references' do
 
   before {
     allow(Maestrano::Connector::Rails::External).to receive(:entities_list).and_return(%w(id_payment))
+    organization.reset_synchronized_entities(true)
 
     allow(connec_client).to receive(:get).and_return(ActionDispatch::Response.new(200, {}, {idpayments: [connec_payment]}.to_json, {}))
     allow(connec_client).to receive(:batch).and_return(ActionDispatch::Response.new(200, {}, {results: [{status: 200, body: {payments: {}}}]}.to_json, {}))

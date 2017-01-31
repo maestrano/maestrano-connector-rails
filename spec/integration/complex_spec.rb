@@ -212,14 +212,17 @@ describe 'complex entities workflow' do
     }
   }
   let!(:supplier_idmap) { Entities::SubEntities::CompSupplier.create_idmap(organization_id: organization.id, external_id: ext_supplier_id, connec_entity: 'comporganization') }
+  let(:entity_name) { 'customer_and_supplier' }
 
   before do
     allow(connec_client).to receive(:get).and_return(ActionDispatch::Response.new(200, {}, {comporganizations: connec_orgs}.to_json, {}))
     allow_any_instance_of(Entities::SubEntities::CompCustomer).to receive(:get_external_entities).and_return([ext_customer])
     allow_any_instance_of(Entities::SubEntities::CompSupplier).to receive(:get_external_entities).and_return([ext_supplier])
+    allow(Maestrano::Connector::Rails::External).to receive(:entities_list).and_return([entity_name])
+    organization.reset_synchronized_entities(true)
   end
 
-  subject { Maestrano::Connector::Rails::SynchronizationJob.new.sync_entity('customer_and_supplier', organization, connec_client, external_client, nil, {}) }
+  subject { Maestrano::Connector::Rails::SynchronizationJob.new.sync_entity(entity_name, organization, connec_client, external_client, nil, {}) }
 
   it 'handles the fetching correctly' do
     expect_any_instance_of(Entities::CustomerAndSupplier).to receive(:consolidate_and_map_data).with({'CompOrganization' => connec_orgs}, {'CompCustomer' => [ext_customer], 'CompSupplier' => [ext_supplier]}).and_return({connec_entities: [], external_entities: []})

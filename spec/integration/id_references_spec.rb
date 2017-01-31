@@ -58,6 +58,7 @@ describe 'id references' do
   let(:ext_line_id2) { 'ext line id2' }
 
   let(:payment_title) { 'This is a payment' }
+  let(:entity_name) { 'id_reference' }
  
 
   before {
@@ -65,9 +66,11 @@ describe 'id references' do
     allow(connec_client).to receive(:batch).and_return(ActionDispatch::Response.new(200, {}, {results: [{status: 200, body: {payments: {}}}]}.to_json, {}))
 
     allow_any_instance_of(Entities::IdReference).to receive(:get_external_entities).and_return([])
+    allow(Maestrano::Connector::Rails::External).to receive(:entities_list).and_return([entity_name])
+    organization.reset_synchronized_entities(true)
   }
 
-  subject { Maestrano::Connector::Rails::SynchronizationJob.new.sync_entity('id_reference', organization, connec_client, external_client, organization.last_synchronization_date, {}) }
+  subject { Maestrano::Connector::Rails::SynchronizationJob.new.sync_entity(entity_name, organization, connec_client, external_client, organization.last_synchronization_date, {}) }
 
   describe 'a creation from connec' do
     before {
