@@ -15,7 +15,7 @@ module Maestrano::Connector::Rails
       super
       self.synchronized_entities = {}
       External.entities_list.each do |entity|
-        self.synchronized_entities[entity.to_sym] = true
+        self.synchronized_entities[entity.to_sym] = {can_push_to_connec: true, can_push_to_external: true}
       end
     end
 
@@ -49,13 +49,13 @@ module Maestrano::Connector::Rails
 
     def displayable_synchronized_entities
       result = {}
-      synchronized_entities.each do |entity, boolean|
+      synchronized_entities.each do |entity, hash|
         begin
           clazz = "Entities::#{entity.to_s.titleize.split.join}".constantize
         rescue
           next
         end
-        result[entity] = {value: boolean, connec_name: clazz.public_connec_entity_name, external_name: clazz.public_external_entity_name}
+        result[entity] = {connec_name: clazz.public_connec_entity_name, external_name: clazz.public_external_entity_name}.merge(hash)
       end
       result
     end
@@ -115,10 +115,46 @@ module Maestrano::Connector::Rails
       last_successful_synchronization&.updated_at || date_filtering_limit
     end
 
-    def reset_synchronized_entities
+    def reset_synchronized_entities(default = false)
       synchronized_entities.slice!(*External.entities_list.map(&:to_sym))
-      External.entities_list.each { |entity| synchronized_entities[entity.to_sym] ||= false }
+      External.entities_list.each do |entity| 
+        can_push_to_external = (synchronized_entities[entity.to_sym].is_a?(Hash) ? 
+                                 synchronized_entities[entity.to_sym][:can_push_to_external] :
+                                 synchronized_entities[entity.to_sym]) || default
+        can_push_to_connec = (synchronized_entities[entity.to_sym].is_a?(Hash) ? 
+                               synchronized_entities[entity.to_sym][:can_push_to_connec] :
+                               synchronized_entities[entity.to_sym]) || default
+        synchronized_entities[entity.to_sym] = {can_push_to_connec: can_push_to_connec, can_push_to_external: can_push_to_external}
+      end
       save
     end
+
+    def push_to_connec_enabled?(entity)
+      synchronized_entities.dig(snake_name(entity),:can_push_to_connec) && entity&.class.can_write_connec?
+    end
+
+    def push_to_external_enabled?(entity)
+      synchronized_entities.dig(snake_name(entity),:can_push_to_external) && entity&.class.can_write_external?
+    end
+
+    private
+      def snake_name(entity)
+        class_name = entity.class.name.underscore.split('/').last
+        if entity.kind_of?(Maestrano::Connector::Rails::SubEntityBase)
+          name = ''
+          Entities.constants&.each do |c|
+            klass = Entities.const_get(c)
+            next unless klass.respond_to?(:formatted_external_entities_names)
+            if klass.formatted_external_entities_names.values.include?(class_name.camelize) ||
+                 klass.formatted_connec_entities_names.values.include?(class_name.camelize)
+              name = c
+              break
+            end
+          end
+          name.to_s.underscore.to_sym
+        else
+          class_name.to_sym
+        end
+      end
   end
 end
