@@ -49,7 +49,7 @@ class Maestrano::ConnecController < Maestrano::Rails::WebHookController
         return false
       end
 
-      unless organization.sync_enabled && organization.synchronized_entities[entity_class_hash[:name].to_sym]
+      unless organization.sync_enabled && organization.synchronized_entities[entity_class_hash[:name].to_sym][:can_push_to_external]
         Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Skipping notification from Connec! webhook, entity_name=\"#{entity_name}\"")
         return false
       end

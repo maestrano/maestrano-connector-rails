@@ -15,7 +15,7 @@ module Maestrano::Connector::Rails
       super
       self.synchronized_entities = {}
       External.entities_list.each do |entity|
-        self.synchronized_entities[entity.to_sym] = true
+        self.synchronized_entities[entity.to_sym] = {can_push_to_connec: true, can_push_to_external: true}
       end
     end
 
@@ -49,13 +49,13 @@ module Maestrano::Connector::Rails
 
     def displayable_synchronized_entities
       result = {}
-      synchronized_entities.each do |entity, boolean|
+      synchronized_entities.each do |entity, hash|
         begin
           clazz = "Entities::#{entity.to_s.titleize.split.join}".constantize
         rescue
           next
         end
-        result[entity] = {value: boolean, connec_name: clazz.public_connec_entity_name, external_name: clazz.public_external_entity_name}
+        result[entity] = {connec_name: clazz.public_connec_entity_name, external_name: clazz.public_external_entity_name}.merge(hash)
       end
       result
     end
@@ -117,8 +117,24 @@ module Maestrano::Connector::Rails
 
     def reset_synchronized_entities
       synchronized_entities.slice!(*External.entities_list.map(&:to_sym))
-      External.entities_list.each { |entity| synchronized_entities[entity.to_sym] ||= false }
+      External.entities_list.each do |entity| 
+        can_push_to_external = (synchronized_entities[entity.to_sym].is_a?(Hash) ? 
+                                 synchronized_entities[entity.to_sym][:can_push_to_external] :
+                                 synchronized_entities[entity.to_sym]) || false
+        can_push_to_connec = (synchronized_entities[entity.to_sym].is_a?(Hash) ? 
+                               synchronized_entities[entity.to_sym][:can_push_to_connec] :
+                               synchronized_entities[entity.to_sym]) || false
+        synchronized_entities[entity.to_sym] = {can_push_to_connec: can_push_to_connec, can_push_to_external: can_push_to_external}
+      end
       save
+    end
+
+    def push_to_connec_enabled?(entity)
+      synchronized_entities[entity_name.to_sym][:can_push_to_connec] && entity&.can_write_connec?
+    end
+
+    def push_to_external_enabled?(entity)
+      synchronized_entities[entity_name.to_sym][:can_push_to_external] && entity&.can_write_external?
     end
   end
 end
