@@ -12,7 +12,7 @@ module Maestrano::Connector::Rails
 
       entities_hash.each do |external_entity_name, entities|
         if entity_instance_hash = find_entity_instance(external_entity_name, organization, connec_client, external_client, opts)
-          next unless organization.synchronized_entities[entity_instance_hash[:name].to_sym]
+          next unless organization.synchronized_entities[entity_instance_hash[:name].to_sym][:can_push_to_connec]
 
           entity_instance = entity_instance_hash[:instance]
 

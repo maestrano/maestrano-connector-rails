@@ -253,7 +253,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
   # * connec_id and push timestamp
   # * error message
   def push_entities_to_connec_to(mapped_external_entities_with_idmaps, connec_entity_name)
-    return unless self.class.can_write_connec?
+    return unless @organization.push_to_connec_enabled?
 
     Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, "Sending #{Maestrano::Connector::Rails::External.external_name} #{self.class.external_entity_name.pluralize} to Connec! #{connec_entity_name.pluralize}")
 
@@ -304,7 +304,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
   # Pushes connec entities to the external application
   # Sends new external ids to Connec! (either only the id, or the id + the id references)
   def push_entities_to_external_to(mapped_connec_entities_with_idmaps, external_entity_name)
-    return unless self.class.can_write_external?
+    return unless @organization.push_to_connec_enabled?
 
     Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, "Sending Connec! #{self.class.connec_entity_name.pluralize} to #{Maestrano::Connector::Rails::External.external_name} #{external_entity_name.pluralize}")
 
