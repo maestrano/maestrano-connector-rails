@@ -138,6 +138,13 @@ module Maestrano::Connector::Rails
     end
 
     private
+      # We get the name associated for the entity in the organization syncrhonized_entities.
+      # 1 - The entity class is NOT a daughter of SubEntityBase
+      #     => The name is the class name in snake_case
+      # 2 - The entity class IS a daughter of SubEntityBase
+      #     => In the synchronized entities, we have name of the complex entity associated to it.
+      #     => We loop in the Entities module to find out wich complex entity is associated to our
+      #     => SubEntityBase
       def snake_name(entity)
         class_name = entity.class.name.underscore.split('/').last
         if entity.kind_of?(Maestrano::Connector::Rails::SubEntityBase)

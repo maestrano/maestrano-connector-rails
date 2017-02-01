@@ -5,7 +5,8 @@ class HomeController < ApplicationController
 
     # Update list of entities to synchronize
     current_organization.synchronized_entities.keys.each do |entity|
-      current_organization.synchronized_entities[entity] = params[entity.to_s].present?
+      current_organization.synchronized_entities[entity][:can_push_to_connec] = params[entity.to_s]["to_connec"] == "1"
+      current_organization.synchronized_entities[entity][:can_push_to_external] = params[entity.to_s]["to_external"] == "1"
     end
     full_sync = params['historical-data'].present? && !current_organization.historical_data
     opts = {full_sync: full_sync}
