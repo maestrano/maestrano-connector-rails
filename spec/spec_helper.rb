@@ -7,6 +7,7 @@ require 'shoulda/matchers'
 require 'simplecov'
 require 'timecop'
 require 'maestrano_connector_rails/factories.rb'
+require 'webmock/rspec'
 SimpleCov.start
 
 Rails.backtrace_cleaner.remove_silencers!
@@ -26,6 +27,8 @@ RSpec.configure do |config|
     allow(Maestrano::Connector::Rails::External).to receive(:external_name).and_return('External app')
     allow(Maestrano::Connector::Rails::External).to receive(:get_client).and_return(Object.new)
     allow(Maestrano::Connector::Rails::External).to receive(:entities_list).and_return(%w(entity1 entity2))
+    stub_request(:get, "#{Maestrano['default'].param('api.host')}/api/v1/account/groups/").
+      to_return({status: 200, body: "{}", headers: {}})
     Rails.cache.clear
   end
 end
