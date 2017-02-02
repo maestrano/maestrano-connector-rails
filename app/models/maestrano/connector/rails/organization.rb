@@ -137,5 +137,15 @@ module Maestrano::Connector::Rails
     def push_to_external_enabled?(entity)
       synchronized_entities.dig(EntityHelper.snake_name(entity), :can_push_to_external) && entity&.class.can_write_external?
     end
+
+    def set_instance_metadata
+      auth = {:username => Maestrano[tenant].param('api.id'), :password => Maestrano[tenant].param('api.key')}
+      res = HTTParty.get("#{ENV['HUB_HOST']}/api/v1/account/groups/#{uid}", :basic_auth => auth)
+
+      self.push_disabled = res.dig('data', 'metadata', 'push_disabled')
+      self.pull_disabled = res.dig('data', 'metadata', 'pull_disabled')
+
+      self.save
+    end
   end
 end
