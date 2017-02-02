@@ -225,6 +225,19 @@ describe Maestrano::Connector::Rails::Organization do
         subject
         expect(organization.synchronized_entities).to eql(entity1: hash1, entity2: hash2)
       end
+
+      context 'with metadata from mnohub' do
+        before {
+          organization.push_disabled = true
+          organization.pull_disabled = true
+        }
+
+
+        it 'takes into account the metadata' do
+          subject
+          expect(organization.synchronized_entities).to eql(entity1: hash2, entity2: hash2)
+        end
+      end
     end
   end
 end

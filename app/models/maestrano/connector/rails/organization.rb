@@ -125,7 +125,7 @@ module Maestrano::Connector::Rails
           can_push_to_external = synchronized_entities[entity.to_sym]
           can_push_to_connec = synchronized_entities[entity.to_sym]
         end
-        synchronized_entities[entity.to_sym] = {can_push_to_connec: can_push_to_connec || default, can_push_to_external: can_push_to_external || default}
+        synchronized_entities[entity.to_sym] = {can_push_to_connec: (can_push_to_connec || default) && !pull_disabled, can_push_to_external: (can_push_to_external || default) && !push_disabled}
       end
       save
     end
