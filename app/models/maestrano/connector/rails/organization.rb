@@ -117,51 +117,25 @@ module Maestrano::Connector::Rails
 
     def reset_synchronized_entities(default = false)
       synchronized_entities.slice!(*External.entities_list.map(&:to_sym))
-      External.entities_list.each do |entity| 
-        can_push_to_external = (synchronized_entities[entity.to_sym].is_a?(Hash) ? 
-                                 synchronized_entities[entity.to_sym][:can_push_to_external] :
-                                 synchronized_entities[entity.to_sym]) || default
-        can_push_to_connec = (synchronized_entities[entity.to_sym].is_a?(Hash) ? 
-                               synchronized_entities[entity.to_sym][:can_push_to_connec] :
-                               synchronized_entities[entity.to_sym]) || default
-        synchronized_entities[entity.to_sym] = {can_push_to_connec: can_push_to_connec, can_push_to_external: can_push_to_external}
+      External.entities_list.each do |entity|
+        if synchronized_entities[entity.to_sym].is_a?(Hash)
+          can_push_to_external = synchronized_entities[entity.to_sym][:can_push_to_external]
+          can_push_to_connec = synchronized_entities[entity.to_sym][:can_push_to_connec]
+        else
+          can_push_to_external = synchronized_entities[entity.to_sym]
+          can_push_to_connec = synchronized_entities[entity.to_sym]
+        end
+        synchronized_entities[entity.to_sym] = {can_push_to_connec: can_push_to_connec || default, can_push_to_external: can_push_to_external || default}
       end
       save
     end
 
     def push_to_connec_enabled?(entity)
-      synchronized_entities.dig(snake_name(entity),:can_push_to_connec) && entity&.class.can_write_connec?
+      synchronized_entities.dig(EntityHelper.snake_name(entity), :can_push_to_connec) && entity&.class.can_write_connec?
     end
 
     def push_to_external_enabled?(entity)
-      synchronized_entities.dig(snake_name(entity),:can_push_to_external) && entity&.class.can_write_external?
+      synchronized_entities.dig(EntityHelper.snake_name(entity), :can_push_to_external) && entity&.class.can_write_external?
     end
-
-    private
-      # We get the name associated for the entity in the organization syncrhonized_entities.
-      # 1 - The entity class is NOT a daughter of SubEntityBase
-      #     => The name is the class name in snake_case
-      # 2 - The entity class IS a daughter of SubEntityBase
-      #     => In the synchronized entities, we have name of the complex entity associated to it.
-      #     => We loop in the Entities module to find out wich complex entity is associated to our
-      #     => SubEntityBase
-      def snake_name(entity)
-        class_name = entity.class.name.underscore.split('/').last
-        if entity.kind_of?(Maestrano::Connector::Rails::SubEntityBase)
-          name = ''
-          Entities.constants&.each do |c|
-            klass = Entities.const_get(c)
-            next unless klass.respond_to?(:formatted_external_entities_names)
-            if klass.formatted_external_entities_names.values.include?(class_name.camelize) ||
-                 klass.formatted_connec_entities_names.values.include?(class_name.camelize)
-              name = c
-              break
-            end
-          end
-          name.to_s.underscore.to_sym
-        else
-          class_name.to_sym
-        end
-      end
   end
 end
