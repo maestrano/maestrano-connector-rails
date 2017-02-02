@@ -27,7 +27,7 @@ class Maestrano::SynchronizationsController < Maestrano::Rails::WebHookControlle
     render_organization_sync(organization, status, 201)
   end
 
-  def update_metadata 
+  def update_metadata
     tenant = params[:tenant]
     uid = params[:group_id]
     organization = Maestrano::Connector::Rails::Organization.find_by(uid: uid, tenant: tenant)

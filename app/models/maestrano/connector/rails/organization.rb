@@ -139,8 +139,8 @@ module Maestrano::Connector::Rails
     end
 
     def set_instance_metadata
-      auth = {:username => Maestrano[tenant].param('api.id'), :password => Maestrano[tenant].param('api.key')}
-      res = HTTParty.get("#{ENV['HUB_HOST']}/api/v1/account/groups/#{uid}", :basic_auth => auth)
+      auth = {username: Maestrano[tenant].param('api.id'), password: Maestrano[tenant].param('api.key')}
+      res = HTTParty.get("#{Maestrano[tenant].param('api.host')}/api/v1/account/groups/#{uid}", basic_auth: auth)
 
       self.push_disabled = res.dig('data', 'metadata', 'push_disabled')
       self.pull_disabled = res.dig('data', 'metadata', 'pull_disabled')
