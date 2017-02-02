@@ -15,6 +15,7 @@ module Maestrano::Connector::Rails
       super
       self.synchronized_entities = {}
       self.set_instance_metadata
+      self.enable_historical_data(true) if self.push_disabled
       External.entities_list.each do |entity|
         self.synchronized_entities[entity.to_sym] = {can_push_to_connec: !self.pull_disabled, can_push_to_external: !self.push_disabled}
       end
