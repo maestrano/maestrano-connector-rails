@@ -64,9 +64,9 @@
                 - current_organization.displayable_synchronized_entities.each do |k, v|
                   .row.sync-entity
                     .col-md-1.link-step-action
-                      #{check_box("#{k}", "to_connec", {checked: v[:can_push_to_connec]|| v[:can_push_to_external], disabled: v[:can_push_to_external]})}
+                      #{check_box("#{k}", "to_connec", {checked: v[:can_push_to_connec]|| v[:can_push_to_external], onclick: "return !#{k}_to_external.checked;"})}
                     .col-md-1.link-step-action
-                      #{check_box("#{k}", "to_external", {checked: v[:can_push_to_external], onchange: "associateBoxes(#{k}_to_connec, #{k}_to_external);"})}
+                      #{check_box("#{k}", "to_external", {checked: v[:can_push_to_external], onchange: "#{k}_to_connec.checked = true;"})}
                     %label.col-md-7{:for => "#{k}", style: 'padding-top: 5px;'}
                       .col-md-6
                         #{v[:external_name]}
