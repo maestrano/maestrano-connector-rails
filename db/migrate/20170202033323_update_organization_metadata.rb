@@ -10,7 +10,6 @@ class UpdateOrganizationMetadata < ActiveRecord::Migration
 
     #We also add metadata from MnoHub
     Maestrano::Connector::Rails::Organization.all.each do |o|
-      o.set_instance_metadata
       o.reset_synchronized_entities
       o.enable_historical_data(true) if o.push_disabled
     end
