@@ -154,6 +154,8 @@ describe Maestrano::Connector::Rails::Entity do
     before do
       allow(subject.class).to receive(:connec_entity_name).and_return(connec_name)
       allow(subject.class).to receive(:external_entity_name).and_return(external_name)
+      allow(Maestrano::Connector::Rails::External).to receive(:entities_list).and_return(%w(entity))
+      organization.reset_synchronized_entities(true)
     end
 
     describe 'Mapper methods' do

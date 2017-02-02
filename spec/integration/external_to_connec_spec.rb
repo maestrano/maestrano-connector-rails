@@ -88,12 +88,16 @@ describe 'external application to connec' do
     }
   }
 
+  let(:entity_name) { 'external_to_connec' }
+
   before {
     allow_any_instance_of(Entities::ExternalToConnec).to receive(:get_connec_entities).and_return([])
     allow_any_instance_of(Entities::ExternalToConnec).to receive(:get_external_entities).and_return([contact])
+    allow(Maestrano::Connector::Rails::External).to receive(:entities_list).and_return([entity_name])
+    organization.reset_synchronized_entities(true)
   }
 
-  subject { Maestrano::Connector::Rails::SynchronizationJob.new.sync_entity('external_to_connec', organization, connec_client, external_client, nil, {}) }
+  subject { Maestrano::Connector::Rails::SynchronizationJob.new.sync_entity(entity_name, organization, connec_client, external_client, nil, {}) }
 
   describe 'creating an record in connec' do
     before {

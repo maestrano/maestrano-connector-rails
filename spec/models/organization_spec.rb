@@ -209,19 +209,34 @@ describe Maestrano::Connector::Rails::Organization do
     end
 
     describe '#reset_synchronized_entities' do
-      let(:organization) { create(:organization, synchronized_entities: {entity1: true, entity2: false, tomatoes: true}) }
+      let(:hash1) { {can_push_to_connec: true, can_push_to_external: true} }
+      let(:hash2) { {can_push_to_connec: false, can_push_to_external: false} }
+      let(:organization) { create(:organization, synchronized_entities: {entity1: true, entity2: true, tomatoes: false}) }
       subject { organization.reset_synchronized_entities }
 
       it 'keeps only the known entities' do
         subject
-        expect(organization.synchronized_entities).to eql(entity1: true, entity2: false)
+        expect(organization.synchronized_entities).to eql(entity1: hash1, entity2: hash1)
       end
 
       it 'adds missing entities' do
-        organization.update_attributes(synchronized_entities: {entity1: true, tomatoes: true})
+        organization.update_attributes(synchronized_entities: {entity1: true, tomatoes: false})
 
         subject
-        expect(organization.synchronized_entities).to eql(entity1: true, entity2: false)
+        expect(organization.synchronized_entities).to eql(entity1: hash1, entity2: hash2)
+      end
+
+      context 'with metadata from mnohub' do
+        before {
+          organization.push_disabled = true
+          organization.pull_disabled = true
+        }
+
+
+        it 'takes into account the metadata' do
+          subject
+          expect(organization.synchronized_entities).to eql(entity1: hash2, entity2: hash2)
+        end
       end
     end
   end

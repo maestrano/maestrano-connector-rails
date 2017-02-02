@@ -87,6 +87,7 @@ describe 'complex entity subentities naming conflict' do
 
   before {
     allow(Maestrano::Connector::Rails::External).to receive(:entities_list).and_return(%w(name_payment))
+    organization.reset_synchronized_entities(true)
   }
 
   subject { Maestrano::Connector::Rails::SynchronizationJob.new.sync_entity('name_payment', organization, connec_client, external_client, organization.last_synchronization_date, {}) }

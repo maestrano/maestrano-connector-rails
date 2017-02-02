@@ -60,7 +60,9 @@ describe Maestrano::Connector::Rails::PushToConnecJob do
     describe 'with entities in synchronized entities' do
 
       describe 'complex entity' do
-        before { organization.update(synchronized_entities: {:"#{entity_name1}" => false, :"#{entity_name2}" => true})}
+        let(:hash1) { {can_push_to_connec: false, can_push_to_external: false} }
+        let(:hash2) { {can_push_to_connec: true, can_push_to_external: true} }
+        before { organization.update(synchronized_entities: {:"#{entity_name1}" => hash1, :"#{entity_name2}" => hash2})}
 
         it 'calls consolidate and map data on the complex entity with the right arguments' do
           expect_any_instance_of(Entities::Entity2).to receive(:consolidate_and_map_data).with({"Connec name" => []}, {"Subs"=>[entity21], "ll"=>[]})
@@ -81,7 +83,9 @@ describe Maestrano::Connector::Rails::PushToConnecJob do
       end
 
       describe 'non complex entity' do
-        before { organization.update(synchronized_entities: {:"#{entity_name1}" => true, :"#{entity_name2}" => false})}
+        let(:hash1) { {can_push_to_connec: true, can_push_to_external: true} }
+        let(:hash2) { {can_push_to_connec: false, can_push_to_external: false} }
+        before { organization.update(synchronized_entities: {:"#{entity_name1}" => hash1, :"#{entity_name2}" => hash2})}
 
         it 'calls consolidate_and_map_data on the non complex entity with the right arguments' do
           expect_any_instance_of(Entities::Entity1).to receive(:consolidate_and_map_data).with([], [entity11, entity12]).and_return({})

@@ -80,14 +80,6 @@ describe Maestrano::Connector::Rails::SynchronizationJob do
 
         it { performes }
 
-        it 'calls sync entity on all the organization synchronized entities set to true' do
-          organization.synchronized_entities[organization.synchronized_entities.keys.first] = false
-          organization.save
-          expect_any_instance_of(Maestrano::Connector::Rails::SynchronizationJob).to receive(:sync_entity).exactly(organization.synchronized_entities.count - 1).times
-
-          subject
-        end
-
         context 'with options' do
           context 'with only_entities' do
             let(:opts) { {only_entities: %w(people price)} }

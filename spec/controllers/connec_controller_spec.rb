@@ -76,7 +76,7 @@ describe Maestrano::ConnecController, type: :controller do
           before {
             allow(Entities::ContactAndLead).to receive(:external_entities_names).and_return(%w())
           }
-          let!(:organization) { create(:organization, uid: group_id, oauth_uid: 'lala', sync_enabled: true, synchronized_entities: {contact_and_lead: true}) }
+          let!(:organization) { create(:organization, uid: group_id, oauth_uid: 'lala', sync_enabled: true) }
 
           it 'process the data and push them' do
             expect_any_instance_of(Entities::ContactAndLead).to receive(:before_sync)
@@ -130,7 +130,7 @@ describe Maestrano::ConnecController, type: :controller do
 
         context 'with a valid organization' do
           context 'with sync disabled' do
-            let!(:organization) { create(:organization, uid: group_id, oauth_uid: 'lala', sync_enabled: false, synchronized_entities: {person: true}) }
+            let!(:organization) { create(:organization, uid: group_id, oauth_uid: 'lala', sync_enabled: false) }
 
             it 'does nothing' do
               expect(Maestrano::Connector::Rails::External).to_not receive(:get_client).with(organization)
@@ -139,7 +139,7 @@ describe Maestrano::ConnecController, type: :controller do
           end
 
           context 'with sync disabled for this entity' do
-            let!(:organization) { create(:organization, uid: group_id, oauth_uid: 'lala', sync_enabled: true, synchronized_entities: {person: false}) }
+            let!(:organization) { create(:organization, uid: group_id, oauth_uid: 'lala', sync_enabled: true, synchronized_entities: {person: {can_push_to_connec: false}}) }
 
             it 'does nothing' do
               expect(Maestrano::Connector::Rails::External).to_not receive(:get_client).with(organization)
@@ -148,7 +148,7 @@ describe Maestrano::ConnecController, type: :controller do
           end
 
           context "when syncing" do
-            let!(:organization) { create(:organization, uid: group_id, oauth_uid: 'lala', sync_enabled: true, synchronized_entities: {person: true}) }
+            let!(:organization) { create(:organization, uid: group_id, oauth_uid: 'lala', sync_enabled: true) }
 
             it 'process the data and push them' do
               expect_any_instance_of(Entities::Person).to receive(:before_sync)

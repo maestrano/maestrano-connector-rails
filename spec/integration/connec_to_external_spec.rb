@@ -88,15 +88,18 @@ describe 'connec to the external application' do
     }
   }
   let(:person) { person1 }
+  let(:entity_name) { 'connec_to_external' }
 
   before do
     allow(connec_client).to receive(:get).and_return(ActionDispatch::Response.new(200, {}, {people: [person]}.to_json, {}))
     allow(connec_client).to receive(:batch).and_return(ActionDispatch::Response.new(200, {}, {results: [{status: 200, body: {people: {}}}]}.to_json, {}))
 
     allow_any_instance_of(Entities::ConnecToExternal).to receive(:get_external_entities).and_return([])
+    allow(Maestrano::Connector::Rails::External).to receive(:entities_list).and_return([entity_name])
+    organization.reset_synchronized_entities(true)
   end
 
-  subject { Maestrano::Connector::Rails::SynchronizationJob.new.sync_entity('connec_to_external', organization, connec_client, external_client, organization.last_synchronization_date, {}) }
+  subject { Maestrano::Connector::Rails::SynchronizationJob.new.sync_entity(entity_name, organization, connec_client, external_client, organization.last_synchronization_date, {}) }
 
   describe 'a new record created in connec with all references known' do
     before {
@@ -228,11 +231,14 @@ describe 'connec to the external application' do
 
   describe 'a creation from connec where the creation_only_mapper has to be used' do
     #idmap.last_push_to_external is nil
+    let(:entity_name) { 'connec_to_external_missing_field' }
     before do
       allow_any_instance_of(Entities::ConnecToExternalMissingField).to receive(:get_external_entities).and_return([])
+      allow(Maestrano::Connector::Rails::External).to receive(:entities_list).and_return([entity_name])
+      organization.reset_synchronized_entities(true)
     end
 
-    subject { Maestrano::Connector::Rails::SynchronizationJob.new.sync_entity('connec_to_external_missing_field', organization, connec_client, external_client, organization.last_synchronization_date, {}) }
+    subject { Maestrano::Connector::Rails::SynchronizationJob.new.sync_entity(entity_name, organization, connec_client, external_client, organization.last_synchronization_date, {}) }
 
     class Entities::ConnecToExternalMissingField < Entities::ConnecToExternal
 

@@ -4,7 +4,7 @@
   .banners
     .row
       .col-md-10.col-md-offset-2
-        %h2 ApplicationName Connector
+        %h1 ApplicationName Connector
         %p
           -if current_organization
             Link your company <strong>#{current_organization.name} (#{current_organization.uid})</strong> to ApplicationName to get your business in synch. Check the status of your connection on this screen.
@@ -23,7 +23,7 @@
           %span.badge.link-step-badge
             1
         .col-md-6.link-step-description
-          %h
+          %p
             - if current_organization.oauth_uid
               Your ApplicationName account <strong>#{current_organization.oauth_name} (#{current_organization.oauth_uid})</strong> is currently linked
             - else
@@ -44,22 +44,30 @@
           .col-md-1.text-center.link-step-number
             %span.badge.link-step-badge 2
           .col-md-9.link-step-description
-            %h You can customize which entities are synchronized by the connector:
+            %p You can customize which entities are synchronized by the connector:
+            %p (#{image_tag "logos/to_connec.png", class: "small-image"} : from ApplicationName to Connec! and #{image_tag "logos/to_external.png", class: "small-image"} : from Connec! to ApplicationName)
             .spacer1
             .row
               .col-md-11.col-md-offset-1.center
-                .col-md-4.col-md-offset-1
-                  ApplicationName wording
-                .col-md-4
-                  Universal wording
+                .row
+                  .col-md-1
+                    =image_tag "logos/to_connec.png", class: "image"
+                  .col-md-1
+                    =image_tag "logos/to_external.png", class: "image"
+                  .col-md-4
+                    Vend wording
+                  .col-md-3
+                    Universal wording
             .spacer1
             .row
               .col-md-11.col-md-offset-1
                 - current_organization.displayable_synchronized_entities.each do |k, v|
                   .row.sync-entity
                     .col-md-1.link-step-action
-                      %input{type: "checkbox", id: "#{k}", name: "#{k}", checked: v[:value]}
-                    %label.col-md-8{:for => "#{k}", style: 'padding-top: 5px;'}
+                      #{check_box("#{k}", "to_connec", {checked: (v[:can_push_to_connec] || v[:can_push_to_external]) && !current_organization.pull_disabled, onclick: "return !#{k}_to_external.checked;", disabled: current_organization.pull_disabled})}
+                    .col-md-1.link-step-action
+                      #{check_box("#{k}", "to_external", {checked: v[:can_push_to_external] && !current_organization.push_disabled, onchange: "#{k}_to_connec.checked = #{!current_organization.pull_disabled};", disabled: current_organization.push_disabled})}
+                    %label.col-md-7{:for => "#{k}", style: 'padding-top: 5px;'}
                       .col-md-6
                         #{v[:external_name]}
                       .col-md-6

@@ -38,7 +38,8 @@ module Maestrano::Connector::Rails
         # We also do batched sync as the first one can be quite huge
         if last_synchronization.nil?
           ConnectorLogger.log('info', organization, 'First synchronization ever. Doing two half syncs to allow smart merging to work its magic.')
-          organization.synchronized_entities.select { |k, v| v }.keys.each do |entity|
+          organization.synchronized_entities.each do |entity, settings|
+            next unless settings[:can_push_to_connec] || settings[:can_push_to_external]
             ConnectorLogger.log('info', organization, "First synchronization ever. Doing half sync from external for #{entity}.")
             first_sync_entity(entity.to_s, organization, connec_client, external_client, last_synchronization_date, opts, true)
             ConnectorLogger.log('info', organization, "First synchronization ever. Doing half sync from Connec! for #{entity}.")
@@ -52,7 +53,8 @@ module Maestrano::Connector::Rails
             sync_entity(entity, organization, connec_client, external_client, last_synchronization_date, opts)
           end
         else
-          organization.synchronized_entities.select { |_k, v| v }.keys.each do |entity|
+          organization.synchronized_entities.each do |entity, settings|
+            next unless settings[:can_push_to_connec] || settings[:can_push_to_external]
             sync_entity(entity.to_s, organization, connec_client, external_client, last_synchronization_date, opts)
           end
         end
