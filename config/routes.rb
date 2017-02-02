@@ -13,6 +13,7 @@ Maestrano::Connector::Rails::Engine.routes.draw do
       resources :synchronizations, only: [:show, :create] do
         collection do
           put :toggle_sync
+          put :update_metadata
         end
       end
     end
