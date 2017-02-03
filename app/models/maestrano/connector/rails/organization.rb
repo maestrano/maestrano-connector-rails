@@ -14,12 +14,13 @@ module Maestrano::Connector::Rails
     def initialize
       super
       self.synchronized_entities = {}
-      self.set_instance_metadata
-      self.enable_historical_data(true) if self.push_disabled
       External.entities_list.each do |entity|
         self.synchronized_entities[entity.to_sym] = {can_push_to_connec: !self.pull_disabled, can_push_to_external: !self.push_disabled}
       end
     end
+
+    # Callbacks
+    before_save :update_metadata
 
     #===================================
     # Encryptions
@@ -147,8 +148,11 @@ module Maestrano::Connector::Rails
 
       self.push_disabled = response.dig('data', 'metadata', 'push_disabled')
       self.pull_disabled = response.dig('data', 'metadata', 'pull_disabled')
+    end
 
-      self.save
+    def update_metadata
+      self.set_instance_metadata
+      self.enable_historical_data(true) if self.push_disabled
     end
   end
 end
