@@ -134,11 +134,11 @@ module Maestrano::Connector::Rails
     end
 
     def push_to_connec_enabled?(entity)
-      synchronized_entities.dig(EntityHelper.snake_name(entity), :can_push_to_connec) && entity&.class.can_write_connec?
+      synchronized_entities.dig(EntityHelper.snake_name(entity), :can_push_to_connec) && entity&.class&.can_write_connec?
     end
 
     def push_to_external_enabled?(entity)
-      synchronized_entities.dig(EntityHelper.snake_name(entity), :can_push_to_external) && entity&.class.can_write_external?
+      synchronized_entities.dig(EntityHelper.snake_name(entity), :can_push_to_external) && entity&.class&.can_write_external?
     end
 
     def set_instance_metadata
