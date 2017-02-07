@@ -12,6 +12,10 @@ Lint/AssignmentInCondition:
   Exclude:
     - 'app/jobs/maestrano/connector/rails/push_to_connec_job.rb'
 
+# Offense count: 1
+Metrics/ClassLength:
+  Max: 160
+
 # Offense count: 23
 Metrics/AbcSize:
   Max: 70

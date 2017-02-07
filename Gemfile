@@ -22,7 +22,6 @@ gem 'slim'
 
 # Add dependencies to develop your gem here.
 group :development do
-  gem 'webmock', '~> 1.24.1'
   gem 'activerecord-jdbcsqlite3-adapter', platforms: :jruby
   gem 'bundler'
   gem 'factory_girl_rails'
@@ -36,4 +35,5 @@ group :development do
   gem 'simplecov', '>= 0'
   gem 'sqlite3', platforms: :ruby
   gem 'timecop'
+  gem 'webmock', '~> 1.24.1'
 end
