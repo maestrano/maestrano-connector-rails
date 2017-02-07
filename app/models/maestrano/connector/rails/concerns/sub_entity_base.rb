@@ -60,14 +60,6 @@ module Maestrano::Connector::Rails::Concerns::SubEntityBase
     end
   end
 
-  def map_connec_entity_with_idmap(connec_entity, external_entity_name, idmap, id_refs_only_connec_entity)
-    {entity: map_to(external_entity_name, connec_entity, idmap.last_push_to_external.nil?), idmap: idmap, id_refs_only_connec_entity: id_refs_only_connec_entity}
-  end
-
-  def map_external_entity_with_idmap(external_entity, connec_entity_name, idmap)
-    {entity: map_to(connec_entity_name, external_entity, idmap.last_push_to_connec.nil?), idmap: idmap}
-  end
-
   # Maps the entity received from external after a creation or an update and complete the received ids with the connec ones
   def map_and_complete_hash_with_connec_ids(external_hash, external_entity_name, connec_hash)
     return nil if connec_hash.empty?
