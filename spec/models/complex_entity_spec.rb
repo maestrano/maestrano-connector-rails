@@ -166,7 +166,7 @@ describe Maestrano::Connector::Rails::ComplexEntity do
           let(:external_name) { 'sc_e1' }
           let(:connec_name) { 'connec1' }
           let(:modelled_external_entities) { {external_name => {connec_name => [entity]}} }
-          before {
+          before do
             allow(subject.class).to receive(:connec_entities_names).and_return(['connec1'])
             allow(subject.class).to receive(:external_entities_names).and_return(['sc_e1'])
             allow(Entities::SubEntities::ScE1).to receive(:external?).and_return(true)
@@ -175,7 +175,7 @@ describe Maestrano::Connector::Rails::ComplexEntity do
             allow(Entities::SubEntities::ScE1).to receive(:object_name_from_external_entity_hash).and_return(human_name)
             allow(Entities::SubEntities::ScE1).to receive(:last_update_date_from_external_entity_hash).and_return(date)
             allow_any_instance_of(Entities::SubEntities::ScE1).to receive(:map_to).and_return(mapped_entity)
-          }
+          end
 
           context 'when idmap exists' do
             let!(:idmap) { create(:idmap, organization: organization, connec_entity: connec_name.downcase, external_entity: external_name.downcase, external_id: id) }
@@ -199,9 +199,7 @@ describe Maestrano::Connector::Rails::ComplexEntity do
             end
 
             context 'when entity is inactive' do
-              before {
-                allow(Entities::SubEntities::ScE1).to receive(:inactive_from_external_entity_hash?).and_return(true)
-              }
+              before { allow(Entities::SubEntities::ScE1).to receive(:inactive_from_external_entity_hash?).and_return(true)}
 
               it 'discards the entity' do
                 expect(subject.consolidate_and_map_external_entities(modelled_external_entities)).to eql({external_name => {connec_name => []}})
