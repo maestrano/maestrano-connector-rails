@@ -1,7 +1,7 @@
 module Maestrano::Connector::Rails::Services
   class DataConsolidator
     def initialize(organization, entity_self, options)
-      @is_a_subentity = entity_self.class.included_modules.include?(Maestrano::Connector::Rails::Concerns::SubEntityBase)
+      @is_a_subentity = entity_self.is_a?(Maestrano::Connector::Rails::Concerns::SubEntityBase)
       @organization = organization
       @current_entity = entity_self
       @opts = options
@@ -13,6 +13,9 @@ module Maestrano::Connector::Rails::Services
       idmap = @current_entity.class.find_or_create_idmap(organization_id: @organization.id)
       # No to_connec, to_external and inactive consideration here as we don't expect those workflow for singleton
 
+      external_id = @current_entity.class.id_from_external_entity_hash(external_entities.first) if external_entities.first
+      # A singleton will be either valid (updated/created) in the external app or in Connec!
+      # if keep_external is true we are keeping the external entity
       keep_external = if external_entities.empty?
                         false
                       elsif connec_entities.empty?
@@ -24,7 +27,7 @@ module Maestrano::Connector::Rails::Services
                       end
 
       if keep_external
-        idmap.update(external_id: @current_entity.class.id_from_external_entity_hash(external_entities.first), name: @current_entity.class.object_name_from_external_entity_hash(external_entities.first))
+        idmap.update(external_id: external_id, name: @current_entity.class.object_name_from_external_entity_hash(external_entities.first))
         return {connec_entities: [], external_entities: [{entity: @current_entity.map_to_connec(external_entities.first), idmap: idmap}]}
       else
         unfold_hash = Maestrano::Connector::Rails::ConnecHelper.unfold_references(connec_entities.first, @current_entity.class.references, @organization)
@@ -38,13 +41,13 @@ module Maestrano::Connector::Rails::Services
     def consolidate_connec_entities(connec_entities, external_entities, references, external_entity_name)
       connec_entities.map do |entity|
         # Entity has been created before date filtering limit
-        next nil if before_date_filtering_limit?(entity, false) && !@opts[:full_sync]
+        next if before_date_filtering_limit?(entity, false) && !@opts[:full_sync]
 
         # Unfold the id arrays
         # From that point on, the connec_entity contains only string of external ids
         unfold_hash = Maestrano::Connector::Rails::ConnecHelper.unfold_references(entity, references, @organization)
         entity = unfold_hash[:entity]
-        next nil unless entity # discard if at least one record reference is missing
+        next unless entity # discard if at least one record reference is missing
         connec_id = unfold_hash[:connec_id]
         id_refs_only_connec_entity = unfold_hash[:id_refs_only_connec_entity]
 
@@ -58,7 +61,7 @@ module Maestrano::Connector::Rails::Services
         idmap = @current_entity.class.find_or_create_idmap(external_id: entity['id'], organization_id: @organization.id, external_entity: external_entity_name.downcase, connec_id: connec_id)
         idmap.update(name: @current_entity.class.object_name_from_connec_entity_hash(entity))
 
-        next nil if idmap.external_inactive || !idmap.to_external || (!@opts[:full_sync] && not_modified_since_last_push_to_external?(idmap, entity))
+        next if idmap.external_inactive || !idmap.to_external || (!@opts[:full_sync] && not_modified_since_last_push_to_external?(idmap, entity))
 
         # Check for conflict with entities from external
         solve_conflict(entity, external_entities, external_entity_name, idmap, id_refs_only_connec_entity)
@@ -68,21 +71,21 @@ module Maestrano::Connector::Rails::Services
     def consolidate_external_entities(external_entities, connec_entity_name)
       external_entities.map do |entity|
         # Entity has been created before date filtering limit
-        next nil if before_date_filtering_limit?(entity) && !@opts[:full_sync]
+        next if before_date_filtering_limit?(entity) && !@opts[:full_sync]
 
         entity_id = @current_entity.class.id_from_external_entity_hash(entity)
         idmap = @current_entity.class.find_or_create_idmap(external_id: entity_id, organization_id: @organization.id, connec_entity: connec_entity_name.downcase)
 
         # Not pushing entity to Connec!
-        next nil unless idmap.to_connec
+        next unless idmap.to_connec
 
         # Not pushing to Connec! and flagging as inactive if inactive in external application
         inactive = @current_entity.class.inactive_from_external_entity_hash?(entity)
         idmap.update(external_inactive: inactive, name: @current_entity.class.object_name_from_external_entity_hash(entity))
-        next nil if inactive
+        next if inactive
 
         # Entity has not been modified since its last push to connec!
-        next nil if !@opts[:full_sync] && not_modified_since_last_push_to_connec?(idmap, entity)
+        next if !@opts[:full_sync] && not_modified_since_last_push_to_connec?(idmap, entity)
 
         map_external_entity_with_idmap(entity, connec_entity_name, idmap)
       end.compact
@@ -105,19 +108,21 @@ module Maestrano::Connector::Rails::Services
     end
 
     def map_external_entity_with_idmap(external_entity, connec_entity_name, idmap)
-      if @is_a_subentity
-        {entity: @current_entity.map_to(connec_entity_name, external_entity, idmap.last_push_to_connec.nil?), idmap: idmap}
+      entity = if @is_a_subentity
+        @current_entity.map_to(connec_entity_name, external_entity, idmap.last_push_to_connec.nil?)
       else
-        {entity: @current_entity.map_to_connec(external_entity, idmap.last_push_to_connec.nil?), idmap: idmap}
+        @current_entity.map_to_connec(external_entity, idmap.last_push_to_connec.nil?)
       end
+      {entity: entity, idmap: idmap}
     end
 
     def map_connec_entity_with_idmap(connec_entity, external_entity_name, idmap, id_refs_only_connec_entity)
-      if @is_a_subentity
-        {entity: @current_entity.map_to(external_entity_name, connec_entity, idmap.last_push_to_external.nil?), idmap: idmap, id_refs_only_connec_entity: id_refs_only_connec_entity}
+      entity = if @is_a_subentity
+        @current_entity.map_to(external_entity_name, connec_entity, idmap.last_push_to_external.nil?)
       else
-        {entity: @current_entity.map_to_external(connec_entity, idmap.last_push_to_external.nil?), idmap: idmap, id_refs_only_connec_entity: id_refs_only_connec_entity}
+        @current_entity.map_to_external(connec_entity, idmap.last_push_to_external.nil?)
       end
+      {entity: entity, idmap: idmap, id_refs_only_connec_entity: id_refs_only_connec_entity}
     end
 
     # This methods try to find a external entity among all the external entities matching the connec (mapped) one (same id)
