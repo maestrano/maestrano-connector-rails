@@ -109,19 +109,19 @@ module Maestrano::Connector::Rails::Services
 
     def map_external_entity_with_idmap(external_entity, connec_entity_name, idmap)
       entity = if @is_a_subentity
-        @current_entity.map_to(connec_entity_name, external_entity, idmap.last_push_to_connec.nil?)
-      else
-        @current_entity.map_to_connec(external_entity, idmap.last_push_to_connec.nil?)
-      end
+                 @current_entity.map_to(connec_entity_name, external_entity, idmap.last_push_to_connec.nil?)
+               else
+                 @current_entity.map_to_connec(external_entity, idmap.last_push_to_connec.nil?)
+               end
       {entity: entity, idmap: idmap}
     end
 
     def map_connec_entity_with_idmap(connec_entity, external_entity_name, idmap, id_refs_only_connec_entity)
       entity = if @is_a_subentity
-        @current_entity.map_to(external_entity_name, connec_entity, idmap.last_push_to_external.nil?)
-      else
-        @current_entity.map_to_external(connec_entity, idmap.last_push_to_external.nil?)
-      end
+                 @current_entity.map_to(external_entity_name, connec_entity, idmap.last_push_to_external.nil?)
+               else
+                 @current_entity.map_to_external(connec_entity, idmap.last_push_to_external.nil?)
+               end
       {entity: entity, idmap: idmap, id_refs_only_connec_entity: id_refs_only_connec_entity}
     end
 
@@ -153,6 +153,5 @@ module Maestrano::Connector::Rails::Services
     def connec_more_recent?(connec_entity, external_entity)
       connec_entity['updated_at'] > @current_entity.class.last_update_date_from_external_entity_hash(external_entity)
     end
-
   end
 end
