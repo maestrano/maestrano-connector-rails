@@ -1,10 +1,7 @@
 ## Release gem
 
-Release the gem using jeweler
+Edit `lib/maestrano/connector/rails/version.rb` with the new version.
 
 ``` bash
-gem install jeweler
-bundle exec rake version:bump:patch
-bundle exec rake gemspec:release
 bundle exec rake release
 ```
