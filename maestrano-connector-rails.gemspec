@@ -14,7 +14,6 @@ Gem::Specification.new do |s|
   s.date = "2017-02-03"
   s.description = "Maestrano is the next generation marketplace for SME applications. See https://sme.maestrano.com for details.".freeze
   s.email = "developers@maestrano.com".freeze
-  s.executables = ["rails".freeze, "rake".freeze]
   s.extra_rdoc_files = [
     "LICENSE",
     "README.md"
@@ -68,8 +67,6 @@ Gem::Specification.new do |s|
     "app/models/maestrano/connector/rails/synchronization.rb",
     "app/models/maestrano/connector/rails/user.rb",
     "app/models/maestrano/connector/rails/user_organization_rel.rb",
-    "bin/rails",
-    "bin/rake",
     "config/routes.rb",
     "db/migrate/20151122162100_create_users.rb",
     "db/migrate/20151122162414_create_organizations.rb",
