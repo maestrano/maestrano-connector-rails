@@ -24,7 +24,7 @@ Gem::Specification.new do |s|
     "README.md"
   ]
 
-  s.add_runtime_dependency('rails', '~> 4.2')
+  s.add_runtime_dependency('rails', '~> 4.2.7.1')
   s.add_runtime_dependency('maestrano-rails', '~> 1.0.3')
   s.add_runtime_dependency('attr_encrypted', '~> 1.4.0')
   s.add_runtime_dependency('autoprefixer-rails')
@@ -34,7 +34,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency('haml-rails')
   s.add_runtime_dependency('hash_mapper', '>= 0.2.2')
 
-  s.add_runtime_dependency('sidekiq')
+  s.add_runtime_dependency('sidekiq', '~> 4.2.9')
   s.add_runtime_dependency('sidekiq-cron')
   s.add_runtime_dependency('sidekiq-unique-jobs')
   s.add_runtime_dependency('sinatra')
