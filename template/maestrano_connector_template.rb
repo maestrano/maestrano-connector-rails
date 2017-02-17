@@ -2,7 +2,6 @@
 RAILS_SUPPORTED = ['>= 4.2', '< 5.0']
 
 def apply_template!
-  no?(RUBY_VERSION)
 
   check_compatible_rails_version
   ensure_valid_options
@@ -51,8 +50,6 @@ def apply_template!
     copy_file 'settings/settings.yml', 'config/settings.yml'
 
     copy_file 'files/application-sample.yml', 'config/application-sample.yml'
-    # TODO not needed imho
-    # copy_file 'application-sample.yml', 'config/application.yml', force: true
 
     application do
       <<-RUBY

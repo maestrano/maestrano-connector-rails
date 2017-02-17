@@ -1,14 +1,11 @@
 source 'https://rubygems.org'
 
-ruby '2.3.0'
-
-# TODO why dependencies if they are used in the gemspec?
 gem 'rails', '<%= Rails::VERSION::STRING %>'
 gem 'tzinfo-data', platforms: [:mingw, :mswin, :jruby]
 
 gem 'puma', require: false
 
-gem 'maestrano-connector-rails'
+gem 'maestrano-connector-rails', '>= 2.0.2.pre.RC6'
 
 group :production, :uat do
   gem 'activerecord-jdbcmysql-adapter', platforms: :jruby
