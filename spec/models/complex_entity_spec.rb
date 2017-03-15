@@ -236,7 +236,7 @@ describe Maestrano::Connector::Rails::ComplexEntity do
             allow(subject.class).to receive(:external_entities_names).and_return(['ext1'])
             allow(Entities::SubEntities::ScE1).to receive(:external?).and_return(false)
             allow(Entities::SubEntities::ScE1).to receive(:entity_name).and_return(connec_name)
-            allow_any_instance_of(Entities::SubEntities::ScE1).to receive(:map_to).with(external_name, entity, first_time_synch).and_return(mapped_entity)
+            allow_any_instance_of(Entities::SubEntities::ScE1).to receive(:map_to).and_return(mapped_entity)
             allow(Entities::SubEntities::ScE1).to receive(:object_name_from_connec_entity_hash).and_return(human_name)
             allow(Maestrano::Connector::Rails::ConnecHelper).to receive(:unfold_references).and_return({entity: entity, connec_id: connec_id, id_refs_only_connec_entity: id_refs_only_connec_entity})
           end
