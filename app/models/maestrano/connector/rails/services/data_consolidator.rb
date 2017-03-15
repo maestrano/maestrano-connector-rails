@@ -34,7 +34,7 @@ module Maestrano::Connector::Rails::Services
         entity = unfold_hash[:entity]
         idmap.update(name: @current_entity.class.object_name_from_connec_entity_hash(entity), connec_id: unfold_hash[:connec_id])
         idmap.update(external_id: @current_entity.class.id_from_external_entity_hash(external_entities.first)) unless external_entities.empty?
-        return {connec_entities: [{entity: @current_entity.map_to_external(entity), idmap: idmap, id_refs_only_connec_entity: {}}], external_entities: []}
+        return {connec_entities: [{entity: @current_entity.map_to_external(entity.merge(idmap: idmap)), idmap: idmap, id_refs_only_connec_entity: {}}], external_entities: []}
       end
     end
 
@@ -109,7 +109,7 @@ module Maestrano::Connector::Rails::Services
 
     def map_external_entity_with_idmap(external_entity, connec_entity_name, idmap)
       entity = if @is_a_subentity
-                 @current_entity.map_to(connec_entity_name, external_entity, idmap.last_push_to_connec.nil?)
+                 @current_entity.map_to(connec_entity_name, external_entity, idmap)
                else
                  @current_entity.map_to_connec(external_entity, idmap.last_push_to_connec.nil?)
                end
@@ -118,9 +118,9 @@ module Maestrano::Connector::Rails::Services
 
     def map_connec_entity_with_idmap(connec_entity, external_entity_name, idmap, id_refs_only_connec_entity)
       entity = if @is_a_subentity
-                 @current_entity.map_to(external_entity_name, connec_entity, idmap.last_push_to_external.nil?)
+                 @current_entity.map_to(external_entity_name, connec_entity, idmap)
                else
-                 @current_entity.map_to_external(connec_entity, idmap.last_push_to_external.nil?)
+                 @current_entity.map_to_external(connec_entity.merge(idmap: idmap), idmap.last_push_to_external.nil?)
                end
       {entity: entity, idmap: idmap, id_refs_only_connec_entity: id_refs_only_connec_entity}
     end
