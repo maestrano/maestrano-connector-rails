@@ -28,6 +28,7 @@ ActiveRecord::Schema.define(version: 20170202033323) do
     t.string   "name"
     t.string   "message"
     t.boolean  "external_inactive",     default: false
+    t.text     "metadata"
   end
 
   add_index "id_maps", ["connec_id", "connec_entity", "organization_id"], name: "idmap_connec_index"

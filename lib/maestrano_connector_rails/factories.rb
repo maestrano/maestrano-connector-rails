@@ -25,6 +25,7 @@ FactoryGirl.define do
     last_push_to_external 2.days.ago
     last_push_to_connec 1.day.ago
     association :organization
+    metadata {}
   end
 
   factory :synchronization, class: Maestrano::Connector::Rails::Synchronization do

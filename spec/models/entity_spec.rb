@@ -414,6 +414,8 @@ describe Maestrano::Connector::Rails::Entity do
             allow(connec_client).to receive(:batch).and_return(ActionDispatch::Response.new(200, {}, {results: [result200, result201]}.to_json, {}))
           end
 
+          let(:mapped_entity_1) { {name: "John"} }
+          let(:mapped_entity_2) { {name: "Jane"} }
           let(:batch_request) {
             {
               sequential: true,
@@ -421,16 +423,31 @@ describe Maestrano::Connector::Rails::Entity do
                 {
                   :method=>"post",
                   :url=>"/api/v2/cld-123/people/",
-                  :params=>{:people=>{:name=>"John"}}
+                  :params=>{:people=>mapped_entity_1}
                 },
                 {
                   :method=>"post",
                   :url=>"/api/v2/cld-123/people/",
-                  :params=>{:people=>{:name=>"Jane"}}
+                  :params=>{:people=>mapped_entity_2}
                 }
               ]
             }
           }
+
+          context 'when currency updates are ignored' do
+            let(:currency_check_field) { 'name' }
+            before do
+              idmap2.update_attributes(metadata: {ignore_currency_update: true})
+              allow(subject.class).to receive(:currency_check_field).and_return(currency_check_field)
+              mapped_entity_1.except!(currency_check_field)
+              mapped_entity_2.except!(currency_check_field)
+            end
+  
+            it 'does not send the field with the currency' do
+              expect(connec_client).to receive(:batch).with(batch_request)
+              subject.push_entities_to_connec_to(entities_with_idmaps, connec_name)
+            end
+          end
 
           it 'calls batch op' do
             expect(subject).to receive(:batch_op).twice
@@ -828,7 +845,7 @@ describe Maestrano::Connector::Rails::Entity do
               end
 
               it 'map with the unfolded references' do
-                expect(subject).to receive(:map_to_external).with('id' => nil, 'updated_at' => updated)
+                expect(subject).to receive(:map_to_external).with('id' => nil, 'updated_at' => updated, idmap: idmap)
                 subject.consolidate_and_map_singleton([connec_entity], [{}])
               end
             end

@@ -49,14 +49,15 @@ module Maestrano::Connector::Rails::Concerns::SubEntityBase
     end
   end
 
-  def map_to(name, entity, first_time_mapped = nil)
+  def map_to(name, entity, idmap = nil)
+    first_time_mapped = self.class.external? ? idmap&.last_push_to_connec.nil? : idmap&.last_push_to_external.nil?
     mapper = first_time_mapped ? self.class.creation_mapper_classes[name] : self.class.mapper_classes[name]
     raise "Impossible mapping from #{self.class.entity_name} to #{name}" unless mapper
 
     if self.class.external?
       map_to_connec_helper(entity, mapper, self.class.references[name] || [])
     else
-      map_to_external_helper(entity, mapper)
+      map_to_external_helper(entity.merge(idmap: idmap), mapper)
     end
   end
 
