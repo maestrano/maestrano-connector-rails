@@ -111,6 +111,10 @@ describe Maestrano::Connector::Rails::Entity do
       it { expect(subject.connec_matching_fields).to be_nil }
     end
 
+    describe 'connec_matching_fields' do
+      it { expect(subject.currency_check_fields).to be_nil }
+    end
+
     describe 'count_and_first' do
       it 'returns the array size and the first element' do
         expect(subject.count_and_first([*1..27])).to eql(count: 27, first: 1)
@@ -378,8 +382,8 @@ describe Maestrano::Connector::Rails::Entity do
       describe 'push_entities_to_connec_to' do
         let(:idmap1) { create(:idmap, organization: organization) }
         let(:idmap2) { create(:idmap, organization: organization, connec_id: nil) }
-        let(:entity1) { {name: 'John'} }
-        let(:entity2) { {name: 'Jane'} }
+        let(:entity1) { {Name: 'John', Price: 50.0} }
+        let(:entity2) { {Name: 'Jane', Price: 250.0} }
         let(:entity_with_idmap1) { {entity: entity1, idmap: idmap1} }
         let(:entity_with_idmap2) { {entity: entity2, idmap: idmap2} }
         let(:entities_with_idmaps) { [entity_with_idmap1, entity_with_idmap2] }
@@ -414,8 +418,11 @@ describe Maestrano::Connector::Rails::Entity do
             allow(connec_client).to receive(:batch).and_return(ActionDispatch::Response.new(200, {}, {results: [result200, result201]}.to_json, {}))
           end
 
-          let(:mapped_entity_1) { {name: "John"} }
-          let(:mapped_entity_2) { {name: "Jane"} }
+          let(:mapped_entity_1) { {'name'=> "John", 'sale_price'=> { 'net_amount'=> 50.0, 'currency'=> 'GBP'}} }
+          let(:mapped_entity_2) { {'name'=> "Jane", 'sale_price'=> { 'net_amount'=> 250.0, 'currency'=> 'GBP'}} }
+          let(:mapped_entity_with_idmap1) { {entity: mapped_entity_1, idmap: idmap1} }
+          let(:mapped_entity_with_idmap2) { {entity: mapped_entity_2, idmap: idmap2} }
+          let(:mapped_external_entity_with_idmaps) { [mapped_entity_with_idmap1, mapped_entity_with_idmap2]}
           let(:batch_request) {
             {
               sequential: true,
@@ -435,17 +442,24 @@ describe Maestrano::Connector::Rails::Entity do
           }
 
           context 'when currency updates are ignored' do
-            let(:currency_check_field) { 'name' }
+            let(:idmap2) { create(:idmap, organization: organization, connec_id: nil, metadata: {ignore_currency_update: true}) }
+            let(:currency_check_fields) { ['sale_price', 'purchase_price'] }
+            let(:filtered_mapped_external_with_idmaps) { [{entity: mapped_entity_1, idmap: idmap1}, {entity: mapped_entity_2, idmap: idmap2}]}
+            let(:proc) { Proc.new {}}
             before do
-              idmap2.update_attributes(metadata: {ignore_currency_update: true})
-              allow(subject.class).to receive(:currency_check_field).and_return(currency_check_field)
-              mapped_entity_1.except!(currency_check_field)
-              mapped_entity_2.except!(currency_check_field)
+              mapped_entity_1
+              mapped_entity_2.except!('sale_price')
             end
-  
-            it 'does not send the field with the currency' do
-              expect(connec_client).to receive(:batch).with(batch_request)
-              subject.push_entities_to_connec_to(entities_with_idmaps, connec_name)
+
+            it 'receives currency_check_fields' do
+              expect(subject.class).to receive(:currency_check_fields).twice.and_return(currency_check_fields)
+              subject.push_entities_to_connec_to(mapped_external_entity_with_idmaps, connec_name)
+            end
+
+            it 'does not send the selected fields' do
+              expect(subject.class).to receive(:currency_check_fields).twice.and_return(currency_check_fields)
+              expect(subject).to receive(:batch_calls).with(filtered_mapped_external_with_idmaps, anything, 'Person')
+              subject.push_entities_to_connec_to(mapped_external_entity_with_idmaps, connec_name)
             end
           end
 
@@ -456,7 +470,7 @@ describe Maestrano::Connector::Rails::Entity do
 
           it 'creates a batch request' do
             expect(connec_client).to receive(:batch).with(batch_request)
-            subject.push_entities_to_connec_to(entities_with_idmaps, connec_name)
+            subject.push_entities_to_connec_to(mapped_external_entity_with_idmaps, connec_name)
           end
 
           it 'update the idmaps push dates' do

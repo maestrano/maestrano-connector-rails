@@ -135,7 +135,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
       true
     end
 
-    def currency_check_field
+    def currency_check_fields
       nil
     end
 
@@ -266,12 +266,14 @@ module Maestrano::Connector::Rails::Concerns::Entity
       mapped_external_entities_with_idmaps.select! { |mapped_external_entity_with_idmap| !mapped_external_entity_with_idmap[:idmap].connec_id }
     end
 
-    if self.class.currency_check_field
-      mapped_external_entities_with_idmaps.each { |mapped_external_entity_with_idmap|
+    if self.class.currency_check_fields
+      mapped_external_entities_with_idmaps.each do |mapped_external_entity_with_idmap|
         id_map = mapped_external_entity_with_idmap[:idmap]
         next unless id_map&.metadata&.dig(:ignore_currency_update)
-        mapped_external_entity_with_idmap[:entity].delete(self.class.currency_check_field)
-      }
+        self.class.currency_check_fields.each do |field|
+          mapped_external_entity_with_idmap[:entity].delete(field)
+        end
+      end
     end
 
     proc = ->(mapped_external_entity_with_idmap) { batch_op('post', mapped_external_entity_with_idmap[:entity], nil, self.class.normalize_connec_entity_name(connec_entity_name)) }
