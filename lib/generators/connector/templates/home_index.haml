@@ -55,7 +55,7 @@
                   .col-md-1
                     =image_tag "logos/to_external.png", class: "image"
                   .col-md-4
-                    Vend wording
+                    ApplicationName wording
                   .col-md-3
                     Universal wording
             .spacer1
@@ -85,6 +85,32 @@
               .col-md-4.col-md-offset-1
                 %label{:for => 'historical-data'} Synchronize my historical data
               .col-md-1
+                #myModal.modal.fade{:role => "dialog"}
+                  .modal-dialog
+                    .modal-content
+                      .modal-header
+                        %button.close{"data-dismiss" => "modal", :type => "button"} ×
+                        %h4.modal-title Warning!
+                      .modal-body
+                        %p
+                          %b All data
+                          created prior to the date you linked ApplicationName
+                          %b will be synchronised both ways.
+                        %p
+                          It means that:
+                          %br
+                          \- all data from applications you already have linked to the platform will be sent to your ApplicationName account
+                          %br
+                          \- all exisiting data from ApplicationName will be sent to your other applications
+                          %br
+                        %p
+                          If you have been manually copying records in multiple applications,
+                          %b you risk seeing duplicates arising!
+                        %p
+                          %b This action cannot be undone at any time!
+                      .modal-footer
+                        %button.btn.btn-primary{id: 'confirm', :type => "button", onclick: "closeModal(confirm);"}  Confirm
+                        %button.btn.btn-secondary{id: 'close', :type => "button", onclick: "closeModal(close);"} Close
                 %input{type: 'checkbox', id: 'historical-data', name: 'historical-data', checked: current_organization.historical_data, onchange: 'historicalDataDisplay();', disabled: current_organization.historical_data}
               .col-md-6
                 %small#historical-data-display-unchecked{style: "display: #{current_organization.historical_data ? 'none' : 'block'}"} Only data created after #{(current_organization.date_filtering_limit && current_organization.date_filtering_limit.utc || Time.now.utc).to_formatted_s(:long_ordinal)} will be synchronized
