@@ -354,10 +354,11 @@ describe Maestrano::Connector::Rails::ComplexEntity do
           }
         }
 
-        before {
+        before do
+          allow(organization).to receive(:push_to_connec_enabled?).and_return(true)
           allow(subject.class).to receive(:external_entities_names).and_return(['sc_e1', 'ScE2'])
           allow(subject.class).to receive(:connec_entities_names).and_return(['Connec1', 'connec2'])
-        }
+        end
 
         it 'calls push_entities_to_connec on each sub complex entity' do
           expect_any_instance_of(Entities::SubEntities::ScE1).to receive(:push_entities_to_connec_to).once.with([mapped_entity_with_idmap], 'Connec1')
@@ -367,13 +368,13 @@ describe Maestrano::Connector::Rails::ComplexEntity do
 
         describe 'full call' do
           let(:idmap) { create(:idmap, organization: organization) }
-          before {
+          before do
             [Entities::SubEntities::ScE1, Entities::SubEntities::ScE2].each do |klass|
               allow(klass).to receive(:external?).and_return(true)
               allow(klass).to receive(:entity_name).and_return('n')
             end
             allow(connec_client).to receive(:batch).and_return(ActionDispatch::Response.new(200, {}, {results: [{status: 200, body: {connec1s: {id: [{provider: 'connec', id: 'connec-id'}]}}}]}.to_json, {}), ActionDispatch::Response.new(200, {}, {results: [{status: 200, body: {connec1s: {id: [{provider: 'connec', id: 'connec-id'}]}}}]}.to_json, {}), ActionDispatch::Response.new(200, {}, {results: [{status: 200, body: {connec2s: {id: [{provider: 'connec', id: 'connec-id'}]}}}]}.to_json, {}))
-          }
+          end
           it 'is successful' do
             subject.push_entities_to_connec(external_hash)
             idmap.reload
