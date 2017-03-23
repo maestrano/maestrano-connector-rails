@@ -1,0 +1,28 @@
+source 'https://rubygems.org'
+
+gem 'rails', '<%= Rails::VERSION::STRING %>'
+gem 'tzinfo-data', platforms: [:mingw, :mswin, :jruby]
+
+gem 'puma', require: false
+
+gem 'maestrano-connector-rails', '>= 2.0.2.pre.RC6'
+
+group :production, :uat do
+  gem 'activerecord-jdbcmysql-adapter', platforms: :jruby
+  gem 'mysql2', platforms: :ruby
+  gem 'rails_12factor'
+end
+
+group :test, :development do
+  gem 'activerecord-jdbcsqlite3-adapter', platforms: :jruby
+  gem 'sqlite3', platforms: :ruby
+  gem 'rubocop'
+end
+
+group :test do
+  gem 'simplecov'
+  gem 'rspec-rails'
+  gem 'factory_girl_rails'
+  gem 'shoulda-matchers'
+  gem 'timecop'
+end
