@@ -26,8 +26,8 @@ module Maestrano::Connector::Rails
     # Encryptions
     #===================================
     attr_encrypted_options[:mode] = :per_attribute_iv_and_salt
-    attr_encrypted :oauth_token, key: ::Settings.encryption_key1
-    attr_encrypted :refresh_token, key: ::Settings.encryption_key2
+    attr_encrypted :oauth_token, key: Rails.env.test? ? 'just_a_string' : ::Settings.encryption_key1
+    attr_encrypted :refresh_token, key: Rails.env.test? ? 'just_a_string' : ::Settings.encryption_key2
 
     #===================================
     # Associations
