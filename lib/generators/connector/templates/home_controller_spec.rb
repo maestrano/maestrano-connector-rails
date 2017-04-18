@@ -3,7 +3,7 @@ require 'spec_helper'
 describe HomeController, type: :controller do
   let(:back_path) { home_index_path }
 
-  before(:each) { request.env['HTTP_REFERER'] = back_path }
+  before(:each) { request.env['HTTP_REFERER'] = back_path}
 
   describe 'index' do
     subject { get :index }
@@ -13,12 +13,14 @@ describe HomeController, type: :controller do
 
   describe 'update' do
     let(:user) { create(:user) }
-    let(:organization) { create(:organization, synchronized_entities: {'people' => false, 'item' => true}) }
+    let(:organization) { create(:organization, synchronized_entities: {'people' => {can_push_to_connec: false, can_push_to_external: false}, 'item' => {can_push_to_connec: true, can_push_to_external: true}}) }
 
-    before { allow_any_instance_of(Maestrano::Connector::Rails::SessionHelper).to receive(:current_user).and_return(user) }
-    before { allow_any_instance_of(Maestrano::Connector::Rails::SessionHelper).to receive(:current_organization).and_return(organization) }
+    before do
+      allow_any_instance_of(Maestrano::Connector::Rails::SessionHelper).to receive(:current_user).and_return(user)
+      allow_any_instance_of(Maestrano::Connector::Rails::SessionHelper).to receive(:current_organization).and_return(organization)
+    end
 
-    subject { put :update, id: organization.id, 'people' => true, 'item' => false, 'lala' => true }
+    subject { put :update, id: organization.id, 'people' => {to_connec: '1', to_external: '1'}, 'item' => {}, 'lala' => {} }
 
     context 'when user is not admin' do
       before { allow_any_instance_of(Maestrano::Connector::Rails::SessionHelper).to receive(:is_admin).and_return(false) }
@@ -34,7 +36,7 @@ describe HomeController, type: :controller do
       it 'updates organization synchronized_entities' do
         subject
         organization.reload
-        expect(organization.synchronized_entities).to eq('people' => true, 'item' => false)
+        expect(organization.synchronized_entities).to eq('people' => {can_push_to_connec: true, can_push_to_external: true}, 'item' => {can_push_to_connec: false, can_push_to_external: false})
       end
 
       it 'updates organization sync_enabled' do
@@ -44,7 +46,7 @@ describe HomeController, type: :controller do
       end
 
       context 'when removing all entities' do
-        subject { put :update, id: organization.id, 'people' => false, 'item' => false }
+        subject { put :update, id: organization.id, 'people' => {}, 'item' => {} }
         before { organization.update(sync_enabled: true) }
 
         it 'set sync_enabled to false' do
@@ -58,10 +60,12 @@ describe HomeController, type: :controller do
 
   describe 'synchronize' do
     let(:user) { create(:user) }
-    let(:organization) { create(:organization, synchronized_entities: {'people' => false, 'item' => true}) }
+    let(:organization) { create(:organization, synchronized_entities: {'people' => {can_push_to_connec: false, can_push_to_external: false}, 'item' => {can_push_to_connec: true, can_push_to_external: true}}) }
 
-    before { allow_any_instance_of(Maestrano::Connector::Rails::SessionHelper).to receive(:current_user).and_return(user) }
-    before { allow_any_instance_of(Maestrano::Connector::Rails::SessionHelper).to receive(:current_organization).and_return(organization) }
+    before do
+      allow_any_instance_of(Maestrano::Connector::Rails::SessionHelper).to receive(:current_user).and_return(user)
+      allow_any_instance_of(Maestrano::Connector::Rails::SessionHelper).to receive(:current_organization).and_return(organization)
+    end
 
     subject { post :synchronize }
 
@@ -102,10 +106,14 @@ describe HomeController, type: :controller do
   end
 
   describe 'redirect_to_external' do
+    let(:user) { create(:user) }
+    let(:organization) { create(:organization) }
     subject { get :redirect_to_external }
 
-    context 'otherwise' do
-      it { expect(subject).to redirect_to('somewhere') }
+    before do
+      allow_any_instance_of(Maestrano::Connector::Rails::SessionHelper).to receive(:current_organization).and_return(organization)
     end
+
+    it {expect(subject).to redirect_to('https://somewhere.com')}
   end
 end

@@ -10,7 +10,7 @@ class HomeController < ApplicationController
     end
     full_sync = params['historical-data'].present? && !current_organization.historical_data
     opts = {full_sync: full_sync}
-    current_organization.sync_enabled = current_organization.synchronized_entities.values.any?
+    current_organization.sync_enabled = current_organization.synchronized_entities.values.any? { |settings| settings.values.any? { |v| v } }
     current_organization.enable_historical_data(params['historical-data'].present?)
     trigger_sync = current_organization.sync_enabled
     current_organization.save
