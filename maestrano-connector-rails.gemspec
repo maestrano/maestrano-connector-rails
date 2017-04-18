@@ -31,6 +31,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency('bootstrap-sass')
   s.add_runtime_dependency('config')
   s.add_runtime_dependency('figaro')
+  s.add_runtime_dependency('jquery-rails')
   s.add_runtime_dependency('haml-rails')
   s.add_runtime_dependency('hash_mapper', '>= 0.2.2')
 

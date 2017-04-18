@@ -33,6 +33,11 @@ module Connector
       copy_file 'example_entity_spec.rb', 'spec/models/entities/example_entitiy.rb'
     end
 
+    def copy_icons_and_logos
+      copy_file 'logos/to_connec.png', 'app/assets/images/logos/to_connec.png'
+      copy_file 'logos/to_external.png', 'spec/assets/images/logos/to_external.png'
+    end
+
     def copy_controllers_and_views
       copy_file 'home_controller.rb', 'app/controllers/home_controller.rb'
       copy_file 'home_controller_spec.rb', 'spec/controllers/home_controller_spec.rb'

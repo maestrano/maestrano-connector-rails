@@ -9,7 +9,7 @@
           -if current_organization
             Link your company <strong>#{current_organization.name} (#{current_organization.uid})</strong> to ApplicationName to get your business in synch. Check the status of your connection on this screen.
           -else
-            Link your account to ApplicationName to get your business in synch. Check the status of your connection on this screen.
+            ApplicationName add-on is a microservice providing data synchronization between your platform and ApplicationName
 
   .container
     - if current_user
@@ -127,9 +127,3 @@
         .row
           .col-md-4.col-md-offset-4.text-center
             = link_to 'Go to ApplicationName', home_redirect_to_external_path, class: 'btn btn-lg btn-primary'
-
-    - else
-      .row
-        .col-md-4.col-md-offset-4.center
-          = link_to 'Link your Maestrano account', Maestrano::Connector::Rails::Engine.routes.url_helpers.default_maestrano_auth_saml_index_path(tenant: :default), class: 'btn btn-warning'
-
