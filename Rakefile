@@ -14,4 +14,4 @@ load 'rails/tasks/engine.rake'
 RuboCop::RakeTask.new
 RSpec::Core::RakeTask.new(spec: 'app:db:test:prepare')
 
-task default: [:spec, :rubocop]
+task default: %i[spec rubocop]

@@ -263,7 +263,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
 
     # As we're doing only POST, we use the idmaps to filter out updates
     unless self.class.can_update_connec?
-      mapped_external_entities_with_idmaps.select! { |mapped_external_entity_with_idmap| !mapped_external_entity_with_idmap[:idmap].connec_id }
+      mapped_external_entities_with_idmaps.reject! { |mapped_external_entity_with_idmap| mapped_external_entity_with_idmap[:idmap].connec_id }
     end
 
     if self.class.currency_check_fields
@@ -472,7 +472,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
         Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, "Sending batch request to Connec! #{log_info} for #{self.class.normalize_connec_entity_name(connec_entity_name)}. Batch_request_size: #{batch_request[:ops].size}. Call_number: #{(start / request_per_call) + 1}")
         response = @connec_client.batch(batch_request)
         Maestrano::Connector::Rails::ConnectorLogger.log('debug', @organization, "Received batch response from Connec! for #{self.class.normalize_connec_entity_name(connec_entity_name)}: #{response}")
-        raise "No data received from Connec! when trying to send batch request #{log_info} for #{self.class.connec_entity_name.pluralize}" unless response && !response.body.blank?
+        raise "No data received from Connec! when trying to send batch request #{log_info} for #{self.class.connec_entity_name.pluralize}" unless response && response.body.present?
         response = JSON.parse(response.body)
 
         # Parse batch response
@@ -497,7 +497,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
       Maestrano::Connector::Rails::ConnectorLogger.log('debug', @organization, "Fetching data from connec entity=#{self.class.connec_entity_name}, url=#{uri}")
       response = @connec_client.get(uri)
 
-      raise "No data received from Connec! when trying to fetch #{self.class.normalized_connec_entity_name}" unless response && !response.body.blank?
+      raise "No data received from Connec! when trying to fetch #{self.class.normalized_connec_entity_name}" unless response && response.body.present?
 
       response_hash = JSON.parse(response.body)
       Maestrano::Connector::Rails::ConnectorLogger.log('debug', @organization, "Received response for entity=#{self.class.connec_entity_name}, response=#{response_hash}")

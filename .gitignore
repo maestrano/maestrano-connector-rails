@@ -4,3 +4,4 @@ spec/dummy/tmp
 /coverage
 /pkg
 Gemfile.lock
+**/.DS_STORE
