@@ -2,8 +2,7 @@ module Maestrano::Connector::Rails::Concerns::User
   extend ActiveSupport::Concern
 
   included do
-
-  	# Enable Maestrano for this user
+    # Enable Maestrano for this user
     maestrano_user_via :provider, :uid, :tenant do |user, maestrano|
       user.uid = maestrano.uid
       user.provider = maestrano.provider
@@ -13,16 +12,16 @@ module Maestrano::Connector::Rails::Concerns::User
       user.tenant = 'default' # To be set from SSO parameter
     end
 
-   	#===================================
-   	# Associations
-   	#===================================
-   	has_many :user_organization_rels, class_name: 'Maestrano::Connector::Rails::UserOrganizationRel'
-   	has_many :organizations, through: :user_organization_rels, class_name: 'Maestrano::Connector::Rails::Organization'
+    #===================================
+    # Associations
+    #===================================
+    has_many :user_organization_rels, class_name: 'Maestrano::Connector::Rails::UserOrganizationRel'
+    has_many :organizations, through: :user_organization_rels, class_name: 'Maestrano::Connector::Rails::Organization'
 
-   	#===================================
-   	# Validation
-   	#===================================
-   	validates :email, presence: true
-   	validates :tenant, presence: true
+    #===================================
+    # Validation
+    #===================================
+    validates :email, presence: true
+    validates :tenant, presence: true
   end
 end

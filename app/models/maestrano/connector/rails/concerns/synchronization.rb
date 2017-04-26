@@ -18,9 +18,9 @@ module Maestrano::Connector::Rails::Concerns::Synchronization
   end
 
   module ClassMethods
-  	def create_running(organization)
-      Synchronization.create(organization_id: organization.id, status: RUNNING_STATUS)
-  	end
+    def create_running(organization)
+      Maestrano::Connector::Rails::Synchronization.create(organization_id: organization.id, status: RUNNING_STATUS)
+    end
   end
 
   def running?
