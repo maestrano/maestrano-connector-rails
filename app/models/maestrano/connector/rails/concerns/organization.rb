@@ -2,8 +2,7 @@ module Maestrano::Connector::Rails::Concerns::Organization
   extend ActiveSupport::Concern
 
   included do
-
-  	# Enable Maestrano for this group
+    # Enable Maestrano for this group
     maestrano_group_via :provider, :uid, :tenant do |group, maestrano|
       group.name = (maestrano.name.blank? ? 'Default Group name' : maestrano.name)
       group.tenant = 'default' # To be set from SSO parameter
@@ -14,7 +13,7 @@ module Maestrano::Connector::Rails::Concerns::Organization
       # group.some_required_field = 'some-appropriate-default-value'
     end
 
-  	# Callbacks
+    # Callbacks
     before_save :update_metadata
 
     #===================================
@@ -53,7 +52,7 @@ module Maestrano::Connector::Rails::Concerns::Organization
     super
     self.synchronized_entities = {}
     Maestrano::Connector::Rails::External.entities_list.each do |entity|
-      self.synchronized_entities[entity.to_sym] = {can_push_to_connec: !self.pull_disabled, can_push_to_external: !self.push_disabled}
+      synchronized_entities[entity.to_sym] = {can_push_to_connec: !pull_disabled, can_push_to_external: !push_disabled}
     end
   end
 
@@ -88,7 +87,7 @@ module Maestrano::Connector::Rails::Concerns::Organization
     self.oauth_token = auth.credentials.token
     self.refresh_token = auth.credentials.refresh_token
     self.instance_url = auth.credentials.instance_url
-    self.save
+    save
   end
 
   def clear_omniauth
@@ -96,13 +95,13 @@ module Maestrano::Connector::Rails::Concerns::Organization
     self.oauth_token = nil
     self.refresh_token = nil
     self.sync_enabled = false
-    self.save
+    save
   end
 
   # Enable historical data sharing (prior to account linking)
   def enable_historical_data(enabled)
     # Historical data sharing cannot be unset
-    return if self.historical_data
+    return if historical_data
     if enabled
       self.date_filtering_limit = nil
       self.historical_data = true
@@ -156,7 +155,7 @@ module Maestrano::Connector::Rails::Concerns::Organization
   end
 
   def update_metadata
-    self.set_instance_metadata
-    self.enable_historical_data(true) if self.push_disabled
+    set_instance_metadata
+    enable_historical_data(true) if push_disabled
   end
 end

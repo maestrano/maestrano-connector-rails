@@ -18,9 +18,9 @@ module Maestrano::Connector::Rails::Concerns::Synchronization
   end
 
   module ClassMethods
-  	def create_running(organization)
-      Synchronization.create(organization_id: organization.id, status: RUNNING_STATUS)
-  	end
+    def create_running(organization)
+      Maestrano::Connector::Rails::Synchronization.create(organization_id: organization.id, status: RUNNING_STATUS)
+    end
   end
 
   def running?
@@ -35,15 +35,15 @@ module Maestrano::Connector::Rails::Concerns::Synchronization
     status == SUCCESS_STATUS
   end
 
-  def set_success
+  def mark_as_success
     update_attributes(status: SUCCESS_STATUS)
   end
 
-  def set_error(msg)
+  def mark_as_error(msg)
     update_attributes(status: ERROR_STATUS, message: msg)
   end
 
-  def set_partial
+  def mark_as_partial
     update_attributes(partial: true)
   end
 

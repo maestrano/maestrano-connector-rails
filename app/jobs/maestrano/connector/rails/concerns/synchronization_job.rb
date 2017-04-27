@@ -33,62 +33,63 @@ module Maestrano::Connector::Rails::Concerns::SynchronizationJob
   #  * :connec_preemption => true|false : preemption is always|never given to connec in case of conflict (if not set, the most recently updated entity is kept)
   def perform(organization_id, opts = {})
     organization = Maestrano::Connector::Rails::Organization.find(organization_id)
-      return unless organization&.sync_enabled
-      # Check if previous synchronization is still running
-      if Maestrano::Connector::Rails::Synchronization.where(organization_id: organization.id, status: 'RUNNING').where(created_at: (30.minutes.ago..Time.now)).exists?
-        Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, 'Synchronization skipped: Previous synchronization is still running')
-        return
-      end
+    return unless organization&.sync_enabled
 
-      # Check if recovery mode: last 3 synchronizations have failed
-      if !opts[:forced] && organization.last_three_synchronizations_failed? \
-          && organization.synchronizations.order(created_at: :desc).limit(1).first.updated_at > 1.day.ago
-        Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, 'Synchronization skipped: Recovery mode (three previous synchronizations have failed)')
-        return
-      end
+    # Check if previous synchronization is still running
+    if Maestrano::Connector::Rails::Synchronization.where(organization_id: organization.id, status: 'RUNNING').where(created_at: (30.minutes.ago..Time.now.utc)).exists?
+      Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, 'Synchronization skipped: Previous synchronization is still running')
+      return
+    end
 
-      # Trigger synchronization
-      Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Start synchronization, opts=#{opts}")
-      current_synchronization = Maestrano::Connector::Rails::Synchronization.create_running(organization)
+    # Check if recovery mode: last 3 synchronizations have failed
+    if !opts[:forced] && organization.last_three_synchronizations_failed? \
+        && organization.synchronizations.order(created_at: :desc).limit(1).first.updated_at > 1.day.ago
+      Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, 'Synchronization skipped: Recovery mode (three previous synchronizations have failed)')
+      return
+    end
 
-      begin
-        last_synchronization = organization.last_successful_synchronization
-        last_synchronization_date = organization.last_synchronization_date
-        connec_client = Maestrano::Connector::Rails::ConnecHelper.get_client(organization)
-        external_client = Maestrano::Connector::Rails::External.get_client(organization)
+    # Trigger synchronization
+    Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Start synchronization, opts=#{opts}")
+    current_synchronization = Maestrano::Connector::Rails::Synchronization.create_running(organization)
 
-        # First synchronization should be from external to Connec! only to let the smart merging works
-        # We do a doube sync: only from external, then only from connec!
-        # We also do batched sync as the first one can be quite huge
-        if last_synchronization.nil?
-          Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, 'First synchronization ever. Doing two half syncs to allow smart merging to work its magic.')
-          organization.synchronized_entities.each do |entity, settings|
-            next unless settings[:can_push_to_connec] || settings[:can_push_to_external]
-            Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "First synchronization ever. Doing half sync from external for #{entity}.")
-            first_sync_entity(entity.to_s, organization, connec_client, external_client, last_synchronization_date, opts, true)
-            Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "First synchronization ever. Doing half sync from Connec! for #{entity}.")
-            first_sync_entity(entity.to_s, organization, connec_client, external_client, last_synchronization_date, opts, false)
-          end
-        elsif opts[:only_entities]
-          Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Synchronization is partial and will synchronize only #{opts[:only_entities].join(' ')}")
-          # The synchronization is marked as partial and will not be considered as the last-synchronization for the next sync
-          current_synchronization.set_partial
-          opts[:only_entities].each do |entity|
-            sync_entity(entity, organization, connec_client, external_client, last_synchronization_date, opts)
-          end
-        else
-          organization.synchronized_entities.each do |entity, settings|
-            next unless settings[:can_push_to_connec] || settings[:can_push_to_external]
-            sync_entity(entity.to_s, organization, connec_client, external_client, last_synchronization_date, opts)
-          end
+    begin
+      last_synchronization = organization.last_successful_synchronization
+      last_synchronization_date = organization.last_synchronization_date
+      connec_client = Maestrano::Connector::Rails::ConnecHelper.get_client(organization)
+      external_client = Maestrano::Connector::Rails::External.get_client(organization)
+
+      # First synchronization should be from external to Connec! only to let the smart merging works
+      # We do a doube sync: only from external, then only from connec!
+      # We also do batched sync as the first one can be quite huge
+      if last_synchronization.nil?
+        Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, 'First synchronization ever. Doing two half syncs to allow smart merging to work its magic.')
+        organization.synchronized_entities.each do |entity, settings|
+          next unless settings[:can_push_to_connec] || settings[:can_push_to_external]
+          Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "First synchronization ever. Doing half sync from external for #{entity}.")
+          first_sync_entity(entity.to_s, organization, connec_client, external_client, last_synchronization_date, opts, true)
+          Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "First synchronization ever. Doing half sync from Connec! for #{entity}.")
+          first_sync_entity(entity.to_s, organization, connec_client, external_client, last_synchronization_date, opts, false)
         end
-
-        Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Finished synchronization, organization=#{organization.uid}, status=success")
-        current_synchronization.set_success
-      rescue => e
-        Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Finished synchronization, organization=#{organization.uid}, status=error, message=#{e.message} backtrace=#{e.backtrace.join("\n\t")}")
-        current_synchronization.set_error(e.message)
+      elsif opts[:only_entities]
+        Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Synchronization is partial and will synchronize only #{opts[:only_entities].join(' ')}")
+        # The synchronization is marked as partial and will not be considered as the last-synchronization for the next sync
+        current_synchronization.mark_as_partial
+        opts[:only_entities].each do |entity|
+          sync_entity(entity, organization, connec_client, external_client, last_synchronization_date, opts)
+        end
+      else
+        organization.synchronized_entities.each do |entity, settings|
+          next unless settings[:can_push_to_connec] || settings[:can_push_to_external]
+          sync_entity(entity.to_s, organization, connec_client, external_client, last_synchronization_date, opts)
+        end
       end
+
+      Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Finished synchronization, organization=#{organization.uid}, status=success")
+      current_synchronization.mark_as_success
+    rescue => e
+      Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Finished synchronization, organization=#{organization.uid}, status=error, message=#{e.message} backtrace=#{e.backtrace.join("\n\t")}")
+      current_synchronization.mark_as_error(e.message)
+    end
   end
 
   def sync_entity(entity_name, organization, connec_client, external_client, last_synchronization_date, opts)
