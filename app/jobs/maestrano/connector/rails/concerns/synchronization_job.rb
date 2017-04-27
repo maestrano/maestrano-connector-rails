@@ -36,7 +36,7 @@ module Maestrano::Connector::Rails::Concerns::SynchronizationJob
     return unless organization&.sync_enabled
 
     # Check if previous synchronization is still running
-    if Maestrano::Connector::Rails::Synchronization.where(organization_id: organization.id, status: 'RUNNING').where(created_at: (30.minutes.ago..Time.now)).exists?
+    if Maestrano::Connector::Rails::Synchronization.where(organization_id: organization.id, status: 'RUNNING').where(created_at: (30.minutes.ago..Time.now.utc)).exists?
       Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, 'Synchronization skipped: Previous synchronization is still running')
       return
     end
@@ -73,7 +73,7 @@ module Maestrano::Connector::Rails::Concerns::SynchronizationJob
       elsif opts[:only_entities]
         Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Synchronization is partial and will synchronize only #{opts[:only_entities].join(' ')}")
         # The synchronization is marked as partial and will not be considered as the last-synchronization for the next sync
-        current_synchronization.set_partial
+        current_synchronization.mark_as_partial
         opts[:only_entities].each do |entity|
           sync_entity(entity, organization, connec_client, external_client, last_synchronization_date, opts)
         end
@@ -85,10 +85,10 @@ module Maestrano::Connector::Rails::Concerns::SynchronizationJob
       end
 
       Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Finished synchronization, organization=#{organization.uid}, status=success")
-      current_synchronization.set_success
+      current_synchronization.mark_as_success
     rescue => e
       Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Finished synchronization, organization=#{organization.uid}, status=error, message=#{e.message} backtrace=#{e.backtrace.join("\n\t")}")
-      current_synchronization.set_error(e.message)
+      current_synchronization.mark_as_error(e.message)
     end
   end
 
