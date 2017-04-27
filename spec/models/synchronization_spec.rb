@@ -41,32 +41,32 @@ describe Maestrano::Connector::Rails::Synchronization do
       it { expect(Maestrano::Connector::Rails::Synchronization.new(status: 'ERROR').running?).to be(false) }
     end
 
-    describe 'set_success' do
+    describe 'mark_as_success' do
       let(:sync) { create(:synchronization, status: 'RUNNING') }
 
       it 'set the synchronization status to success' do
-        sync.set_success
+        sync.mark_as_success
         sync.reload
         expect(sync.status).to eql('SUCCESS')
       end
     end
 
-    describe 'set_error' do
+    describe 'mark_as_error' do
       let(:sync) { create(:synchronization, status: 'RUNNING') }
 
       it 'set the synchronization status to error with the message' do
-        sync.set_error('msg')
+        sync.mark_as_error('msg')
         sync.reload
         expect(sync.status).to eql('ERROR')
         expect(sync.message).to eql('msg')
       end
     end
 
-    describe 'set_partial' do
+    describe 'mark_as_partial' do
       let(:sync) { create(:synchronization, partial: false) }
 
       it 'set the synchronization status to error with the message' do
-        sync.set_partial
+        sync.mark_as_partial
         sync.reload
         expect(sync.partial).to be(true)
       end
