@@ -12,8 +12,8 @@ Rails.application.routes.draw do
   get 'shared_entities/index' => 'shared_entities#index'
 
   # OAuth workflow pages
-  match 'auth/:provider/request', to: 'oauth#create_omniauth', via: %i(get post)
-  match 'signout_omniauth', to: 'oauth#destroy_omniauth', as: 'signout_omniauth', via: %i(get post)
+  match 'auth/:provider/request', to: 'oauth#create_omniauth', via: %i[get post]
+  match 'signout_omniauth', to: 'oauth#destroy_omniauth', as: 'signout_omniauth', via: %i[get post]
   post 'auth/auth', to: 'auth#auth'
 
   # Sidekiq Admin

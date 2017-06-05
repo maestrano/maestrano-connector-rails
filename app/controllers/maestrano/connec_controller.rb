@@ -8,7 +8,7 @@ class Maestrano::ConnecController < Maestrano::Rails::WebHookController
         entities.each do |entity|
           begin
             organization = find_valid_organization(entity[:group_id], params[:tenant], entity_class_hash)
-            next unless organization.present?
+            next if organization.blank?
             Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Processing entity from Connec! webhook, entity_name=\"#{entity_name}\", data=\"#{entity}\"")
 
             connec_client = Maestrano::Connector::Rails::ConnecHelper.get_client(organization)
