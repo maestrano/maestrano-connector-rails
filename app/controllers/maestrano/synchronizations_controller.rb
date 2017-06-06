@@ -19,7 +19,7 @@ class Maestrano::SynchronizationsController < Maestrano::Rails::WebHookControlle
 
     status = organization_status(organization)
 
-    unless status == 'RUNNING' || status == 'ENQUEUED'
+    unless ['RUNNING', 'ENQUEUED'].include?(status)
       Maestrano::Connector::Rails::SynchronizationJob.perform_later(organization.id, opts.with_indifferent_access)
       status = 'ENQUEUED'
     end

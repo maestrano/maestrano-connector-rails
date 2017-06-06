@@ -6,10 +6,9 @@ class Maestrano::ConnecController < Maestrano::Rails::WebHookController
         next Maestrano::Connector::Rails::ConnectorLogger.log('info', nil, "Received notification from Connec! for unknow entity: #{entity_name}") unless entity_class_hash
 
         entities.each do |entity|
-          organization = Maestrano::Connector::Rails::Organization.find_by(uid: entity[:group_id], tenant: params[:tenant])
-
           begin
-            next unless valid_organization?(organization, entity_class_hash)
+            organization = find_valid_organization(entity[:group_id], params[:tenant], entity_class_hash)
+            next if organization.blank?
             Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Processing entity from Connec! webhook, entity_name=\"#{entity_name}\", data=\"#{entity}\"")
 
             connec_client = Maestrano::Connector::Rails::ConnecHelper.get_client(organization)
@@ -38,23 +37,25 @@ class Maestrano::ConnecController < Maestrano::Rails::WebHookController
 
   private
 
-    def valid_organization?(organization, entity_class_hash)
+    def find_valid_organization(uid, tenant, entity_class_hash)
+      organization = Maestrano::Connector::Rails::Organization.find_by(uid: uid, tenant: tenant)
+
       if organization.nil?
-        Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Received notification from Connec! for an unknown organization, organization_uid=\"#{entity[:group_id]}\", tenant=\"#{params[:tenant]}\"")
-        return false
+        Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Received notification from Connec! for an unknown organization, organization_uid=\"#{uid}\", tenant=\"#{tenant}\"")
+        return nil
       end
 
       if organization.oauth_uid.blank?
-        Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Received notification from Connec! for an organization not linked, organization_uid=\"#{entity[:group_id]}\", tenant=\"#{params[:tenant]}\"")
-        return false
+        Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Received notification from Connec! for an organization not linked, organization_uid=\"#{uid}\", tenant=\"#{tenant}\"")
+        return nil
       end
 
       unless organization.sync_enabled && organization.synchronized_entities[entity_class_hash[:name].to_sym][:can_push_to_external]
-        Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Skipping notification from Connec! webhook, entity_name=\"#{entity_name}\"")
-        return false
+        Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Skipping notification from Connec! webhook, entity_name=\"#{entity_class_hash[:name]}\"")
+        return nil
       end
 
-      true
+      organization
     end
 
     def find_entity_class(entity_name)
