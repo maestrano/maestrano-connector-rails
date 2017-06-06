@@ -31,7 +31,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency('bootstrap-sass')
   s.add_runtime_dependency('config')
   s.add_runtime_dependency('figaro')
-  s.add_runtime_dependency('jquery-rails')
+  s.add_runtime_dependency('jquery-rails', '>= 1.4.0')
   s.add_runtime_dependency('haml-rails')
   s.add_runtime_dependency('hash_mapper', '>= 0.2.2')
 
@@ -46,7 +46,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency('github_changelog_generator')
   s.add_development_dependency('rdoc')
   s.add_development_dependency('rspec-rails')
-  s.add_development_dependency('rubocop', '~> 0.43')
+  s.add_development_dependency('rubocop', '~> 0.49.1')
   s.add_development_dependency('shoulda')
   s.add_development_dependency('shoulda-matchers')
   s.add_development_dependency('simplecov', '>= 0')
