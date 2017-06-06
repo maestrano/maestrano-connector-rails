@@ -4,6 +4,9 @@ inherit_from: .rubocop_todo.yml
 Rails:
   Enabled: true
 
+Rails/ApplicationRecord:
+  Enabled: false
+
 AllCops:
   TargetRubyVersion: 2.3
   Exclude:
