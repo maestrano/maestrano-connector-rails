@@ -46,8 +46,13 @@ module Maestrano::Connector::Rails::Services
         # Unfold the id arrays
         # From that point on, the connec_entity contains only string of external ids
         unfold_hash = Maestrano::Connector::Rails::ConnecHelper.unfold_references(entity, references, @organization)
+        unfolded_entity = entity
         entity = unfold_hash[:entity]
-        next unless entity # discard if at least one record reference is missing
+
+        unless entity # discard if at least one record reference is missing
+          Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, "Record discarded - missing external reference in #{unfolded_entity}")
+          next
+        end
         connec_id = unfold_hash[:connec_id]
         id_refs_only_connec_entity = unfold_hash[:id_refs_only_connec_entity]
 
