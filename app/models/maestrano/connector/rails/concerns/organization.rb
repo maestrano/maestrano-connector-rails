@@ -48,8 +48,9 @@ module Maestrano::Connector::Rails::Concerns::Organization
   module ClassMethods
   end
 
-  def initialize
-    super
+  def initialize(attributes = nil, options = {})
+    super(attributes, options)
+
     self.synchronized_entities = {}
     Maestrano::Connector::Rails::External.entities_list.each do |entity|
       synchronized_entities[entity.to_sym] = {can_push_to_connec: !pull_disabled, can_push_to_external: !push_disabled}
