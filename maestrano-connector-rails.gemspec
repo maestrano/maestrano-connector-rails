@@ -25,7 +25,7 @@ Gem::Specification.new do |s|
   ]
 
   s.add_runtime_dependency('rails', '~> 4.2.7.1')
-  s.add_runtime_dependency('maestrano-rails', '~> 1.0.3')
+  s.add_runtime_dependency('maestrano-rails', '~> 1.0.4')
   s.add_runtime_dependency('attr_encrypted', '~> 1.4.0')
   s.add_runtime_dependency('autoprefixer-rails')
   s.add_runtime_dependency('bootstrap-sass')
