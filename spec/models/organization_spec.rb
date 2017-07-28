@@ -208,7 +208,7 @@ describe Maestrano::Connector::Rails::Organization do
         let!(:failed_sync) { create(:synchronization, organization: subject, status: 'ERROR', created_at: 1.minute.ago) }
         before { subject.date_filtering_limit = date}
 
-        it { expect(subject.last_synchronization_date).to eql(failed_sync.created_at) }
+        it { expect(subject.last_synchronization_date).to be_within(1.second).of(failed_sync.created_at) }
       end
     end
 
