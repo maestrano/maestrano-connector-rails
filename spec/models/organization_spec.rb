@@ -196,7 +196,7 @@ describe Maestrano::Connector::Rails::Organization do
         before { subject.date_filtering_limit = date}
 
         it 'returns the sync date' do
-          expect(subject.last_synchronization_date.to_date).to eql(success_sync.updated_at.to_date)
+          expect(subject.last_synchronization_date.to_date).to be_within(1.second).of(success_sync.updated_at.to_date)
         end
       end
 
