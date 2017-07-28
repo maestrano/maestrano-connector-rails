@@ -330,7 +330,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
     # or if there are some sub entities ids to send (completed_hash)
     return if entities_to_send_to_connec.empty?
 
-    # Build a batch op from an idmap and a competed hash
+    # Build a batch op from an idmap and a completed hash
     # with either only the id, or the id + id references
     proc = lambda do |entity|
       id = {id: [Maestrano::Connector::Rails::ConnecHelper.id_hash(entity[:idmap].external_id, @organization)]}
