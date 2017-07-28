@@ -1,3 +1,17 @@
+## 2.1.0
+
+### Features
+* If there are no previous synchronizations and the synchronization fails, the last_synchronization_date is
+  set to the creation date of the failed sync (instead of resetting to the date_filtering_limit)
+* Organization and User can now be overridden in the connectors
+* Updates to layout of generated connectors
+* Option to push/pull disable for a specific Organization
+* Optional methods to limit currency updates 
+
+### Migration guide
+* Please refer to this document in the
+[Maestrano Guides](https://maestrano.atlassian.net/wiki/spaces/DEV/pages/102336339/Migration+Guides)
+
 ## 2.0.0
 
 ### Features
