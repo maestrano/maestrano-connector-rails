@@ -9,10 +9,10 @@ module Maestrano::Connector::Rails
           next unless klass.respond_to?(:formatted_external_entities_names)
 
           external_class_names = klass.formatted_external_entities_names.values
-          break name = c if self.camel_case_format(external_class_names).include?(class_name.camelize)
+          break name = c if camel_case_format(external_class_names).include?(class_name.camelize)
 
           connec_class_names = klass.formatted_connec_entities_names.values
-          break name = c if self.camel_case_format(connec_class_names).include?(class_name.camelize)
+          break name = c if camel_case_format(connec_class_names).include?(class_name.camelize)
         end
         name.to_s.underscore.to_sym
       else
@@ -21,7 +21,7 @@ module Maestrano::Connector::Rails
     end
 
     def self.camel_case_format(array_of_class_names)
-      array_of_class_names.map { |name| name.titleize.gsub(' ', '') }
+      array_of_class_names.map { |name| name.titleize.delete(' ') }
     end
   end
 end
