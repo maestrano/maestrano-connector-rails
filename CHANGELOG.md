@@ -1,3 +1,9 @@
+## 2.1.1
+
+### Features
+* Class names declared into ComplexEntities can now be camel case, spaced or underscored
+* Logs have been added when an entity is not pushed to either Connec!/External (when push is disabled)
+
 ## 2.1.0
 
 ### Features
@@ -6,11 +12,25 @@
 * Organization and User can now be overridden in the connectors
 * Updates to layout of generated connectors
 * Option to push/pull disable for a specific Organization
-* Optional methods to limit currency updates 
+* Optional methods to limit currency updates
 
-### Migration guide
+### Detailed Migration guide
 * Please refer to this document in the
 [Maestrano Guides](https://maestrano.atlassian.net/wiki/spaces/DEV/pages/102336339/Migration+Guides)
+
+#### Quick Migration Checklist
+
+* Add `webmock`
+* Update `spec_helper` to require `webmock` and stub requests
+* Add `to_connec.png` and `to_external.png` in your `assets/images/logos` folder
+* Update `home.js` to support the Modal (Popping up when enabling historical data)
+* Update `layout.sass` to correctly resize the logos
+* Update your `home_controller.rb`
+* Update your `home_controller_spec.rb` fil
+* Update your `index.html.haml`
+* Add `UpdateOrganizationMetadata` and `AddMetadataToIdMap` migrations
+
+
 
 ## 2.0.0
 
