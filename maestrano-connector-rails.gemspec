@@ -32,9 +32,11 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency('config')
   s.add_runtime_dependency('figaro')
   s.add_runtime_dependency('jquery-rails', '>= 4.0.4')
+  s.add_runtime_dependency('jsonapi-resources')
   s.add_runtime_dependency('haml-rails')
   s.add_runtime_dependency('hash_mapper', '>= 0.2.2')
-
+  s.add_runtime_dependency('pundit')
+  s.add_runtime_dependency('pundit-resources')
   s.add_runtime_dependency('sidekiq', '~> 4.2.9')
   s.add_runtime_dependency('sidekiq-cron')
   s.add_runtime_dependency('sidekiq-unique-jobs')
