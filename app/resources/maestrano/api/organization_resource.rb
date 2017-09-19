@@ -8,6 +8,7 @@ module Maestrano
       attribute :has_account_linked
       attribute :uid
       attribute :org_uid
+      attribute :account_creation_link
 
       filter :uid
 
@@ -16,6 +17,10 @@ module Maestrano
       end
 
       alias has_account_linked account_linked?
+
+      def account_creation_link
+        Maestrano::Connector::Rails::External.create_account_link(@model || nil)
+      end
     end
   end
 end
