@@ -10,6 +10,7 @@ Rails.application.routes.draw do
   post 'home/synchronize' => 'home#synchronize'
   get 'synchronizations/index' => 'synchronizations#index'
   get 'shared_entities/index' => 'shared_entities#index'
+  get 'setup_form' => 'home#form'
 
   # OAuth workflow pages
   match 'auth/:provider/request', to: 'oauth#create_omniauth', via: %i[get post]
