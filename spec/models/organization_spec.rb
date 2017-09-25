@@ -204,11 +204,18 @@ describe Maestrano::Connector::Rails::Organization do
         it { expect(subject.last_synchronization_date).to eql(nil) }
       end
 
-      context 'when the synchronization fails and there are no previous successful syncs' do
+      context 'when the synchronization fails and there are no previous successful syncs - No Historical Data' do
         let!(:failed_sync) { create(:synchronization, organization: subject, status: 'ERROR', created_at: 1.minute.ago) }
         before { subject.date_filtering_limit = date}
 
         it { expect(subject.last_synchronization_date).to be_within(1.second).of(failed_sync.created_at) }
+      end
+
+      context 'when the synchronization fails and there are no previous successful syncs - Historical Data' do
+        let!(:failed_sync) { create(:synchronization, organization: subject, status: 'ERROR', created_at: 1.minute.ago) }
+        before { subject.historical_data = true}
+
+        it { expect(subject.last_synchronization_date).to be_nil }
       end
     end
 

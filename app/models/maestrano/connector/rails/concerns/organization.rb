@@ -121,7 +121,11 @@ module Maestrano::Connector::Rails::Concerns::Organization
   end
 
   def last_synchronization_date
-    last_successful_synchronization&.updated_at || synchronizations&.first&.created_at || date_filtering_limit
+    last_successful_synchronization&.updated_at || historical_not_enabled_and_not_first_sync || date_filtering_limit
+  end
+
+  def historical_not_enabled_and_not_first_sync
+    !self.historical_data && synchronizations&.first&.created_at
   end
 
   def reset_synchronized_entities(default = false)
