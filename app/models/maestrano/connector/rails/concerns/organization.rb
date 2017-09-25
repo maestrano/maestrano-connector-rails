@@ -125,7 +125,7 @@ module Maestrano::Connector::Rails::Concerns::Organization
   end
 
   def historical_not_enabled_and_not_first_sync
-    !self.historical_data && synchronizations&.first&.created_at
+    !historical_data && synchronizations&.first&.created_at
   end
 
   def reset_synchronized_entities(default = false)

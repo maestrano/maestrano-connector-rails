@@ -1,3 +1,9 @@
+## 2.1.2
+
+### Features
+* Fix a bug when the user selects Historical data before the first synchronization
+* and the first synchronization fails
+
 ## 2.1.1
 
 ### Features
