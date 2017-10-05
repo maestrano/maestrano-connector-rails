@@ -1,3 +1,9 @@
+## 2.1.3
+
+### Features
+* Add guarding when receiving a web-hook to delete the Group
+* but the group is not found   
+
 ## 2.1.2
 
 ### Features
