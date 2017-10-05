@@ -8,6 +8,11 @@ class Maestrano::Account::GroupsController < Maestrano::Rails::WebHookController
     # Get entity
     organization = Maestrano::Connector::Rails::Organization.find_by(uid: org_uid, tenant: params[:tenant] || 'default')
 
+    unless organization
+      Maestrano::Connector::Rails::ConnectorLogger.log('info', nil, 'Organization not found')
+      return render json: {success: true}, status: 204
+    end
+
     Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, 'delete organization')
 
     # Delete all relations
