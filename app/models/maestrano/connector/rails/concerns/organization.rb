@@ -14,7 +14,7 @@ module Maestrano::Connector::Rails::Concerns::Organization
     end
 
     # Callbacks
-    before_save :update_metadata
+    # before_save :update_metadata
 
     #===================================
     # Encryptions

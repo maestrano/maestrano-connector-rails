@@ -45,10 +45,10 @@ class Maestrano::Connector::Rails::ApplicationPolicy
   end
 
   class Scope
-    attr_reader :tenant, :scope
+    attr_reader :user, :scope
 
-    def initialize(tenant, scope)
-      @tenant = tenant
+    def initialize(user, scope)
+      @user = user
       @scope = scope
     end
 
@@ -57,7 +57,7 @@ class Maestrano::Connector::Rails::ApplicationPolicy
     end
 
     def scope_to_tenant
-      scope.where(tenant: tenant)
+      scope.where(tenant: user)
     end
   end
 end

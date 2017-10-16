@@ -20,6 +20,8 @@ Maestrano::Connector::Rails::Engine.routes.draw do
 
     namespace :api do
       jsonapi_resources :organizations
+      jsonapi_resources :users
+      jsonapi_resources :synchronizations
     end
   end
 end
