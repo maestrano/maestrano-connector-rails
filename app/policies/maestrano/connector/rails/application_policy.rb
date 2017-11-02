@@ -29,7 +29,7 @@ class Maestrano::Connector::Rails::ApplicationPolicy
   end
 
   def update?
-    false
+    create?
   end
 
   def edit?

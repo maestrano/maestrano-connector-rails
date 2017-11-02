@@ -22,6 +22,7 @@ Maestrano::Connector::Rails::Engine.routes.draw do
       jsonapi_resources :organizations
       jsonapi_resources :users
       jsonapi_resources :synchronizations
+      jsonapi_resources :id_maps
     end
   end
 end

@@ -14,6 +14,7 @@ module Maestrano
       attribute :tenant
       attribute :provider
       attribute :sync_enabled
+      attribute :entities_types
 
       filter :uid
 
@@ -32,6 +33,10 @@ module Maestrano
       def save
         @model.tenant = context[:client]
         super
+      end
+
+      def entities_types
+        ['All', *Maestrano::Connector::Rails::IdMap.uniq.pluck(:external_entity)]
       end
     end
   end

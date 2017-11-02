@@ -29,7 +29,7 @@ JSONAPI.configure do |config|
   config.top_level_links_include_pagination = true
 
   config.default_page_size = 30
-  config.maximum_page_size = 50
+  config.maximum_page_size = 100
 
   # Output the record count in top level meta data for find operations
   config.top_level_meta_include_record_count = true

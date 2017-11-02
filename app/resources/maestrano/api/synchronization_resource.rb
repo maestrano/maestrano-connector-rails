@@ -11,7 +11,7 @@ module Maestrano
 
       belongs_to :organization
 
-      filter :org_uid, apply: lambda { |records, value, _options|
+      filter :uid, apply: lambda { |records, value, _options|
         records.joins(:organization).where('organizations.uid = ?', value)
       }
     end
