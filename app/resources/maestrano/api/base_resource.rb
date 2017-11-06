@@ -11,7 +11,7 @@ module Maestrano
         lte: '<=',
         ne: '<>',
         like: 'LIKE'
-      }
+      }.freeze
 
       def self.all_filters
         # Skipping if there is no tables as calling columns_hash in attribute_type is causing issue
