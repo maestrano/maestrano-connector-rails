@@ -1,6 +1,7 @@
 module Maestrano
   module Api
     class ApiController < JSONAPI::ResourceController
+      protect_from_forgery
       before_action :authenticate_client!
 
       # Return the current API client (tenant)

@@ -9,7 +9,7 @@ module Maestrano
       attribute :updated_at
       attribute :created_at
 
-      belongs_to :organization
+      has_one :organization
 
       filter :uid, apply: lambda { |records, value, _options|
         records.joins(:organization).where('organizations.uid = ?', value)

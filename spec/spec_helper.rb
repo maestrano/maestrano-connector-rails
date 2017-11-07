@@ -8,6 +8,7 @@ require 'simplecov'
 require 'timecop'
 require 'maestrano_connector_rails/factories.rb'
 require 'webmock/rspec'
+require 'jsonapi-resources-matchers'
 SimpleCov.start
 
 Rails.backtrace_cleaner.remove_silencers!

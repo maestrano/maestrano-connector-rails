@@ -10,7 +10,7 @@ end
 
 group :test do
   gem 'jsonapi-resources'
-  gem 'jsonapi-resources-matchers', '~> 1.0.0'
+  gem 'jsonapi-resources-matchers', require: false
   gem 'pundit'
   gem 'pundit-resources'
 end

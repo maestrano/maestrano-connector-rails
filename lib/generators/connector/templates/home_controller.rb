@@ -33,13 +33,6 @@ class HomeController < ApplicationController
     redirect_to 'https://path/to/external/app'
   end
 
-  def form
-    # TODO return the json angular schema form
-    # that will be used for the user to link their account
-    # See https://github.com/json-schema-form/angular-schema-form/
-    render json: {}.to_json
-  end
-
   private
 
     def start_synchronization(opts)
