@@ -35,7 +35,7 @@ module Connector
 
     def copy_icons_and_logos
       copy_file 'logos/to_connec.png', 'app/assets/images/logos/to_connec.png'
-      copy_file 'logos/to_external.png', 'spec/assets/images/logos/to_external.png'
+      copy_file 'logos/to_external.png', 'app/assets/images/logos/to_external.png'
     end
 
     def copy_controllers_and_views
