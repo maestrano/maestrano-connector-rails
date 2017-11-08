@@ -7,22 +7,6 @@
 # versions of RuboCop, may require this file to be generated again.
 
 # Offense count: 1
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle, SupportedStyles.
-# SupportedStyles: empty_lines, empty_lines_except_namespace, empty_lines_special, no_empty_lines
-Layout/EmptyLinesAroundModuleBody:
-  Exclude:
-    - 'app/jobs/maestrano/connector/rails/push_to_connec_worker.rb'
-
-# Offense count: 1
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle, SupportedStyles.
-# SupportedStyles: final_newline, final_blank_line
-Layout/TrailingBlankLines:
-  Exclude:
-    - 'app/helpers/maestrano/connector/rails/session_helper.rb'
-
-# Offense count: 1
 # Configuration parameters: AllowSafeAssignment.
 Lint/AssignmentInCondition:
   Exclude:
@@ -108,7 +92,7 @@ Style/DoubleNegation:
 # Offense count: 56
 # Cop supports --auto-correct.
 # Configuration parameters: EnforcedStyle, SupportedStyles.
-# SupportedStyles: when_needed, always, never
+# SupportedStyles: when_needed, always
 Style/FrozenStringLiteralComment:
   Enabled: false
 
