@@ -4,7 +4,4 @@ class Maestrano::Connector::Rails::UserPolicy < Maestrano::Connector::Rails::App
   def create?
     true
   end
-
-  class Scope < Scope
-  end
 end

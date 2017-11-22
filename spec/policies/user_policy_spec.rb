@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 require 'spec_helper'
 
-RSpec.describe Maestrano::Connector::Rails::OrganizationPolicy do
+RSpec.describe Maestrano::Connector::Rails::UserPolicy do
   include SharedPunditExample
 
-  let!(:instance1) { create(:organization, tenant: 'default') }
-  let!(:instance2) { create(:organization, tenant: 'production') }
+  let!(:instance1) { create(:user, tenant: 'default') }
+  let!(:instance2) { create(:user, tenant: 'production') }
 
   describe 'scope' do
     it_behaves_like 'a model scoped to the tenant'

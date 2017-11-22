@@ -12,5 +12,6 @@ group :test do
   gem 'jsonapi-resources'
   gem 'jsonapi-resources-matchers', require: false
   gem 'pundit'
+  gem 'pundit-matchers'
   gem 'pundit-resources'
 end

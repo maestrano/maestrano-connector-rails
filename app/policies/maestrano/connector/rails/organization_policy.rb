@@ -4,7 +4,4 @@ class Maestrano::Connector::Rails::OrganizationPolicy < Maestrano::Connector::Ra
   def create?
     true
   end
-
-  class Scope < Scope
-  end
 end

@@ -53,5 +53,5 @@ Gem::Specification.new do |s|
   s.add_development_dependency('shoulda-matchers')
   s.add_development_dependency('simplecov', '>= 0')
   s.add_development_dependency('timecop')
-  s.add_development_dependency('webmock', '~> 1.24.1')
+  s.add_development_dependency('webmock')
 end

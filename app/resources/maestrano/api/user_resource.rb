@@ -11,9 +11,6 @@ module Maestrano
       attribute :tenant
       attribute :uid
 
-      # == Relationships ========================================================
-      has_many :users
-
       def save
         @model.tenant = context[:client]
         super

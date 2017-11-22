@@ -3,7 +3,7 @@
 class Maestrano::Connector::Rails::SynchronizationPolicy < Maestrano::Connector::Rails::ApplicationPolicy
   class Scope < Scope
     def resolve
-      scope
+      scope.includes(:organization).where('organizations.tenant': user)
     end
   end
 end

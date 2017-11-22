@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require 'spec_helper'
 
-RSpec.describe Maestrano::Api::OrganizationsController, type: :controller do
+RSpec.describe Maestrano::Api::UsersController, type: :controller do
   include JsonApiController
   routes { Maestrano::Connector::Rails::Engine.routes }
 
