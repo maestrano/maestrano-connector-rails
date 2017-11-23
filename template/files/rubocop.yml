@@ -23,7 +23,7 @@ Style/CollectionMethods:
 Metrics/LineLength:
   Max: 320
 
-Style/IndentationConsistency:
+Layout/IndentationConsistency:
   EnforcedStyle: rails
 
 # Missing top-level class documentation comment
@@ -34,7 +34,7 @@ Style/ClassAndModuleChildren:
   Enabled: false
 
 # Space inside braces => only for blocks (not for literal)
-Style/SpaceInsideHashLiteralBraces:
+Layout/SpaceInsideHashLiteralBraces:
   EnforcedStyle: no_space
 
 # Checks for unused block arguments

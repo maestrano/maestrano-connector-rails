@@ -8,12 +8,13 @@ require 'simplecov'
 require 'timecop'
 require 'maestrano_connector_rails/factories.rb'
 require 'webmock/rspec'
+require 'jsonapi-resources-matchers'
 SimpleCov.start
 
 Rails.backtrace_cleaner.remove_silencers!
 
 # Load support files
-Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each { |f| require f }
+Dir[Rails.root.join("../..", "lib/testing_support/**/*.rb")].each { |f| require f }
 
 RSpec.configure do |config|
   config.mock_with :rspec
@@ -27,7 +28,9 @@ RSpec.configure do |config|
     allow(Maestrano::Connector::Rails::External).to receive(:external_name).and_return('External app')
     allow(Maestrano::Connector::Rails::External).to receive(:get_client).and_return(Object.new)
     allow(Maestrano::Connector::Rails::External).to receive(:entities_list).and_return(%w(entity1 entity2))
-    stub_request(:get, %r(#{Maestrano['default'].param('api.host')}/api/v1/account/groups/[\w-]*)).
+
+    config = Maestrano.configs.values.first
+    stub_request(:get, %r(/api/v1/account/groups/[\w-]*)).
       to_return({status: 200, body: "{}", headers: {}})
     Rails.cache.clear
   end

@@ -17,6 +17,9 @@ class Maestrano::SynchronizationsController < Maestrano::Rails::WebHookControlle
     organization = Maestrano::Connector::Rails::Organization.find_by(uid: uid, tenant: tenant)
     return render json: {errors: [{message: 'Organization not found', code: 404}]}, status: :not_found unless organization
 
+    organization.sync_enabled = organization.synchronized_entities.values.any? { |settings| settings.values.any? { |v| v } }
+    organization.save if organization.sync_enabled_changed?
+
     status = organization_status(organization)
 
     unless %w[RUNNING ENQUEUED].include?(status)

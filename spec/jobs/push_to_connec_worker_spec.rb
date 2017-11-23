@@ -10,7 +10,7 @@ describe Maestrano::Connector::Rails::PushToConnecWorker do
     it 'perform_async add a new job' do
       expect_any_instance_of(Maestrano::Connector::Rails::PushToConnecJob).to receive(:perform)
       expect {
-        subject.perform_async(organization.id, 2, 3)
+        subject.perform_async(organization.id, {}, 3)
       }.to change(subject.jobs, :size).by(1)
 
       expect {
@@ -19,7 +19,7 @@ describe Maestrano::Connector::Rails::PushToConnecWorker do
     end
 
     it 'raise an error if the organization can t be found' do
-      subject.perform_async(-1, 2, 3)
+      subject.perform_async(-1, {}, 3)
       expect {
         subject.drain
       }.to raise_error(ActiveRecord::RecordNotFound)

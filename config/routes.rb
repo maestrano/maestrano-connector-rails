@@ -17,5 +17,16 @@ Maestrano::Connector::Rails::Engine.routes.draw do
         end
       end
     end
+
+    namespace :api do
+      get 'account/setup_form'
+      post 'account/link_account'
+      post 'account/unlink_account'
+
+      jsonapi_resources :organizations
+      jsonapi_resources :users
+      jsonapi_resources :synchronizations
+      jsonapi_resources :id_maps
+    end
   end
 end

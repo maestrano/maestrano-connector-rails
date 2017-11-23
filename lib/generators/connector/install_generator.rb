@@ -53,6 +53,9 @@ module Connector
       copy_file 'shared_entities_index.haml', 'app/views/shared_entities/index.html.haml'
 
       copy_file 'layouts.haml', 'app/views/layouts/application.html.haml'
+
+      mkdir_p 'app/controllers/maestrano/api'
+      copy_file 'account_controller.rb', 'app/controllers/maestrano/api/account_controller.rb'
     end
 
     def copy_stylesheets

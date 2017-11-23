@@ -1,5 +1,4 @@
 module Maestrano::Connector::Rails
-
   # This class process the push to Connec, it use PushToConnecJob for retrocompatibility
   # By using sidekiq-unique-jobs, it makes sure that 2 calls on the same entity, are processed in order
   class PushToConnecWorker
