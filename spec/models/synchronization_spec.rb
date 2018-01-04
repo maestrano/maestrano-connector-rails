@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Maestrano::Connector::Rails::Synchronization do
+describe Maestrano::Connector::Rails::Synchronization, type: :model do
 
   # Attributes
   it { should validate_presence_of(:status) }

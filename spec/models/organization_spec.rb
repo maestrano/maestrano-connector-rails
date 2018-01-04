@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Maestrano::Connector::Rails::Organization do
+describe Maestrano::Connector::Rails::Organization, type: :model do
 
   # Attributes
   it { should validate_presence_of(:name) }
