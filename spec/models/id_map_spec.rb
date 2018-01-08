@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Maestrano::Connector::Rails::IdMap, type: :model do
+describe Maestrano::Connector::Rails::IdMap do
 
   # Indexes
   it { should have_db_index([:connec_id, :connec_entity, :organization_id]) }

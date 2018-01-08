@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Maestrano::Connector::Rails::User, type: :model do
+describe Maestrano::Connector::Rails::User do
 
   # Attributes
   it { should validate_presence_of(:email) }
