@@ -1,0 +1,2 @@
+encryption_key1: <%= %w(a03f2d03 f3ae 4de0 a80a 113c22e6a37b).join('-') %>
+encryption_key2: <%= ENV['encryption_key2'] %>
