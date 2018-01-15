@@ -48,7 +48,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency('github_changelog_generator')
   s.add_development_dependency('rdoc')
   s.add_development_dependency('rspec-rails')
-  s.add_development_dependency('rubocop', '~> 0.49.1')
+  s.add_development_dependency('rubocop', '~> 0.52')
   s.add_development_dependency('shoulda')
   s.add_development_dependency('shoulda-matchers', '~> 3.1')
   s.add_development_dependency('simplecov', '>= 0')
