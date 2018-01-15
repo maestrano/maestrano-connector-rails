@@ -47,7 +47,7 @@ def apply_template!
     remove_file 'config/settings.yml'
     run 'mkdir config/settings'
     %w(development production test uat).each do |file|
-      copy_file "settings/#{file}.yml", "config/settings/#{file}.yml"
+      copy_file "settings/#{file}.yml", "config/settings/#{file}.yml", force: true
     end
     copy_file 'settings/settings.yml', 'config/settings.yml'
 

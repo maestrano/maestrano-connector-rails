@@ -153,7 +153,7 @@ module Maestrano::Connector::Rails::Concerns::Organization
 
   def set_instance_metadata
     auth = {username: Maestrano[tenant].param('api.id'), password: Maestrano[tenant].param('api.key')}
-    res = HTTParty.get("#{Maestrano[tenant].param('api.host')}/api/v1/account/groups/#{uid}", basic_auth: auth)
+    res = HTTParty.get(URI.encode("#{Maestrano[tenant].param('api.host')}/api/v1/account/groups/#{uid}"), basic_auth: auth)
     response = JSON.parse(res.body)
     self.push_disabled = response.dig('data', 'metadata', 'push_disabled')
     self.pull_disabled = response.dig('data', 'metadata', 'pull_disabled')
