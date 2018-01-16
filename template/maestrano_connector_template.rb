@@ -1,3 +1,5 @@
+require 'tmpdir'
+
 # Ensures a compatible version of Rails is used
 RAILS_SUPPORTED = ['>= 4.2', '< 5.0']
 

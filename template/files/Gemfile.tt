@@ -7,6 +7,12 @@ gem 'puma', require: false
 
 gem 'maestrano-connector-rails', '>= 2.0.2.pre.RC6'
 
+gem 'jsonapi-resources'
+gem 'jsonapi-resources-matchers', require: false
+gem 'pundit'
+gem 'pundit-matchers'
+gem 'pundit-resources'
+
 group :production, :uat do
   gem 'activerecord-jdbcmysql-adapter', platforms: :jruby
   gem 'mysql2', platforms: :ruby

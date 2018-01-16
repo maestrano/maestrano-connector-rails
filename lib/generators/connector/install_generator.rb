@@ -1,3 +1,5 @@
+require 'fileutils'
+
 module Connector
   class InstallGenerator < ::Rails::Generators::Base
     source_root File.expand_path('../templates', __FILE__)
@@ -54,7 +56,7 @@ module Connector
 
       copy_file 'layouts.haml', 'app/views/layouts/application.html.haml'
 
-      mkdir_p 'app/controllers/maestrano/api'
+      FileUtils.mkdir_p 'app/controllers/maestrano/api'
       copy_file 'account_controller.rb', 'app/controllers/maestrano/api/account_controller.rb'
     end
 
