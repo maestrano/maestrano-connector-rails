@@ -255,12 +255,12 @@ describe 'connec to the external application' do
     end
 
     describe 'a new record created in connec with all references known' do
-      before {
+      before do
         allow(connec_client).to receive(:get).and_return(ActionDispatch::Response.new(200, {}, {people: [person2]}.to_json, {}))
         allow(connec_client).to receive(:batch).and_return(ActionDispatch::Response.new(200, {}, {results: [{status: 200, body: {people: {}}}]}.to_json, {}))
 
         allow_any_instance_of(Entities::ConnecToExternalMissingField).to receive(:create_external_entity).and_return({'ID' => ext_contact_id2})
-      }
+      end
 
       let(:person2) { person1.merge('first_name' => 'Jack', 'id' => [{"realm" => "org-fg4a", "provider" => "connec", "id" => connec_id2 }]) }
 
@@ -310,11 +310,22 @@ describe 'connec to the external application' do
         expect(idmap.connec_id).to eql("11daf041-e18e-0133-7b6a-15461b913yyy")
       end
 
-      it 'does the mapping correctly' do
-        idmap = Entities::ConnecToExternalMissingField.create_idmap(organization_id: organization.id, external_id: ext_contact_id, connec_id: "23daf041-e18e-0133-7b6a-15461b913yyy")
-        allow(Entities::ConnecToExternalMissingField).to receive(:find_or_create_idmap).and_return(idmap)
-        expect_any_instance_of(Entities::ConnecToExternalMissingField).to receive(:push_entities_to_external).with([{entity: mapped_entity_missing_field.with_indifferent_access, idmap: idmap, id_refs_only_connec_entity: {}}])
-        subject
+      context 'The record has been created from External' do
+        it 'uses the normal mapper (as it is an update)' do
+          idmap = Entities::ConnecToExternalMissingField.create_idmap(organization_id: organization.id, external_id: ext_contact_id, connec_id: "23daf041-e18e-0133-7b6a-15461b913yyy")
+          allow(Entities::ConnecToExternalMissingField).to receive(:find_or_create_idmap).and_return(idmap)
+          expect_any_instance_of(Entities::ConnecToExternalMissingField).to receive(:push_entities_to_external).with([{entity: mapped_entity_missing_field.except(:missing_connec_field).with_indifferent_access, idmap: idmap, id_refs_only_connec_entity: {}}])
+          subject
+        end
+      end
+
+      context 'The record has never been shared to External' do
+        it 'maps correctly' do
+          idmap = Entities::ConnecToExternalMissingField.create_idmap(organization_id: organization.id, external_id: nil, connec_id: "23daf041-e18e-0133-7b6a-15461b913yyy")
+          allow(Entities::ConnecToExternalMissingField).to receive(:find_or_create_idmap).and_return(idmap)
+          expect_any_instance_of(Entities::ConnecToExternalMissingField).to receive(:push_entities_to_external).with([{entity: mapped_entity_missing_field.with_indifferent_access, idmap: idmap, id_refs_only_connec_entity: {}}])
+          subject
+        end
       end
 
       it 'send the external id to connec' do

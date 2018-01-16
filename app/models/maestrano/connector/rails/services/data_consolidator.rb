@@ -116,7 +116,7 @@ module Maestrano::Connector::Rails::Services
       entity = if @is_a_subentity
                  @current_entity.map_to(connec_entity_name, external_entity, idmap)
                else
-                 @current_entity.map_to_connec(external_entity, idmap.last_push_to_connec.nil?)
+                 @current_entity.map_to_connec(external_entity, (idmap.last_push_to_connec.nil? && idmap.connec_id.nil?))
                end
       {entity: entity, idmap: idmap}
     end
@@ -125,7 +125,7 @@ module Maestrano::Connector::Rails::Services
       entity = if @is_a_subentity
                  @current_entity.map_to(external_entity_name, connec_entity, idmap)
                else
-                 @current_entity.map_to_external(connec_entity.merge(idmap: idmap), idmap.last_push_to_external.nil?)
+                 @current_entity.map_to_external(connec_entity.merge(idmap: idmap), (idmap.last_push_to_external.nil? && idmap.external_id.nil?))
                end
       {entity: entity, idmap: idmap, id_refs_only_connec_entity: id_refs_only_connec_entity}
     end
