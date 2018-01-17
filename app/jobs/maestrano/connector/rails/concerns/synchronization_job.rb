@@ -16,7 +16,7 @@ module Maestrano::Connector::Rails::Concerns::SynchronizationJob
         job_organization_id = begin
           job.item['args'][0]['arguments'].first
         rescue
-          job_organization_id
+          false
         end
         organization_id == job_organization_id
       end
@@ -27,7 +27,7 @@ module Maestrano::Connector::Rails::Concerns::SynchronizationJob
         job_organization_id = begin
           work['payload']['args'][0]['arguments'].first
         rescue
-          nil
+          false
         end
         work['queue'] == 'default' && organization_id == job_organization_id
       end
