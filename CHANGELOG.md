@@ -1,3 +1,16 @@
+## 2.2.1
+
+* Fix a bug where the CreationMapper was used to map updates coming from external
+
+## 2.2.0
+
+* New applications workflow
+* JSON API / Pundit introduced to manage resources
+
+### Migration Guide
+* Add this Gems to the Gemfile
+* `jsonapi-resources`, `pundit`, `pundit-resources`
+
 ## 2.1.3
 
 ### Features
