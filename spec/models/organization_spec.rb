@@ -27,6 +27,32 @@ describe Maestrano::Connector::Rails::Organization do
       expect(subject.synchronized_entities).to include(entities_list.last.to_sym)
     end
 
+    context 'when specific entities cannot push to external or connec' do
+      before do
+        allow(Maestrano::Connector::Rails::External).to receive(:entities_list).and_return(%w(entity_a entity_b))
+
+        class Entities::EntityA < Maestrano::Connector::Rails::Entity
+          def self.can_write_external?
+            false
+          end
+        end
+
+        class Entities::EntityB < Maestrano::Connector::Rails::Entity
+          def self.can_write_connec?
+            false
+          end
+        end
+      end
+
+      let(:synchronized1) { { can_push_to_connec: true, can_push_to_external: false } }
+      let(:synchronized2) { { can_push_to_connec: false, can_push_to_external: true } }
+
+      it 'correctly sets :can_push_to_connec and :can_push_to_external for each individual synchronized entity' do
+        expect(subject.synchronized_entities[:entity_a]).to eq(synchronized1)
+        expect(subject.synchronized_entities[:entity_b]).to eq(synchronized2)
+      end
+    end
+
     it 'does not allow organizations with the same oauth UID' do
       organization1 = create(:organization, oauth_provider: 'myapp', oauth_uid: 'ABC')
       organization2 = build(:organization, oauth_provider: 'myapp', oauth_uid: 'ABC')
