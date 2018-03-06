@@ -54,7 +54,9 @@ module Maestrano::Connector::Rails::Concerns::Organization
     self.synchronized_entities = {}
     Maestrano::Connector::Rails::External.entities_list.each do |entity|
       begin
-        clazz = "Entities::#{entity.to_s.titleize.split.join}".constantize
+        # Transform entity name from entities_list to class name
+        # ex. :item => Entities::Item
+        clazz = "Entities::#{entity.to_s.titleize.tr(' ', '')}".constantize
       rescue
         clazz = nil
       end
@@ -71,7 +73,9 @@ module Maestrano::Connector::Rails::Concerns::Organization
     result = {}
     synchronized_entities.each do |entity, hash|
       begin
-        clazz = "Entities::#{entity.to_s.titleize.split.join}".constantize
+        # Transform entity name from entities_list to class name
+        # ex. :item => Entities::Item
+        clazz = "Entities::#{entity.to_s.titleize.tr(' ', '')}".constantize
       rescue
         next
       end
