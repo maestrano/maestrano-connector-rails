@@ -24,12 +24,12 @@ class Maestrano::ConnecController < Maestrano::Rails::WebHookController
             entity_instance.push_entities_to_external(mapped_entity[:connec_entities])
             entity_instance.after_sync(last_synchronization_date)
           rescue => e
-            Maestrano::Connector::Rails::ConnectorLogger.log('warn', organization, "error processing notification entity_name=\"#{entity_name}\", message=\"#{e.message}\", #{e.backtrace.join("\n")}")
+            Maestrano::Connector::Rails::ConnectorLogger.log('warn', organization, "error processing notification entity_name=\"#{entity_name}\", message=\"#{e.message}\", trace=\"#{e.backtrace}\"")
           end
         end
       end
     rescue => e
-      Maestrano::Connector::Rails::ConnectorLogger.log('warn', nil, "error processing notification #{e.message} - #{e.backtrace.join("\n")}")
+      Maestrano::Connector::Rails::ConnectorLogger.log('warn', nil, "error processing notification #{e.message} - #{e.backtrace}")
     end
 
     head 200, content_type: 'application/json'
