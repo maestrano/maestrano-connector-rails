@@ -97,7 +97,7 @@ module Maestrano::Connector::Rails::Concerns::SynchronizationJob
       Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Finished synchronization, organization=#{organization.uid}, status=success")
       current_synchronization.mark_as_success
     rescue => e
-      Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Finished synchronization, organization=#{organization.uid}, status=error, message=#{e.message} backtrace=#{e.backtrace.join("\n\t")}")
+      Maestrano::Connector::Rails::ConnectorLogger.log('warn', organization, "Finished synchronization, organization=#{organization.uid}, status=error, message=\"#{e.message}\" backtrace=\"#{e.backtrace}\"")
       current_synchronization.mark_as_error(e.message)
     end
   end
