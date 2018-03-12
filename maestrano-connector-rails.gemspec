@@ -40,7 +40,6 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency('sidekiq', '~> 4.2.9')
   s.add_runtime_dependency('sidekiq-cron')
   s.add_runtime_dependency('sidekiq-unique-jobs')
-  s.add_runtime_dependency('sinatra')
   s.add_runtime_dependency('slim')
 
   s.add_development_dependency('bundler')

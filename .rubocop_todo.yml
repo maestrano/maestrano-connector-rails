@@ -62,13 +62,6 @@ Performance/FlatMap:
   Exclude:
     - 'app/models/maestrano/connector/rails/concerns/complex_entity.rb'
 
-# Offense count: 2
-# Cop supports --auto-correct.
-# Configuration parameters: AutoCorrect.
-Performance/HashEachMethods:
-  Exclude:
-    - 'app/resources/maestrano/api/base_resource.rb'
-
 # Offense count: 1
 # Cop supports --auto-correct.
 # Configuration parameters: Whitelist.

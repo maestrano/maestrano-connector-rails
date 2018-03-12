@@ -36,15 +36,15 @@ module Maestrano::Connector::Rails::Concerns::Synchronization
   end
 
   def mark_as_success
-    update_attributes(status: SUCCESS_STATUS)
+    update(status: SUCCESS_STATUS)
   end
 
   def mark_as_error(msg)
-    update_attributes(status: ERROR_STATUS, message: msg)
+    update(status: ERROR_STATUS, message: msg)
   end
 
   def mark_as_partial
-    update_attributes(partial: true)
+    update(partial: true)
   end
 
   def clean_synchronizations

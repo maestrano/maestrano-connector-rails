@@ -14,7 +14,6 @@ require 'attr_encrypted'
 require 'sidekiq'
 require 'sidekiq-cron'
 require 'sidekiq-unique-jobs'
-require 'sinatra'
 require 'slim'
 
 module Maestrano

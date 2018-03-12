@@ -53,7 +53,19 @@ module Maestrano::Connector::Rails::Concerns::Organization
 
     self.synchronized_entities = {}
     Maestrano::Connector::Rails::External.entities_list.each do |entity|
-      synchronized_entities[entity.to_sym] = {can_push_to_connec: !pull_disabled, can_push_to_external: !push_disabled}
+      begin
+        # Transform entity name from entities_list to class name
+        # ex. :item => Entities::Item
+        clazz = "Entities::#{entity.to_s.titleize.tr(' ', '')}".constantize
+      rescue
+        clazz = nil
+      end
+
+      # Check if Entity or ComplexEntity and set entity_push_to_connec and entity_push_to_external
+      entity_push_to_connec = clazz && clazz < Maestrano::Connector::Rails::Entity ? clazz.can_write_connec? : true
+      entity_push_to_external = clazz && clazz < Maestrano::Connector::Rails::Entity ? clazz.can_write_external? : true
+
+      synchronized_entities[entity.to_sym] = {can_push_to_connec: !pull_disabled && entity_push_to_connec, can_push_to_external: !push_disabled && entity_push_to_external}
     end
   end
 
@@ -61,7 +73,9 @@ module Maestrano::Connector::Rails::Concerns::Organization
     result = {}
     synchronized_entities.each do |entity, hash|
       begin
-        clazz = "Entities::#{entity.to_s.titleize.split.join}".constantize
+        # Transform entity name from entities_list to class name
+        # ex. :item => Entities::Item
+        clazz = "Entities::#{entity.to_s.titleize.tr(' ', '')}".constantize
       rescue
         next
       end
