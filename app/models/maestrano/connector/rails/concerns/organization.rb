@@ -13,9 +13,6 @@ module Maestrano::Connector::Rails::Concerns::Organization
       # group.some_required_field = 'some-appropriate-default-value'
     end
 
-    # Callbacks
-    before_save :update_metadata
-
     #===================================
     # Encryptions
     #===================================
@@ -152,7 +149,7 @@ module Maestrano::Connector::Rails::Concerns::Organization
         can_push_to_external = synchronized_entities[entity.to_sym]
         can_push_to_connec = synchronized_entities[entity.to_sym]
       end
-      synchronized_entities[entity.to_sym] = {can_push_to_connec: (can_push_to_connec || default) && !pull_disabled, can_push_to_external: (can_push_to_external || default) && !push_disabled}
+      synchronized_entities[entity.to_sym] = {can_push_to_connec: (can_push_to_connec || default), can_push_to_external: (can_push_to_external || default)}
     end
     save
   end
@@ -163,18 +160,5 @@ module Maestrano::Connector::Rails::Concerns::Organization
 
   def push_to_external_enabled?(entity)
     synchronized_entities.dig(Maestrano::Connector::Rails::EntityHelper.snake_name(entity), :can_push_to_external) && entity&.class&.can_write_external?
-  end
-
-  def set_instance_metadata
-    auth = {username: Maestrano[tenant].param('api.id'), password: Maestrano[tenant].param('api.key')}
-    res = HTTParty.get(URI.encode("#{Maestrano[tenant].param('api.host')}/api/v1/account/groups/#{uid}"), basic_auth: auth)
-    response = JSON.parse(res.body)
-    self.push_disabled = response.dig('data', 'metadata', 'push_disabled')
-    self.pull_disabled = response.dig('data', 'metadata', 'pull_disabled')
-  end
-
-  def update_metadata
-    set_instance_metadata
-    enable_historical_data(true) if push_disabled
   end
 end

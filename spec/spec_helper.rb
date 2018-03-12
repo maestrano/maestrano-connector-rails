@@ -37,9 +37,6 @@ RSpec.configure do |config|
     allow(Maestrano::Connector::Rails::External).to receive(:get_client).and_return(Object.new)
     allow(Maestrano::Connector::Rails::External).to receive(:entities_list).and_return(%w(entity1 entity2))
 
-    config = Maestrano.configs.values.first
-    stub_request(:get, %r(/api/v1/account/groups/[\w-]*)).
-      to_return({status: 200, body: "{}", headers: {}})
     Rails.cache.clear
   end
 end

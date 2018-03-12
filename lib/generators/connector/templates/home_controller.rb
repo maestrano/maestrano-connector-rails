@@ -5,6 +5,7 @@ class HomeController < ApplicationController
 
     # Update list of entities to synchronize
     current_organization.synchronized_entities.keys.each do |entity|
+      next unless params[entity.to_s]
       current_organization.synchronized_entities[entity][:can_push_to_connec] = params[entity.to_s]["to_connec"] == "1"
       current_organization.synchronized_entities[entity][:can_push_to_external] = params[entity.to_s]["to_external"] == "1"
     end
