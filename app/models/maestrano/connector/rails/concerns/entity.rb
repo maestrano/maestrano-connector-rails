@@ -388,7 +388,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
       else
         # Store External error
         Maestrano::Connector::Rails::ConnectorLogger.log('error', @organization, "Error while pushing to #{Maestrano::Connector::Rails::External.external_name}: #{e}")
-        Maestrano::Connector::Rails::ConnectorLogger.log('debug', @organization, "Error while pushing backtrace: #{e.backtrace.join("\n\t")}")
+        Maestrano::Connector::Rails::ConnectorLogger.log('debug', @organization, "Error while pushing backtrace: #{e.backtrace}")
         idmap.update(message: e.message.truncate(255))
       end
     end
