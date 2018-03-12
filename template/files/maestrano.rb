@@ -5,7 +5,7 @@ unless ENV['SKIP_CONFIGURATION']
     else
       Maestrano.auto_configure
     end
-  rescue => e
+  rescue StandardError => e
     puts "Cannot load configuration #{e.message}"
   end
 end
