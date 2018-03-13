@@ -62,7 +62,7 @@ module Maestrano::Connector::Rails::Concerns::Organization
       entity_push_to_connec = clazz && clazz < Maestrano::Connector::Rails::Entity ? clazz.can_write_connec? : true
       entity_push_to_external = clazz && clazz < Maestrano::Connector::Rails::Entity ? clazz.can_write_external? : true
 
-      synchronized_entities[entity.to_sym] = {can_push_to_connec: !pull_disabled && entity_push_to_connec, can_push_to_external: !push_disabled && entity_push_to_external}
+      synchronized_entities[entity.to_sym] = {can_push_to_connec: entity_push_to_connec, can_push_to_external: entity_push_to_external}
     end
   end
 

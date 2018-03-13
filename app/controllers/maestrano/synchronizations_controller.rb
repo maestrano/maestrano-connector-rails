@@ -71,13 +71,12 @@ class Maestrano::SynchronizationsController < Maestrano::Rails::WebHookControlle
     end
 
     def organization_status(organization)
-      last_sync = organization.synchronizations.last
       if Maestrano::Connector::Rails::SynchronizationJob.find_running_job(organization.id)
         'RUNNING'
       elsif Maestrano::Connector::Rails::SynchronizationJob.find_job(organization.id)
         'ENQUEUED'
       else
-        last_sync&.status || 'DISABLED'
+        organization.synchronizations.last&.status || 'DISABLED'
       end
     end
 end
