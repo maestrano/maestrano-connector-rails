@@ -7,11 +7,6 @@ describe Maestrano::Connector::Rails::AllSynchronizationsJob do
 
   subject { Maestrano::Connector::Rails::AllSynchronizationsJob.perform_now() }
 
-  # before{
-  #   organization_not_active.update(encrypted_oauth_token: Maestrano::Connector::Rails::Organization.encrypt_oauth_token('123', key: 'This is a key that is 256 bits!!', iv: 'This iv is 12 bytes or longer'))
-  #   organization_to_process.update(encrypted_oauth_token: Maestrano::Connector::Rails::Organization.encrypt_oauth_token('123', key: 'This is a key that is 256 bits!!', iv: 'This iv is 12 bytes or longer'))
-  # }
-
   describe 'perform' do
     it 'does not calls sync entity' do
       expect(Maestrano::Connector::Rails::SynchronizationJob).to_not receive(:perform_later).with(organization_not_linked.id, anything)
