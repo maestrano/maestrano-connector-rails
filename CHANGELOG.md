@@ -1,3 +1,9 @@
+## 2.3.0
+
+* Send data to Connec! even if the push/pull parameters are disabled (Transac! integration)
+* Randomise cron jobs time to avoid connectors crowding
+* Fix duplicated Sidekiq UI configuration and time based attack 
+
 ## 2.2.1
 
 * Fix a bug where the CreationMapper was used to map updates coming from external
