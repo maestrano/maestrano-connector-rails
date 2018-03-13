@@ -1,11 +1,6 @@
 # frozen_string_literal: true
 
-require 'sidekiq/web'
-
-Sidekiq::Cron::Job.create(name: 'AllSynchronizationsJob runs every hour', cron: '0 * * * *', class: 'Maestrano::Connector::Rails::AllSynchronizationsJob')
-Sidekiq::Cron::Job.create(name: 'UpdateConfigurationJob runs every hour', cron: '0 * * * *', class: 'Maestrano::Connector::Rails::UpdateConfigurationJob')
-
-# Sidekiq Admin
-Sidekiq::Web.use Rack::Auth::Basic do |username, password|
-  username == ENV['SIDEKIQ_USERNAME'] && password == ENV['SIDEKIQ_PASSWORD']
-end
+# Schedule cron jobs at a random minute to avoid crowding of all connectors
+minute = rand(60)
+Sidekiq::Cron::Job.create(name: 'all_syncrhonizations_job', cron: "#{minute} * * * *", class: 'Maestrano::Connector::Rails::AllSynchronizationsJob')
+Sidekiq::Cron::Job.create(name: 'update_configuration_job', cron: "#{minute} * * * *", class: 'Maestrano::Connector::Rails::UpdateConfigurationJob')
