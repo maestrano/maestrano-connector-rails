@@ -114,6 +114,6 @@ describe HomeController, type: :controller do
       allow_any_instance_of(Maestrano::Connector::Rails::SessionHelper).to receive(:current_organization).and_return(organization)
     end
 
-    it {expect(subject).to redirect_to('https://somewhere.com')}
+    it {expect(subject).to redirect_to('https://your_application.com')}
   end
 end

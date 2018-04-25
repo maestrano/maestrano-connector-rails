@@ -5,24 +5,35 @@ gem 'tzinfo-data', platforms: [:mingw, :mswin, :jruby]
 
 gem 'puma', require: false
 
-gem 'maestrano-connector-rails', '>= 2.0.2.pre.RC6'
+gem 'maestrano-connector-rails', '~> 2.3.1'
 
+gem 'jquery-rails'
 gem 'jsonapi-resources'
 gem 'jsonapi-resources-matchers', require: false
 gem 'pundit'
 gem 'pundit-matchers'
 gem 'pundit-resources'
+gem 'turbolinks', '~> 2.5'
+gem 'uglifier'
+gem 'spring'
 
 group :production, :uat do
   gem 'activerecord-jdbcmysql-adapter', platforms: :jruby
-  gem 'mysql2', platforms: :ruby
+  # Lock mysql2 to an old version for now as there is a bug in Rails 4.1.x and 4.2.x
+  # The bug prevents activerecord from using the most recent version of mysql2.
+  # See: https://stackoverflow.com/questions/32457657/rails-4-gemloaderror-specified-mysql2-for-database-adapter-but-the-gem-i
+  gem 'mysql2', '~> 0.3.18', platforms: :ruby
   gem 'rails_12factor'
 end
 
 group :test, :development do
   gem 'activerecord-jdbcsqlite3-adapter', platforms: :jruby
+  gem 'brakeman', require: false
+  gem 'bundler-audit', require: false
+  gem 'pry-byebug', platforms: :ruby
+  gem 'rubocop', require: false
+  gem 'rubocop-rspec', require: false
   gem 'sqlite3', platforms: :ruby
-  gem 'rubocop'
 end
 
 group :test do
@@ -31,4 +42,6 @@ group :test do
   gem 'factory_girl_rails'
   gem 'shoulda-matchers'
   gem 'timecop'
+  gem 'webmock'
+  gem 'rspec_junit_formatter'
 end
