@@ -6,7 +6,7 @@ module Connector
     desc 'Creating a Maestrano Connector application'
 
     def maestrano_generator
-      generate 'maestrano:initializer'
+      generate 'maestrano:install'
     end
 
     def include_helpers

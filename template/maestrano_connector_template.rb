@@ -42,6 +42,7 @@ def apply_template!
     copy_file 'files/sidekiq.rb', 'config/initializers/sidekiq.rb'
 
     # Settings
+    run 'spring stop'
     run 'bundle exec rails g config:install'
     remove_dir 'config/settings'
     remove_file 'config/settings.yml'
@@ -66,14 +67,16 @@ def apply_template!
     run 'SKIP_CONFIGURATION=true bundle exec rails g connector:install'
     run 'bundle exec figaro install'
     run 'bundle exec rake railties:install:migrations'
-    run 'SKIP_CONFIGURATION=true bundle exec rake db:migrate'
 
-    run 'bundler binstubs puma --force'
-    run 'bundler binstubs sidekiq --force'
-    run 'bundler binstubs rake --force'
+    run 'bundle binstubs bundler --force'
+    run 'bundle binstubs puma --force'
+    run 'bundle binstubs sidekiq --force'
+    run 'bundle binstubs rake --force'
 
     remove_file 'config/initializers/maestrano.rb'
     copy_file 'files/maestrano.rb', 'config/initializers/maestrano.rb'
+
+    run 'SKIP_CONFIGURATION=true bundle exec rake db:migrate'
 
     # Init repo and commit
     git :init

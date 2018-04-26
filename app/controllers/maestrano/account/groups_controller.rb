@@ -10,7 +10,7 @@ class Maestrano::Account::GroupsController < Maestrano::Rails::WebHookController
 
     unless organization
       Maestrano::Connector::Rails::ConnectorLogger.log('info', nil, 'Organization not found')
-      return render json: {success: true}, status: 204
+      return render json: {success: true}, status: :no_content
     end
 
     Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, 'delete organization')

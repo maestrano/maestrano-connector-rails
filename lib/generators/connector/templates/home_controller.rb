@@ -5,10 +5,10 @@ class HomeController < ApplicationController
 
     # Update list of entities to synchronize
     current_organization.synchronized_entities.keys.each do |entity|
-      next unless params[entity.to_s]
       current_organization.synchronized_entities[entity][:can_push_to_connec] = params[entity.to_s]["to_connec"] == "1"
       current_organization.synchronized_entities[entity][:can_push_to_external] = params[entity.to_s]["to_external"] == "1"
     end
+
     full_sync = params['historical-data'].present? && !current_organization.historical_data
     opts = {full_sync: full_sync}
     current_organization.sync_enabled = current_organization.synchronized_entities.values.any? { |settings| settings.values.any? { |v| v } }
@@ -31,13 +31,13 @@ class HomeController < ApplicationController
 
   # Implement the redirection to the external application
   def redirect_to_external
-    redirect_to 'https://path/to/external/app'
+    redirect_to 'https://your_application.com'
   end
 
   private
 
-    def start_synchronization(opts)
-      Maestrano::Connector::Rails::SynchronizationJob.perform_later(current_organization.id, opts)
-      flash[:info] = 'Congrats, you\'re all set up! Your data are now being synced' if current_organization.sync_enabled_changed?
-    end
+  def start_synchronization(opts)
+    Maestrano::Connector::Rails::SynchronizationJob.perform_later(current_organization.id, opts)
+    flash[:info] = 'Congrats, you\'re all set up! Your data are now being synced' if current_organization.sync_enabled_changed?
+  end
 end
