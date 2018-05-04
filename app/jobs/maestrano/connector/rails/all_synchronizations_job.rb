@@ -4,13 +4,13 @@ module Maestrano::Connector::Rails
 
     # Trigger synchronization of all active organizations
     def perform(name = nil, count = nil)
-      active_organizations = Maestrano::Connector::Rails::Organization.where.not(oauth_provider: nil, encrypted_oauth_token: nil)
-      gap_span = (60 / active_organizations.count).to_i
-      time = 0
-      active_organizations.each do |o|
-        next unless [true, 1].include?(o.sync_enabled)
-        Maestrano::Connector::Rails::SynchronizationJob.set(wait: time.minutes).perform_later(o.id, {})
-        time += gap_span
+      active_organizations = Maestrano::Connector::Rails::Organization
+                             .where.not(oauth_provider: nil, encrypted_oauth_token: nil)
+                             .select { |o| [true, 1].include?(o.sync_enabled) }
+
+      time_span_seconds = (3600 / active_organizations.count).to_i
+      active_organizations.each_with_index do |organization, i|
+        Maestrano::Connector::Rails::SynchronizationJob.set(wait: time_span_seconds * i).perform_later(organization.id, {})
       end
     end
   end
