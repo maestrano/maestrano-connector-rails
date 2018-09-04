@@ -1,0 +1,6 @@
+employee:
+  first_name: hash
+  last_name: hash
+  full_name: suppress
+  email:
+    address: hash

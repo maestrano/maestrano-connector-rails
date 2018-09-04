@@ -243,7 +243,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
 
     entities.flatten!
 
-    sanitized_entities = connec_sanitizer_profile? ? DataSanitizer.new('connec_sanitizer_profile.yml').sanitize(external_entity_name.downcase, entities) : entities
+    sanitized_entities = sanitizer_profile? ? Maestrano::Connector::Rails::Services::DataSanitizer.new('connec_sanitizer_profile.yml').sanitize(external_entity_name.downcase, entities) : entities
     Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, "Received data: Source=Connec!, Entity=#{self.class.connec_entity_name}, Data=#{sanitized_entities}")
 
     entities
@@ -290,7 +290,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
   # Helper method to build an op for batch call
   # See http://maestrano.github.io/connec/#api-|-batch-calls
   def batch_op(method, mapped_external_entity, id, connec_entity_name)
-    sanitized_external_entity = connec_sanitizer_profile? ? DataSanitizer.new('connec_sanitizer_profile.yml').sanitize(connec_entity_name, mapped_external_entity) : mapped_external_entity
+    sanitized_external_entity = sanitizer_profile? ? Maestrano::Connector::Rails::Services::DataSanitizer.new('connec_sanitizer_profile.yml').sanitize(connec_entity_name, mapped_external_entity) : mapped_external_entity
     Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, "Sending #{method.upcase} #{connec_entity_name}: #{sanitized_external_entity} to Connec! (Preparing batch request)")
     {
       method: method,
@@ -484,7 +484,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
         log_info = id_update_only ? 'with only ids' : ''
         Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, "Sending batch request to Connec! #{log_info} for #{self.class.normalize_connec_entity_name(connec_entity_name)}. Batch_request_size: #{batch_request[:ops].size}. Call_number: #{(start / request_per_call) + 1}")
         response = Retriable.with_context(:connec) { @connec_client.batch(batch_request) }
-        sanitized_response = connec_sanitizer_profile? ? DataSanitizer.new('connec_sanitizer_profile.yml').sanitize(self.class.normalize_connec_entity_name(connec_entity_name), (JSON.parse(response.body)['results'].map { |h| h['body'] })) : response
+        sanitized_response = sanitizer_profile? ? Maestrano::Connector::Rails::Services::DataSanitizer.new('connec_sanitizer_profile.yml').sanitize(self.class.normalize_connec_entity_name(connec_entity_name), (JSON.parse(response.body)['results'].map { |h| h['body'] })) : response
         Maestrano::Connector::Rails::ConnectorLogger.log('debug', @organization, "Received batch response from Connec! for #{self.class.normalize_connec_entity_name(connec_entity_name)}: #{sanitized_response}")
         raise "No data received from Connec! when trying to send batch request #{log_info} for #{self.class.connec_entity_name.pluralize}" unless response && response.body.present?
 
@@ -516,7 +516,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
 
       response_hash = JSON.parse(response.body)
 
-      sanitized_response_hash = connec_sanitizer_profile? ? DataSanitizer.new('connec_sanitizer_profile.yml').sanitize(self.class.connec_entity_name, response_hash['results'].map { |h| h['body'] }) : response_hash
+      sanitized_response_hash = sanitizer_profile? ? Maestrano::Connector::Rails::Services::DataSanitizer.new('connec_sanitizer_profile.yml').sanitize(self.class.connec_entity_name, response_hash['results'].map { |h| h['body'] }) : response_hash
 
       Maestrano::Connector::Rails::ConnectorLogger.log('debug', @organization, "Received response for entity=#{self.class.connec_entity_name}, response=#{sanitized_response_hash}")
       raise "Received unrecognized Connec! data when trying to fetch #{self.class.normalized_connec_entity_name}: #{response_hash}" unless response_hash[self.class.normalized_connec_entity_name]
@@ -524,7 +524,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
       response_hash
     end
 
-    def connec_sanitizer_profile?
-      File.file?(Rails.root.join('config', 'profiles', 'connec_sanitizer_profile.yml'))
+    def sanitizer_profile?(profile = 'connec_sanitizer_profile.yml')
+      File.file?(Rails.root.join('config', 'profiles', profile))
     end
 end
