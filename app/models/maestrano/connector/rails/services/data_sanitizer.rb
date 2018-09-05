@@ -7,38 +7,40 @@ module Maestrano::Connector::Rails::Services
       @profile = load_sanitizer_profile(sanitizer_profile)
     end
 
-    def sanitize(arg_entity, args, input_profile = nil)
+    def sanitize(entity, args, input_profile = nil)
       return args unless @profile
+
       if args.is_a?(Array)
-        args.map do |arg|
-          arg = arg[arg_entity] || arg
-          if arg.is_a?(Array)
-            sanitize(arg_entity, arg, input_profile)
-          else
-            sanitize_hash(arg_entity, arg, input_profile)
-          end
-        end
+        sanitize_array(entity, args, input_profile)
       else
-        args = args[arg_entity] || args
+        args = args[entity] || args
         if args.is_a?(Array)
-          sanitize(arg_entity, args, input_profile)
+          sanitize(entity, args, input_profile)
         else
-          sanitize_hash(arg_entity, args, input_profile)
+          sanitize_hash(entity, args, input_profile)
         end
       end
     end
 
     private
 
-      def sanitize_array(arg_entity, arg_hash, input_profile = nil)
-        #
+      def sanitize_array(entity, args, input_profile = nil)
+        args.map do |arg|
+          arg = arg[entity] || arg
+          if arg.is_a?(Array)
+            sanitize(entity, arg, input_profile)
+          else
+            sanitize_hash(entity, arg, input_profile)
+          end
+        end
       end
 
-      def sanitize_hash(arg_entity, arg_hash, input_profile = nil)
+      def sanitize_hash(entity, arg_hash, input_profile = nil)
         # Format arguments
-        entity = arg_entity.underscore
-        sanitized_hash = arg_hash.deep_dup
+        entity = entity.underscore
         profile = input_profile || @profile[entity]
+        sanitized_hash = arg_hash.deep_dup
+
         return sanitized_hash if profile.nil?
         # Go through each attribute specified in the entity sanitization profile and take action
         # If action is a hash (= nested attributes), recusively call the method
