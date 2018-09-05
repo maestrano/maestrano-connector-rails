@@ -17,6 +17,7 @@ describe Maestrano::Connector::Rails::Services::DataSanitizer do
     end
 
     context 'when data is a hash' do
+
       let(:employee_data) do
         {
           "first_name" => "Jon",
@@ -39,9 +40,45 @@ describe Maestrano::Connector::Rails::Services::DataSanitizer do
     end
 
     context 'when data is an array of hashes' do
-      
-    end
+      let(:employee_data) do
+        [
+          {
+            "first_name" => "Jon",
+            "last_name" => "Doe",
+            "full_name" => "Jon Doe",
+            "email" => {
+              "address" => "test@example.com"
+            }
+          },
+          {
+            "first_name" => "Jane",
+            "last_name" => "Doe",
+            "full_name" => "Jane Doe",
+            "email" => {
+              "address" => "test1@example.com"
+            }
+          }
+        ]
+      end
 
+      it 'sanitizes the first hash in the array based on the profile' do
+        expect(sanitized_data[0]['full_name']).to be_nil
+        expect(sanitized_data[0]['first_name']).not_to eq(employee_data[0]['first_name'])
+        expect(sanitized_data[0]['last_name']).not_to eq(employee_data[0]['last_name'])
+        expect(decrypt_hashed_value(sanitized_data[0]['first_name'])).to eq(employee_data[0]['first_name'])
+        expect(decrypt_hashed_value(sanitized_data[0]['last_name'])).to eq(employee_data[0]['last_name'])
+        expect(decrypt_hashed_value(sanitized_data[0]['email']['address'])).to eq(employee_data[0]['email']['address'])
+      end
+
+      it 'sanitizes other hashes in the array based on profile' do
+        expect(sanitized_data[0]['full_name']).to be_nil
+        expect(sanitized_data[0]['first_name']).not_to eq(employee_data[0]['first_name'])
+        expect(sanitized_data[0]['last_name']).not_to eq(employee_data[0]['last_name'])
+        expect(decrypt_hashed_value(sanitized_data[0]['first_name'])).to eq(employee_data[0]['first_name'])
+        expect(decrypt_hashed_value(sanitized_data[0]['last_name'])).to eq(employee_data[0]['last_name'])
+        expect(decrypt_hashed_value(sanitized_data[0]['email']['address'])).to eq(employee_data[0]['email']['address'])
+      end
+    end
   end
 
   private
