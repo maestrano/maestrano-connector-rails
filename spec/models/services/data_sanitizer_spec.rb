@@ -4,19 +4,16 @@ describe Maestrano::Connector::Rails::Services::DataSanitizer do
   let(:mock_profile) { YAML.load_file('spec/dummy/config/profiles/test_sanitizer_profile.yml') }
 
   describe 'described_class#sanitize' do
-    subject(:sanitized_data) { sanitizer.sanitize('employee', employee_data) }
-
     let(:sanitizer) { Maestrano::Connector::Rails::Services::DataSanitizer.new('test_sanitizer_profile.yml') }
-
-    before do
-      allow(File).to receive(:file?).and_return(true)
-    end
 
     it 'loads sanitizer profile' do
       expect(sanitizer.instance_variable_get(:@profile)).to eq(mock_profile)
     end
 
     context 'when data is a hash' do
+      subject(:sanitized_data) { sanitizer.sanitize('employee', employee_data) }
+
+      let(:sanitizer) { Maestrano::Connector::Rails::Services::DataSanitizer.new('test_sanitizer_profile.yml') }
 
       let(:employee_data) do
         {
@@ -40,6 +37,10 @@ describe Maestrano::Connector::Rails::Services::DataSanitizer do
     end
 
     context 'when data is an array of hashes' do
+      subject(:sanitized_data) { sanitizer.sanitize('employee', employee_data) }
+
+      let(:sanitizer) { Maestrano::Connector::Rails::Services::DataSanitizer.new('test_sanitizer_profile.yml') }
+
       let(:employee_data) do
         [
           {
@@ -77,6 +78,27 @@ describe Maestrano::Connector::Rails::Services::DataSanitizer do
         expect(decrypt_hashed_value(sanitized_data[0]['first_name'])).to eq(employee_data[0]['first_name'])
         expect(decrypt_hashed_value(sanitized_data[0]['last_name'])).to eq(employee_data[0]['last_name'])
         expect(decrypt_hashed_value(sanitized_data[0]['email']['address'])).to eq(employee_data[0]['email']['address'])
+      end
+    end
+
+    context 'when profile not given' do
+      subject(:sanitized_data) { sanitizer.sanitize('employee', employee_data) }
+
+      let(:sanitizer) { Maestrano::Connector::Rails::Services::DataSanitizer.new('fake_profile.yml') }
+
+      let(:employee_data) do
+        {
+          "first_name" => "Jon",
+          "last_name" => "Doe",
+          "full_name" => "Jon Doe",
+          "email" => {
+            "address" => "test@example.com"
+          }
+        }
+      end
+
+      it 'returns the original object' do
+        expect(sanitized_data).to eq(employee_data)
       end
     end
   end
