@@ -12,15 +12,27 @@ module Maestrano::Connector::Rails::Services
       if args.is_a?(Array)
         args.map do |arg|
           arg = arg[arg_entity] || arg
-          sanitize_hash(arg_entity, arg, input_profile)
+          if arg.is_a?(Array)
+            sanitize(arg_entity, arg, input_profile)
+          else
+            sanitize_hash(arg_entity, arg, input_profile)
+          end
         end
       else
         args = args[arg_entity] || args
-        sanitize_hash(arg_entity, args, input_profile)
+        if args.is_a?(Array)
+          sanitize(arg_entity, args, input_profile)
+        else
+          sanitize_hash(arg_entity, args, input_profile)
+        end
       end
     end
 
     private
+
+      def sanitize_array(arg_entity, arg_hash, input_profile = nil)
+        #
+      end
 
       def sanitize_hash(arg_entity, arg_hash, input_profile = nil)
         # Format arguments
@@ -61,7 +73,7 @@ module Maestrano::Connector::Rails::Services
       def hash_value(value)
         cipher = OpenSSL::Cipher.new('AES-128-ECB').encrypt
         cipher.key = Rails.application.secrets.secret_key_base[0..15]
-        crypt = cipher.update(value) + cipher.final
+        crypt = cipher.update(value.to_s) + cipher.final
         Base64.encode64(crypt)
       end
   end
