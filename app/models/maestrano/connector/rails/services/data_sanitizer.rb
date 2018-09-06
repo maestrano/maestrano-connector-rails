@@ -15,7 +15,7 @@ module Maestrano::Connector::Rails::Services
       else
         args = args[entity] || args
         if args.is_a?(Array)
-          sanitize(entity, args, input_profile)
+          sanitize_array(entity, args, input_profile)
         else
           sanitize_hash(entity, args, input_profile)
         end
@@ -28,7 +28,7 @@ module Maestrano::Connector::Rails::Services
         args.map do |arg|
           arg = arg[entity] || arg
           if arg.is_a?(Array)
-            sanitize(entity, arg, input_profile)
+            sanitize_array(entity, arg, input_profile)
           else
             sanitize_hash(entity, arg, input_profile)
           end
