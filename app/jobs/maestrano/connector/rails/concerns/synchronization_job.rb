@@ -14,10 +14,10 @@ module Maestrano::Connector::Rails::Concerns::SynchronizationJob
       queue = Sidekiq::Queue.new(:default)
       queue.find do |job|
         job_organization_id = begin
-          job.item['args'][0]['arguments'].first
-        rescue
-          false
-        end
+                                job.item['args'][0]['arguments'].first
+                              rescue
+                                false
+                              end
         organization_id == job_organization_id
       end
     end
@@ -25,10 +25,10 @@ module Maestrano::Connector::Rails::Concerns::SynchronizationJob
     def find_running_job(organization_id)
       Sidekiq::Workers.new.find do |_, _, work|
         job_organization_id = begin
-          work['payload']['args'][0]['arguments'].first
-        rescue
-          false
-        end
+                                work['payload']['args'][0]['arguments'].first
+                              rescue
+                                false
+                              end
         work['queue'] == 'default' && organization_id == job_organization_id
       end
     rescue
