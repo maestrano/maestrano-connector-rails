@@ -4,3 +4,8 @@ employee:
   full_name: suppress
   email:
     address: hash
+  friends:
+    address: hash
+    name:
+      first_name: suppress
+      last_name: hash
