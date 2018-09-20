@@ -114,6 +114,7 @@ module Maestrano::Connector::Rails::Concerns::Organization
   def enable_historical_data(enabled)
     # Historical data sharing cannot be unset
     return if historical_data
+
     if enabled
       self.date_filtering_limit = nil
       self.historical_data = true

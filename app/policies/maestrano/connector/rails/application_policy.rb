@@ -16,6 +16,7 @@ class Maestrano::Connector::Rails::ApplicationPolicy
   def initialize(user, record)
     # Closed system: must be logged in to do anything
     raise Pundit::NotAuthorizedError, 'must be logged in' unless user
+
     @user = user
     @record = record
   end

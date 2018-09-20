@@ -16,6 +16,7 @@ module Maestrano
       def self.all_filters
         # Skipping if there is no tables as calling columns_hash in attribute_type is causing issue
         return unless tables_exists?
+
         _attributes.keys.each do |attribute|
           type = attribute_type(attribute)
           if type == :boolean
@@ -34,6 +35,7 @@ module Maestrano
           # iterating through all the api operator and adding them as custom filter
           # name.gt, name.like etc...
           next unless _model_class
+
           field = "#{_model_class.table_name}.#{key}"
 
           API_SQL_OPERATOR_MAPPING.each do |api_operator, sql_operator|
