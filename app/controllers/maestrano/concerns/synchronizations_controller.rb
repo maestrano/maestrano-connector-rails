@@ -79,30 +79,30 @@ module Maestrano
 
       private
 
-      def render_organization_sync(organization, status, code)
-        h = {
-          group_id: organization.uid,
-          sync_enabled: organization.sync_enabled,
-          status: status
-        }
-        last_sync = organization.synchronizations.last
-        if last_sync
-          h[:message] = last_sync.message
-          h[:updated_at] = last_sync.updated_at
+        def render_organization_sync(organization, status, code)
+          h = {
+            group_id: organization.uid,
+            sync_enabled: organization.sync_enabled,
+            status: status
+          }
+          last_sync = organization.synchronizations.last
+          if last_sync
+            h[:message] = last_sync.message
+            h[:updated_at] = last_sync.updated_at
+          end
+
+          render json: h, status: code
         end
 
-        render json: h, status: code
-      end
-
-      def organization_status(organization)
-        if Maestrano::Connector::Rails::SynchronizationJob.find_running_job(organization.id)
-          'RUNNING'
-        elsif Maestrano::Connector::Rails::SynchronizationJob.find_job(organization.id)
-          'ENQUEUED'
-        else
-          organization.synchronizations.last&.status || 'DISABLED'
+        def organization_status(organization)
+          if Maestrano::Connector::Rails::SynchronizationJob.find_running_job(organization.id)
+            'RUNNING'
+          elsif Maestrano::Connector::Rails::SynchronizationJob.find_job(organization.id)
+            'ENQUEUED'
+          else
+            organization.synchronizations.last&.status || 'DISABLED'
+          end
         end
-      end
     end
   end
 end
