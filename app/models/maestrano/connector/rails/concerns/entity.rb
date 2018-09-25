@@ -273,6 +273,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
       mapped_external_entities_with_idmaps.each do |mapped_external_entity_with_idmap|
         id_map = mapped_external_entity_with_idmap[:idmap]
         next unless id_map&.metadata&.dig(:ignore_currency_update)
+
         self.class.currency_check_fields.each do |field|
           mapped_external_entity_with_idmap[:entity].delete(field)
         end
@@ -302,6 +303,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
   # Wrapper to process options and limitations
   def get_external_entities_wrapper(last_synchronization_date = nil, entity_name = self.class.external_entity_name)
     return [] if @opts[:__skip_external] || !self.class.can_read_external?
+
     get_external_entities(entity_name, last_synchronization_date)
   end
 
@@ -367,6 +369,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
       # Update
       else
         return nil unless self.class.can_update_external?
+
         external_hash = update_external_entity(mapped_connec_entity, idmap.external_id, external_entity_name)
 
         completed_hash = map_and_complete_hash_with_connec_ids(external_hash, external_entity_name, id_refs_only_connec_entity)
@@ -479,6 +482,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
         response = @connec_client.batch(batch_request)
         Maestrano::Connector::Rails::ConnectorLogger.log('debug', @organization, "Received batch response from Connec! for #{self.class.normalize_connec_entity_name(connec_entity_name)}: #{response}")
         raise "No data received from Connec! when trying to send batch request #{log_info} for #{self.class.connec_entity_name.pluralize}" unless response && response.body.present?
+
         response = JSON.parse(response.body)
 
         # Parse batch response

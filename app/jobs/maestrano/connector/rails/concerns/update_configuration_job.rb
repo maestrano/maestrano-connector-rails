@@ -8,6 +8,7 @@ module Maestrano::Connector::Rails::Concerns::UpdateConfigurationJob
 
   def perform
     return if ENV['SKIP_CONFIGURATION']
+
     Maestrano.reset!
     Maestrano.auto_configure
   rescue StandardError => e

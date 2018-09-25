@@ -119,6 +119,7 @@ module Maestrano::Connector::Rails::Concerns::ConnecHelper
       # Unfold the id
       if array_of_refs.empty? && field
         return entity.delete(ref) if field.is_a?(String) # ~retro-compatibility to ease transition aroud Connec! idmaps rework. Should be removed eventually.
+
         id_hash = field.find { |id| id[:provider] == organization.oauth_provider && id[:realm] == organization.oauth_uid }
         if id_hash
           entity[ref] = id_hash['id']
@@ -134,6 +135,7 @@ module Maestrano::Connector::Rails::Concerns::ConnecHelper
       # Follow embedment path
       else
         return true if field.blank?
+
         case field
         when Array
           bool = true
@@ -151,6 +153,7 @@ module Maestrano::Connector::Rails::Concerns::ConnecHelper
     # References can either be an array (only record references), or a hash
     def format_references(references)
       return {record_references: references, id_references: []} if references.is_a?(Array)
+
       references[:record_references] ||= []
       references[:id_references] ||= []
       references
@@ -173,6 +176,7 @@ module Maestrano::Connector::Rails::Concerns::ConnecHelper
     # Recursive method for filtering connec entities
     def filter_connec_entity_for_id_refs_helper(entity_hash, tree)
       return if tree.empty?
+
       entity_hash.slice!(*tree.keys)
 
       tree.each do |key, children|

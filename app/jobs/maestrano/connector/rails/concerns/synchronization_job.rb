@@ -14,10 +14,10 @@ module Maestrano::Connector::Rails::Concerns::SynchronizationJob
       queue = Sidekiq::Queue.new(:default)
       queue.find do |job|
         job_organization_id = begin
-          job.item['args'][0]['arguments'].first
-        rescue
-          false
-        end
+                                job.item['args'][0]['arguments'].first
+                              rescue
+                                false
+                              end
         organization_id == job_organization_id
       end
     end
@@ -25,10 +25,10 @@ module Maestrano::Connector::Rails::Concerns::SynchronizationJob
     def find_running_job(organization_id)
       Sidekiq::Workers.new.find do |_, _, work|
         job_organization_id = begin
-          work['payload']['args'][0]['arguments'].first
-        rescue
-          false
-        end
+                                work['payload']['args'][0]['arguments'].first
+                              rescue
+                                false
+                              end
         work['queue'] == 'default' && organization_id == job_organization_id
       end
     rescue
@@ -75,6 +75,7 @@ module Maestrano::Connector::Rails::Concerns::SynchronizationJob
         Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, 'First synchronization ever. Doing two half syncs to allow smart merging to work its magic.')
         organization.synchronized_entities.each do |entity, settings|
           next unless settings[:can_push_to_connec] || settings[:can_push_to_external]
+
           Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "First synchronization ever. Doing half sync from external for #{entity}.")
           first_sync_entity(entity.to_s, organization, connec_client, external_client, last_synchronization_date, opts, true)
           Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "First synchronization ever. Doing half sync from Connec! for #{entity}.")
@@ -90,6 +91,7 @@ module Maestrano::Connector::Rails::Concerns::SynchronizationJob
       else
         organization.synchronized_entities.each do |entity, settings|
           next unless settings[:can_push_to_connec] || settings[:can_push_to_external]
+
           sync_entity(entity.to_s, organization, connec_client, external_client, last_synchronization_date, opts)
         end
       end
@@ -136,6 +138,7 @@ module Maestrano::Connector::Rails::Concerns::SynchronizationJob
       # We're comparing the first record to check that it is different
       first_record = Digest::MD5.hexdigest(perform_hash[:first].to_s)
       break if last_first_record && first_record == last_first_record
+
       last_first_record = first_record
 
       skip += limit

@@ -24,6 +24,7 @@ module Maestrano::Connector::Rails::Concerns::ComplexEntity
 
     def formatted_entities_names(names)
       return names.with_indifferent_access if names.is_a?(Hash)
+
       names.index_by { |name| name }.with_indifferent_access
     end
 
@@ -44,6 +45,7 @@ module Maestrano::Connector::Rails::Concerns::ComplexEntity
     def public_name(formatted_names)
       names = formatted_names.keys.map(&:pluralize)
       return names.first.humanize if names.size == 1
+
       (names[0..-2].join(', ') + " and #{names.last}").humanize
     end
   end

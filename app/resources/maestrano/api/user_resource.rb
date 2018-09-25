@@ -15,6 +15,7 @@ module Maestrano
         @model.tenant = context[:client]
         super
         return unless org_uid == context.dig(:params, :org_uid)
+
         org = Maestrano::Connector::Rails::Organization.find_by(org_uid: org_uid)
         org.add_member(@model) unless !org || org.member?(@model)
       end

@@ -12,11 +12,13 @@ module Maestrano::Connector::Rails::Concerns::SubEntityBase
 
     def external_entity_name
       return entity_name if external?
+
       raise 'Forbidden call: cannot call external_entity_name for a connec entity'
     end
 
     def connec_entity_name
       return entity_name unless external?
+
       raise 'Forbidden call: cannot call connec_entity_name for an external entity'
     end
 
