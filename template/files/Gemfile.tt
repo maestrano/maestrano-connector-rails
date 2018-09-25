@@ -5,7 +5,7 @@ gem 'tzinfo-data', platforms: [:mingw, :mswin, :jruby]
 
 gem 'puma', require: false
 
-gem 'maestrano-connector-rails', '~> 2.3.2'
+gem 'maestrano-connector-rails', '~> 2.3.3'
 
 gem 'jquery-rails'
 gem 'jsonapi-resources'

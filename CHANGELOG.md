@@ -1,3 +1,18 @@
+## 2.3.3
+
+* [MARLIN-244] Decorate SynchronizationController [\#176](https://github.com/maestrano/maestrano-connector-rails/pull/176)
+* Rubofix [\#177](https://github.com/maestrano/maestrano-connector-rails/pull/177)
+* [MNO-816] Fix regex pattern [\#175](https://github.com/maestrano/maestrano-connector-rails/pull/175)
+* Spread out sync jobs [\#173](https://github.com/maestrano/maestrano-connector-rails/pull/173)
+
+## 2.3.2
+
+* Update framework generators and template [\#171](https://github.com/maestrano/maestrano-connector-rails/pull/171)
+
+## 2.3.1
+
+* Do not skip Connec! webhook on push_disabled (transac! compatibility) [\#170](https://github.com/maestrano/maestrano-connector-rails/pull/170)
+
 ## 2.3.0
 
 * Send data to Connec! even if the push/pull parameters are disabled (Transac! integration)
