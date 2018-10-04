@@ -1,3 +1,6 @@
+## 2.3.4
+- Fix gemfile template to remove test/dev gems from the production group
+
 ## 2.3.3
 
 * [MARLIN-244] Decorate SynchronizationController [\#176](https://github.com/maestrano/maestrano-connector-rails/pull/176)
@@ -17,7 +20,7 @@
 
 * Send data to Connec! even if the push/pull parameters are disabled (Transac! integration)
 * Randomise cron jobs time to avoid connectors crowding
-* Fix duplicated Sidekiq UI configuration and time based attack 
+* Fix duplicated Sidekiq UI configuration and time based attack
 
 ## 2.2.1
 
