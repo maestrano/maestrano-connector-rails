@@ -8,14 +8,13 @@ gem 'puma', require: false
 gem 'maestrano-connector-rails', '~> 2.3.3'
 
 gem 'jquery-rails'
-gem 'jsonapi-resources'
-gem 'jsonapi-resources-matchers', require: false
-gem 'pundit'
-gem 'pundit-matchers'
-gem 'pundit-resources'
 gem 'turbolinks', '~> 2.5'
 gem 'uglifier'
-gem 'spring'
+
+# JSON API
+gem 'jsonapi-resources'
+gem 'pundit'
+gem 'pundit-resources'
 
 group :production, :uat do
   gem 'activerecord-jdbcmysql-adapter', platforms: :jruby
@@ -36,12 +35,19 @@ group :test, :development do
   gem 'sqlite3', platforms: :ruby
 end
 
+group :development do
+  gem 'spring'
+end
+
 group :test do
   gem 'simplecov'
   gem 'rspec-rails'
   gem 'factory_girl_rails'
   gem 'shoulda-matchers'
+  gem 'pundit-matchers'
+  gem 'jsonapi-resources-matchers', require: false
   gem 'timecop'
   gem 'webmock'
+  # CircleCI
   gem 'rspec_junit_formatter'
 end
