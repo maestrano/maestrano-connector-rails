@@ -1,0 +1,7 @@
+update_configuration_job:
+  cron: "<%= sidekiq_cron_minute %> * * * *"
+  class: 'Maestrano::Connector::Rails::UpdateConfigurationJob'
+
+all_synchronizations_job:
+  cron: "<%= (sidekiq_cron_minute + 1) % 60 %> * * * *"
+  class: 'Maestrano::Connector::Rails::AllSynchronizationsJob'

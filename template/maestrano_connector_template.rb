@@ -40,6 +40,7 @@ def apply_template!
     # Sidekiq
     copy_file 'files/sidekiq.yml', 'config/sidekiq.yml'
     copy_file 'files/sidekiq.rb', 'config/initializers/sidekiq.rb'
+    template 'files/sidekiq_cron.yml.tt', 'config/sidekiq_cron.yml'
 
     # Settings
     run 'spring stop'
@@ -143,6 +144,11 @@ def ensure_valid_options
       fail Rails::Generators::Error, "Unsupported option: #{key}=#{actual}"
     end
   end
+end
+
+# Schedule cron jobs at a random minute to avoid crowding of all connectors
+def sidekiq_cron_minute
+  @sidekiq_cron_minute ||= rand(60)
 end
 
 apply_template!
