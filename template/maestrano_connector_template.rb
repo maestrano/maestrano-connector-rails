@@ -13,8 +13,7 @@ def apply_template!
   #
   template 'files/Gemfile.tt', 'Gemfile', force: true
 
-  remove_file '.gitignore'
-  copy_file 'files/gitignore', '.gitignore'
+  copy_file 'files/gitignore', '.gitignore', force: true
   copy_file 'files/rubocop.yml', '.rubocop.yml'
 
   #
@@ -25,15 +24,13 @@ def apply_template!
     remove_dir 'test'
     remove_file 'app/views/layouts/application.html.erb'
     remove_file 'app/assets/stylesheets/application.css'
-    remove_file 'config/routes.rb'
     copy_file 'files/spec_helper.rb', 'spec/spec_helper.rb'
-    copy_file 'files/routes.rb', 'config/routes.rb'
+    copy_file 'files/routes.rb', 'config/routes.rb', force: true
 
     # Procfile and uat
     copy_file 'files/Procfile', 'Procfile'
     run 'cp config/environments/production.rb config/environments/uat.rb'
-    remove_file 'config/database.yml'
-    copy_file 'files/database.yml', 'config/database.yml'
+    copy_file 'files/database.yml', 'config/database.yml', force: true
     run 'echo \'uat:
     secret_key_base: <%= ENV["SECRET_KEY_BASE"] %>\' >> config/secrets.yml'
 
@@ -44,14 +41,13 @@ def apply_template!
 
     # Settings
     run 'spring stop'
-    run 'bundle exec rails g config:install'
+    generate 'config:install'
     remove_dir 'config/settings'
-    remove_file 'config/settings.yml'
     run 'mkdir config/settings'
     %w(development production test uat).each do |file|
       copy_file "settings/#{file}.yml", "config/settings/#{file}.yml", force: true
     end
-    copy_file 'settings/settings.yml', 'config/settings.yml'
+    copy_file 'settings/settings.yml', 'config/settings.yml', force: true
 
     copy_file 'files/application-sample.yml', 'config/application-sample.yml'
 
@@ -65,9 +61,9 @@ def apply_template!
       RUBY
     end
 
-    run 'SKIP_CONFIGURATION=true bundle exec rails g connector:install'
+    generate 'connector:install SKIP_CONFIGURATION=true'
     run 'bundle exec figaro install'
-    run 'bundle exec rake railties:install:migrations'
+    rake 'railties:install:migrations'
 
     run 'bundle binstubs bundler --force'
     run 'bundle binstubs puma --force'
@@ -77,7 +73,7 @@ def apply_template!
     remove_file 'config/initializers/maestrano.rb'
     copy_file 'files/maestrano.rb', 'config/initializers/maestrano.rb'
 
-    run 'SKIP_CONFIGURATION=true bundle exec rake db:migrate'
+    rake 'db:migrate SKIP_CONFIGURATION=true'
 
     # Init repo and commit
     git :init
