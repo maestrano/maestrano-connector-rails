@@ -71,5 +71,10 @@ module Connector
     def copy_oauth_controller
       copy_file 'oauth_controller.rb', 'app/controllers/oauth_controller.rb'
     end
+
+    def cleanup
+      # The connector framework already provide a working implementation of this controller
+      remove_file 'app/controllers/maestrano/account/groups_controller.rb'
+    end
   end
 end
