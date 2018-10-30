@@ -497,9 +497,9 @@ describe Maestrano::Connector::Rails::Entity do
             let(:entities) { [] }
             let(:results) { [] }
 
-            context 'when 100 entities' do
+            context 'when 50 entities' do
               before do
-                100.times do
+                50.times do
                   entities << entity_with_idmap1
                   results << result200
                 end
@@ -512,9 +512,9 @@ describe Maestrano::Connector::Rails::Entity do
               end
             end
 
-            context 'when more than 100 entities' do
+            context 'when more than 50 entities' do
               before do
-                100.times do
+                50.times do
                   entities << entity_with_idmap1
                   results << result200
                 end

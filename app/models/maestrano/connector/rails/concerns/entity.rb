@@ -465,7 +465,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
     # proc is a lambda to create a batch_op from an element of the array
     # Perform batch calls on Connec API and parse the response
     def batch_calls(array_with_idmap, proc, connec_entity_name, id_update_only = false)
-      request_per_call = @opts[:request_per_batch_call] || 100
+      request_per_call = @opts[:request_per_batch_call] || 50
       start = 0
       while start < array_with_idmap.size
         # Prepare batch request
