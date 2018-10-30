@@ -479,7 +479,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
         # Batch call
         log_info = id_update_only ? 'with only ids' : ''
         Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, "Sending batch request to Connec! #{log_info} for #{self.class.normalize_connec_entity_name(connec_entity_name)}. Batch_request_size: #{batch_request[:ops].size}. Call_number: #{(start / request_per_call) + 1}")
-        response = @connec_client.batch(batch_request)
+        response = Retriable.with_context(:connec) { @connec_client.batch(batch_request) }
         Maestrano::Connector::Rails::ConnectorLogger.log('debug', @organization, "Received batch response from Connec! for #{self.class.normalize_connec_entity_name(connec_entity_name)}: #{response}")
         raise "No data received from Connec! when trying to send batch request #{log_info} for #{self.class.connec_entity_name.pluralize}" unless response && response.body.present?
 
@@ -505,7 +505,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
 
     def fetch_connec(uri)
       Maestrano::Connector::Rails::ConnectorLogger.log('debug', @organization, "Fetching data from connec entity=#{self.class.connec_entity_name}, url=#{uri}")
-      response = @connec_client.get(uri)
+      response = Retriable.with_context(:connec) { @connec_client.get(uri) }
 
       raise "No data received from Connec! when trying to fetch #{self.class.normalized_connec_entity_name}" unless response && response.body.present?
 

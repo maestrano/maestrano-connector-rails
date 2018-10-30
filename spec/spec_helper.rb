@@ -40,3 +40,10 @@ RSpec.configure do |config|
     Rails.cache.clear
   end
 end
+
+# Disable exponential backoff and wait in testing
+Retriable.configure do |c|
+  c.multiplier    = 1.0
+  c.rand_factor   = 0.0
+  c.base_interval = 0
+end
