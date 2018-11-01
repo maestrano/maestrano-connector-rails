@@ -37,6 +37,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency('hash_mapper', '>= 0.2.2')
   s.add_runtime_dependency('pundit')
   s.add_runtime_dependency('pundit-resources')
+  s.add_runtime_dependency('retriable', '~> 3.1.2')
   s.add_runtime_dependency('sidekiq', '~> 4.2.9')
   s.add_runtime_dependency('sidekiq-cron')
   s.add_runtime_dependency('sidekiq-unique-jobs')

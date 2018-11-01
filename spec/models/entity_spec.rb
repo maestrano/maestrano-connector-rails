@@ -342,6 +342,17 @@ describe Maestrano::Connector::Rails::Entity do
         end
 
         describe 'failures' do
+          CONNEC_RETRIABLE_ERRORS.each do |error|
+            context "#{error}" do
+              before { allow(connec_client).to receive(:get).and_raise(error) }
+
+              it 'retries and raise the error' do
+                expect {subject.get_connec_entities(nil)}.to raise_error(error)
+                expect(connec_client).to have_received(:get).exactly(3).times
+              end
+            end
+          end
+
           context 'when no response' do
             before do
               allow(connec_client).to receive(:get).and_return(ActionDispatch::Response.new(200, {}, nil, {}))
@@ -488,9 +499,9 @@ describe Maestrano::Connector::Rails::Entity do
             let(:entities) { [] }
             let(:results) { [] }
 
-            context 'when 100 entities' do
+            context 'when 50 entities' do
               before do
-                100.times do
+                50.times do
                   entities << entity_with_idmap1
                   results << result200
                 end
@@ -503,9 +514,9 @@ describe Maestrano::Connector::Rails::Entity do
               end
             end
 
-            context 'when more than 100 entities' do
+            context 'when more than 50 entities' do
               before do
-                100.times do
+                50.times do
                   entities << entity_with_idmap1
                   results << result200
                 end
@@ -546,6 +557,15 @@ describe Maestrano::Connector::Rails::Entity do
               subject.push_entities_to_connec_to(entities_with_idmaps, '')
               idmap2.reload
               expect(idmap2.message).to eq err_msg.truncate(255)
+            end
+          end
+
+          context 'timeout error' do
+            before { allow(connec_client).to receive(:batch).and_raise(Net::OpenTimeout) }
+
+            it 'retries and raise the error' do
+              expect {subject.push_entities_to_connec_to(entities_with_idmaps, '')}.to raise_error(Net::OpenTimeout)
+              expect(connec_client).to have_received(:batch).exactly(3).times
             end
           end
         end

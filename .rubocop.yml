@@ -8,6 +8,8 @@ Rails/ApplicationRecord:
   Enabled: false
 
 AllCops:
+  DisplayCopNames: true
+  DisplayStyleGuide: true
   TargetRubyVersion: 2.3
   Exclude:
     - 'maestrano-connector-rails.gemspec'

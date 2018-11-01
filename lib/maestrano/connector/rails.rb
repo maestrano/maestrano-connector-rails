@@ -1,4 +1,5 @@
 require 'maestrano-rails'
+require 'retriable'
 
 require 'haml-rails'
 require 'bootstrap-sass'
