@@ -1,5 +1,17 @@
-## 2.3.4
-- Fix gemfile template to remove test/dev gems from the production group
+## [v2.3.5](https://github.com/maestrano/maestrano-connector-rails/tree/v2.3.5) (2018-11-02)
+[Full Changelog](https://github.com/maestrano/maestrano-connector-rails/compare/v2.3.4...v2.3.5)
+
+**Fixed bugs:**
+
+- \[APPINT-1323\] Retry call to Connec! [\#180](https://github.com/maestrano/maestrano-connector-rails/pull/180) ([ouranos](https://github.com/ouranos))
+-  \[APPINT-1205\] Fix cron jobs & cleanup template [\#179](https://github.com/maestrano/maestrano-connector-rails/pull/179) ([ouranos](https://github.com/ouranos))
+
+## [v2.3.4](https://github.com/maestrano/maestrano-connector-rails/tree/v2.3.4) (2018-10-04)
+[Full Changelog](https://github.com/maestrano/maestrano-connector-rails/compare/v2.3.3...v2.3.4)
+
+**Fixed bugs:**
+
+- Fix Gemfile template [\#178](https://github.com/maestrano/maestrano-connector-rails/pull/178) ([ouranos](https://github.com/ouranos))
 
 ## 2.3.3
 
