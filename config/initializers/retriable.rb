@@ -3,6 +3,8 @@
 CONNEC_RETRIABLE_ERRORS = [Net::OpenTimeout, Net::ReadTimeout].freeze
 
 Retriable.configure do |c|
+  c.tries = 3
+
   c.contexts[:connec] = {
     on: CONNEC_RETRIABLE_ERRORS,
     on_retry: proc do |exception, try, elapsed_time, next_interval|
