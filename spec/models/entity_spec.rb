@@ -342,12 +342,14 @@ describe Maestrano::Connector::Rails::Entity do
         end
 
         describe 'failures' do
-          context 'timeout error' do
-            before { allow(connec_client).to receive(:get).and_raise(Net::OpenTimeout) }
+          CONNEC_RETRIABLE_ERRORS.each do |error|
+            context "#{error}" do
+              before { allow(connec_client).to receive(:get).and_raise(error) }
 
-            it 'retries and raise the error' do
-              expect {subject.get_connec_entities(nil)}.to raise_error(Net::OpenTimeout)
-              expect(connec_client).to have_received(:get).exactly(3).times
+              it 'retries and raise the error' do
+                expect {subject.get_connec_entities(nil)}.to raise_error(error)
+                expect(connec_client).to have_received(:get).exactly(3).times
+              end
             end
           end
 
