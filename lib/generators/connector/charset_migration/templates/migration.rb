@@ -1,6 +1,7 @@
 # frozen_string_literal: true
+
 class ConvertTablesToUtf8 < ActiveRecord::Migration
-  def change_encoding(encoding,collation)
+  def change_encoding(encoding, collation)
     # Allow for different adapter in different environment
     unless ActiveRecord::Base.connection_config[:adapter] == 'mysql2'
       say "Skipping conversion as non MySQL database (#{ActiveRecord::Base.connection_config[:adapter]})"
@@ -25,10 +26,10 @@ class ConvertTablesToUtf8 < ActiveRecord::Migration
   def change
     reversible do |dir|
       dir.up do
-        change_encoding('utf8','utf8_general_ci')
+        change_encoding('utf8', 'utf8_general_ci')
       end
       dir.down do
-        change_encoding('latin1','latin1_swedish_ci')
+        change_encoding('latin1', 'latin1_swedish_ci')
       end
     end
   end

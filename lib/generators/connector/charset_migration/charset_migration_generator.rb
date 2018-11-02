@@ -11,7 +11,7 @@ module Connector
       source_root File.expand_path('templates', __dir__)
 
       def copy_migration
-        migration_template "migration.rb", "db/migrate/convert_tables_to_utf8.rb"
+        migration_template 'migration.rb', 'db/migrate/convert_tables_to_utf8.rb'
       end
     end
   end
