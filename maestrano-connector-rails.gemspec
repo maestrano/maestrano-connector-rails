@@ -30,6 +30,8 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency('autoprefixer-rails')
   s.add_runtime_dependency('bootstrap-sass')
   s.add_runtime_dependency('config')
+  # v1.1 breaks the build. See: https://github.com/ruby-concurrency/concurrent-ruby/issues/768
+  s.add_runtime_dependency('concurrent-ruby', '~> 1.0.5')
   s.add_runtime_dependency('figaro')
   s.add_runtime_dependency('jquery-rails', '>= 4.0.4')
   s.add_runtime_dependency('jsonapi-resources')
