@@ -24,13 +24,14 @@ Gem::Specification.new do |s|
     "README.md"
   ]
 
-  s.add_runtime_dependency('rails', '~> 4.2.9')
+  s.add_runtime_dependency('rails', '~> 4.2.11')
   s.add_runtime_dependency('maestrano-rails', '~> 1.0.4')
   s.add_runtime_dependency('attr_encrypted', '~> 1.4.0')
   s.add_runtime_dependency('autoprefixer-rails')
   s.add_runtime_dependency('bootstrap-sass')
   s.add_runtime_dependency('config')
   # v1.1 breaks the build. See: https://github.com/ruby-concurrency/concurrent-ruby/issues/768
+  # v1.1.1 and v1.1.3 are also causing errors when the app is loaded, hence locking to 1.0.5
   s.add_runtime_dependency('concurrent-ruby', '~> 1.0.5')
   s.add_runtime_dependency('figaro')
   s.add_runtime_dependency('jquery-rails', '>= 4.0.4')
