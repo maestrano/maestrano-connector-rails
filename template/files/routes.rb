@@ -1,6 +1,9 @@
 Rails.application.routes.draw do
   mount Maestrano::Connector::Rails::Engine, at: '/'
 
+  # health check
+  health_check_routes
+
   # Default Connector pages
   root 'home#index'
   get 'home/index' => 'home#index'

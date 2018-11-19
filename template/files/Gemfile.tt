@@ -15,6 +15,7 @@ gem 'uglifier'
 gem 'jsonapi-resources'
 gem 'pundit'
 gem 'pundit-resources'
+gem 'health_check', '~> 2.4'
 
 group :production, :uat do
   gem 'activerecord-jdbcmysql-adapter', platforms: :jruby
