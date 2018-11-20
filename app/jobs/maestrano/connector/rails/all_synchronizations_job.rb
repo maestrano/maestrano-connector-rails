@@ -5,7 +5,7 @@ module Maestrano::Connector::Rails
     # Trigger synchronization of all active organizations
     def perform(name = nil, count = nil)
       Maestrano::Connector::Rails::Organization
-        .where.not(oauth_provider: nil, encrypted_oauth_token: nil)
+        .where.not(oauth_provider: nil, encrypted_oauth_keys: nil)
         .where(sync_enabled: true)
         .select(:id)
         .find_each do |organization|

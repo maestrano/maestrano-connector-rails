@@ -19,6 +19,7 @@ module Maestrano::Connector::Rails::Concerns::Organization
     attr_encrypted_options[:mode] = :per_attribute_iv_and_salt
     attr_encrypted :oauth_token, key: ::Settings.encryption_key1
     attr_encrypted :refresh_token, key: ::Settings.encryption_key2
+    attr_encrypted :oauth_keys, key: ::Settings.encryption_key2
 
     #===================================
     # Associations

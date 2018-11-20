@@ -59,6 +59,8 @@ ActiveRecord::Schema.define(version: 20170202033323) do
     t.string   "org_uid"
     t.boolean  "push_disabled"
     t.boolean  "pull_disabled"
+    t.text     "encrypted_oauth_keys"
+    t.string   "encrypted_oauth_keys_iv"
   end
 
   add_index "organizations", ["oauth_uid"], name: "index_organizations_on_oauth_uid", unique: true
