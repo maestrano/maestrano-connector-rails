@@ -72,7 +72,7 @@ def apply_template!
 
     remove_file 'config/initializers/maestrano.rb'
     copy_file 'files/maestrano.rb', 'config/initializers/maestrano.rb'
-    copy_file 'files/health_check.rb', 'config/initializers/health_check.rb'
+
     rake 'db:migrate SKIP_CONFIGURATION=true'
 
     # Init repo and commit

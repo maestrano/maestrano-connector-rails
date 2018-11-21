@@ -1,3 +1,5 @@
+require 'health_check'
+
 HealthCheck::Engine.routes_explicitly_defined = true
 
 HealthCheck.setup do |config|
@@ -27,7 +29,6 @@ HealthCheck.setup do |config|
 
   # Add one or more custom checks that return a blank string if ok, or an error message if there is an error
   # config.add_custom_check do
-  #   # any code that returns blank on success and non blank string upon failure
-  #
+  #   any code that returns blank on success and non blank string upon failure
   # end
 end
