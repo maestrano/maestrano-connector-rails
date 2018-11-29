@@ -1,4 +1,4 @@
-## [v2.3.6](https://github.com/maestrano/maestrano-connector-rails/tree/v2.3.6)
+## [v2.3.6](https://github.com/maestrano/maestrano-connector-rails/tree/v2.3.6) (2018-11-29)
 [Full Changelog](https://github.com/maestrano/maestrano-connector-rails/compare/v2.3.5...v2.3.6)
 
 **Fixed bugs:**
