@@ -1,3 +1,11 @@
+## [v2.3.6](https://github.com/maestrano/maestrano-connector-rails/tree/v2.3.6)
+[Full Changelog](https://github.com/maestrano/maestrano-connector-rails/compare/v2.3.5...v2.3.6)
+
+**Fixed bugs:**
+
+- Lock concurrent-ruby to 1.0.5 [\#182](https://github.com/maestrano/maestrano-connector-rails/pull/182) ([ouranos](https://github.com/ouranos))
+- \[APPINT-1146\] Fix database encoding configuration [\#181](https://github.com/maestrano/maestrano-connector-rails/pull/181) ([ouranos](https://github.com/ouranos))
+
 ## [v2.3.5](https://github.com/maestrano/maestrano-connector-rails/tree/v2.3.5) (2018-11-02)
 [Full Changelog](https://github.com/maestrano/maestrano-connector-rails/compare/v2.3.4...v2.3.5)
 
