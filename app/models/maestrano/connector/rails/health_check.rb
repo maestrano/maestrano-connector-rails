@@ -3,7 +3,8 @@ module Maestrano::Connector::Rails
     # Check API connection with Connec!
     # any code that returns blank on success and non blank string upon failure
     def self.perform_connec_check
-      if Maestrano::Api::OrganizationResource.first
+      organization = Maestrano::Connector::Rails::Organization.first
+      if Maestrano::Connector::Rails::ConnecHelper.connec_version(organization)
         ''
       else
         'Connec!'
