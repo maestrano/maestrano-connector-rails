@@ -24,7 +24,7 @@ Gem::Specification.new do |s|
     "README.md"
   ]
 
-  s.add_runtime_dependency('rails', '~> 4.2.9')
+  s.add_runtime_dependency('rails', '~> 4.2.11')
   s.add_runtime_dependency('maestrano-rails', '~> 1.0.4')
   s.add_runtime_dependency('attr_encrypted', '~> 1.4.0')
   s.add_runtime_dependency('autoprefixer-rails')
