@@ -22,13 +22,17 @@ HealthCheck.setup do |config|
   config.http_status_for_error_object = 500
 
   # You can customize which checks happen on a standard health check
-  config.standard_checks = %w[site cache redis-if-present]
+  config.standard_checks = %w[site cache]
 
   # You can set what tests are run with the 'full' or 'all' parameter
-  config.full_checks = %w[site cache custom redis-if-present sidekiq-redis-if-present]
+  config.full_checks = %w[site cache custom sidekiq-redis-if-present]
 
   # Add one or more custom checks that return a blank string if ok, or an error message if there is an error
-  # config.add_custom_check do
-  #   any code that returns blank on success and non blank string upon failure
-  # end
+  config.add_custom_check('Connec') do
+    Maestrano::Connector::Rails::HealthCheck.perform_connec_check
+  end
+
+  config.add_custom_check('Dev Platform') do
+    Maestrano::Connector::Rails::HealthCheck.perform_dev_platform_check
+  end
 end
