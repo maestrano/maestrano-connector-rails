@@ -12,16 +12,16 @@
 #   endCont
 
 #   # input :  {
-#   #             connec_entity_names[0]: [unmapped_connec_entitiy1, unmapped_connec_entitiy2],
-#   #             connec_entity_names[1]: [unmapped_connec_entitiy3, unmapped_connec_entitiy4]
+#   #             connec_entity_names[0]: [unmapped_connec_entity1, unmapped_connec_entity2],
+#   #             connec_entity_names[1]: [unmapped_connec_entity3, unmapped_connec_entity4]
 #   #          }
 #   # output : {
 #   #             connec_entity_names[0]: {
-#   #               external_entities_names[0]: [unmapped_connec_entitiy1, unmapped_connec_entitiy2]
+#   #               external_entities_names[0]: [unmapped_connec_entity1, unmapped_connec_entity2]
 #   #             },
 #   #             connec_entity_names[1]: {
-#   #               external_entities_names[0]: [unmapped_connec_entitiy3],
-#   #               external_entities_names[1]: [unmapped_connec_entitiy4]
+#   #               external_entities_names[0]: [unmapped_connec_entity3],
+#   #               external_entities_names[1]: [unmapped_connec_entity4]
 #   #             }
 #   #          }
 #   def connec_model_to_external_model(connec_hash_of_entities)

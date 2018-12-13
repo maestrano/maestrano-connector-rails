@@ -15,6 +15,8 @@ def apply_template!
 
   copy_file 'files/gitignore', '.gitignore', force: true
   copy_file 'files/rubocop.yml', '.rubocop.yml'
+  remove_file 'README.rdoc'
+  copy_file 'files/README.md', 'README.md'
 
   #
   # Cleanup
@@ -72,7 +74,11 @@ def apply_template!
 
     remove_file 'config/initializers/maestrano.rb'
     copy_file 'files/maestrano.rb', 'config/initializers/maestrano.rb'
-
+    copy_file 'files/puma.rb', 'config/puma.rb'
+    copy_file 'files/.foreman', '.foreman'
+    copy_file 'files/setup', 'bin/setup'
+    run 'mkdir .circleci'
+    copy_file 'files/circleci_config.yml', '.circleci/config.yml'
     rake 'db:migrate SKIP_CONFIGURATION=true'
 
     # Init repo and commit

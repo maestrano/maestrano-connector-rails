@@ -17,22 +17,22 @@ gem 'pundit'
 gem 'pundit-resources'
 
 group :production, :uat do
-  gem 'activerecord-jdbcmysql-adapter', platforms: :jruby
-  # Lock mysql2 to an old version for now as there is a bug in Rails 4.1.x and 4.2.x
-  # The bug prevents activerecord from using the most recent version of mysql2.
-  # See: https://stackoverflow.com/questions/32457657/rails-4-gemloaderror-specified-mysql2-for-database-adapter-but-the-gem-i
-  gem 'mysql2', '~> 0.3.18', platforms: :ruby
+  # Lock mysql2 to '0.4.10' as '0.3.8' had issues with mysql v8 in macosx
+  gem 'mysql2', '~> 0.4.10', platforms: :ruby
   gem 'rails_12factor'
+  gem 'newrelic_rpm'
 end
 
 group :test, :development do
-  gem 'activerecord-jdbcsqlite3-adapter', platforms: :jruby
   gem 'brakeman', require: false
   gem 'bundler-audit', require: false
   gem 'pry-byebug', platforms: :ruby
   gem 'rubocop', require: false
   gem 'rubocop-rspec', require: false
   gem 'sqlite3', platforms: :ruby
+  gem 'jsonapi-resources-matchers', require: false
+  gem 'pundit-matchers'
+  gem 'shoulda-matchers'
 end
 
 group :development do
@@ -43,9 +43,6 @@ group :test do
   gem 'simplecov'
   gem 'rspec-rails'
   gem 'factory_girl_rails'
-  gem 'shoulda-matchers'
-  gem 'pundit-matchers'
-  gem 'jsonapi-resources-matchers', require: false
   gem 'timecop'
   gem 'webmock'
   # CircleCI
