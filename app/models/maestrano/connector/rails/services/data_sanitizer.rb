@@ -15,6 +15,9 @@ module Maestrano::Connector::Rails::Services
       else
         sanitize_hash(entity, args, input_profile)
       end
+
+    rescue StandardError => e
+      Rails.logger.warn "Error Masking Logs #{e}"
     end
 
     private
