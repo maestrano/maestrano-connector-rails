@@ -34,23 +34,37 @@ class Maestrano::Connector::Rails::Entity < Maestrano::Connector::Rails::EntityB
   # e.g entity['id']
   def self.id_from_external_entity_hash(entity)
     # TODO
+    # This method return the id from external_entity_hash
+    # e.g entity['id']
   end
 
   # This method return the last update date from an external_entity_hash
   # e.g entity['last_update']
   def self.last_update_date_from_external_entity_hash(entity)
     # TODO
+    # This method returns the last update date from external_entity_hash
+    # e.g entity['last_update']
   end
 
   # This method return the creation date from an external_entity_hash
   # e.g entity['created_at']
   def self.creation_date_from_external_entity_hash(entity)
     # TODO
+    # This method returns the creation date from external_entity_hash
+    # e.g entity['created_at']
   end
 
   # This method return true is entity is inactive in the external application
   # e.g entity['status'] == 'INACTIVE'
   def self.inactive_from_external_entity_hash?(entity)
     # TODO
+    # This method return true if entity is inactive in the external application
+    # e.g entity['status'] == 'INACTIVE'
+  end
+
+  def self.immutable?(entity)
+    # TODO
+    # This method return true if entity is immutable.
+    # An entity is immutable, if it is only ever creates, but never updated. eg. BankTransaction
   end
 end

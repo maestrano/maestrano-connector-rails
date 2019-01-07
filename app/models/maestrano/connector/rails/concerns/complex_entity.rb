@@ -48,6 +48,10 @@ module Maestrano::Connector::Rails::Concerns::ComplexEntity
 
       (names[0..-2].join(', ') + " and #{names.last}").humanize
     end
+
+    def immutable?
+      false
+    end
   end
 
   # input :  {

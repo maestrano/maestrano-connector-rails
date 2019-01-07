@@ -81,6 +81,7 @@ module Maestrano::Connector::Rails::Services
         entity_id = @current_entity.class.id_from_external_entity_hash(entity)
         idmap = @current_entity.class.find_or_create_idmap(external_id: entity_id, organization_id: @organization.id, connec_entity: connec_entity_name.downcase)
 
+        next if @current_entity.class.immutable? && idmap.connec_id.present?
         # Not pushing entity to Connec!
         next unless idmap.to_connec
 

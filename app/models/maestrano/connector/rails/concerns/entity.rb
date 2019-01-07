@@ -80,6 +80,10 @@ module Maestrano::Connector::Rails::Concerns::Entity
       false
     end
 
+    def immutable?
+      false
+    end
+
     # Entity name in Connec!
     def connec_entity_name
       raise 'Not implemented'
