@@ -1,12 +1,15 @@
 require 'spec_helper'
 
 def process_entities_to_cmp(entities)
-  entities.flat_map {|e| e[:entity]['id'] = e[:entity]['id'].first['id']; e[:entity]}
+  entities.flat_map do |e|
+    e[:entity]['id'] = e[:entity]['id'].first['id']
+    e[:entity]
+  end
 end
 
 describe Maestrano::Connector::Rails::Services::DataConsolidator do
-  let!(:organization) {create(:organization, uid: 'cld-123')}
-  let(:external_entities) {
+  let!(:organization) { create(:organization, uid: 'cld-123') }
+  let(:external_entities) do
     [
       {
         'amount' => 8.93,
@@ -36,7 +39,7 @@ describe Maestrano::Connector::Rails::Services::DataConsolidator do
         'account_id' => '4518738'
       }
     ]
-  }
+  end
 
   class BankTransactionMapper
     extend HashMapper
@@ -66,7 +69,7 @@ describe Maestrano::Connector::Rails::Services::DataConsolidator do
     end
 
     def self.object_name_from_external_entity_hash(entity)
-      self.id_from_external_entity_hash(entity)
+      id_from_external_entity_hash(entity)
     end
 
     def self.mapper_class
@@ -75,40 +78,49 @@ describe Maestrano::Connector::Rails::Services::DataConsolidator do
   end
 
   describe '#consolidate_external_entities' do
-    let(:transaction) {BankTransaction.new(organization, nil, nil)}
-    let(:data_consolidator) {described_class.new(organization, transaction, {})}
+    let(:transaction) { BankTransaction.new(organization, nil, nil) }
+    let(:data_consolidator) { described_class.new(organization, transaction, {}) }
+    let(:entities) { data_consolidator.consolidate_external_entities(external_entities, 'BankTransaction') }
+    let(:subject) { process_entities_to_cmp(entities) }
 
-    context 'entity is not immutable, no entity has been pushed to connec! before' do
-      it 'returns all external entities' do
+    context 'when entity is mutable' do
+      before do
         allow(BankTransaction).to receive(:immutable?).and_return(false)
-        entities = data_consolidator.consolidate_external_entities(external_entities, 'BankTransaction')
-        ent = process_entities_to_cmp(entities)
-        expect(ent).to eq(external_entities)
+      end
+      context 'when none of the entities have been pushed to connec!' do
+        it 'returns all external entities' do
+          expect(subject).to eq(external_entities)
+        end
       end
     end
 
-    context 'entity is immutable and some entities have been pushed to connec! before' do
-      it 'returns some external entities' do
-        Maestrano::Connector::Rails::IdMap.create(external_id: 'TX8934077941420180731', external_entity: 'transaction', organization_id: organization.id, connec_entity: 'banktransaction', connec_id: 1)
+    context 'when entity is immutable' do
+      before do
         allow(BankTransaction).to receive(:immutable?).and_return(true)
-        entities = data_consolidator.consolidate_external_entities(external_entities, 'BankTransaction')
-        ent = process_entities_to_cmp(entities)
-        expect(ent.count).to eq(2)
-        expect(ent[0]).to eq(external_entities[1])
-        expect(ent[1]).to eq(external_entities[2])
       end
-    end
 
-    context 'entity is immutable and all entities have been pushed to connec! before' do
-      it 'return empty array' do
-        Maestrano::Connector::Rails::IdMap.create(external_id: 'TX8934077941420180731', external_entity: 'transaction', organization_id: organization.id, connec_entity: 'banktransaction', connec_id: 1)
-        Maestrano::Connector::Rails::IdMap.create(external_id: '201801160', external_entity: 'transaction', organization_id: organization.id, connec_entity: 'banktransaction', connec_id: 2)
-        Maestrano::Connector::Rails::IdMap.create(external_id: '201801121', external_entity: 'transaction', organization_id: organization.id, connec_entity: 'banktransaction', connec_id: 3)
-        allow(BankTransaction).to receive(:immutable?).and_return(true)
-        entities = data_consolidator.consolidate_external_entities(external_entities, 'BankTransaction')
-        expect(entities.count).to eq(0)
+      context 'when some entities have been pushed to connec!' do
+        before do
+          create(:idmap, external_id: 'TX8934077941420180731', external_entity: 'transaction', organization_id: organization.id, connec_entity: 'banktransaction', connec_id: 1)
+        end
+
+        it 'only returns new entities' do
+          expect(subject.count).to eq(2)
+          expect(subject).to eq(external_entities[1..2])
+        end
+      end
+
+      context 'when all entities have been pushed to connec!' do
+        before do
+          create(:idmap, external_id: 'TX8934077941420180731', external_entity: 'transaction', organization_id: organization.id, connec_entity: 'banktransaction', connec_id: 1)
+          create(:idmap, external_id: '201801160', external_entity: 'transaction', organization_id: organization.id, connec_entity: 'banktransaction', connec_id: 2)
+          create(:idmap, external_id: '201801121', external_entity: 'transaction', organization_id: organization.id, connec_entity: 'banktransaction', connec_id: 3)
+        end
+
+        it 'does not return any entity' do
+          expect(subject.count).to eq(0)
+        end
       end
     end
   end
 end
-
