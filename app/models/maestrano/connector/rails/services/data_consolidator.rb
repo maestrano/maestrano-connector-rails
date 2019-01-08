@@ -81,7 +81,9 @@ module Maestrano::Connector::Rails::Services
         entity_id = @current_entity.class.id_from_external_entity_hash(entity)
         idmap = @current_entity.class.find_or_create_idmap(external_id: entity_id, organization_id: @organization.id, connec_entity: connec_entity_name.downcase)
 
-        next if @current_entity.class.immutable? && idmap.connec_id.present?
+        # Don't push to connec, the immutable entities which have already been pushed
+        next if immutable_and_already_pushed_to_connec?(idmap)
+
         # Not pushing entity to Connec!
         next unless idmap.to_connec
 
@@ -158,6 +160,12 @@ module Maestrano::Connector::Rails::Services
 
     def connec_more_recent?(connec_entity, external_entity)
       connec_entity['updated_at'] > @current_entity.class.last_update_date_from_external_entity_hash(external_entity)
+    end
+
+    private
+
+    def immutable_and_already_pushed_to_connec?(idmap)
+      @current_entity.class.immutable? && idmap.connec_id.present?
     end
   end
 end

@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 def process_entities_to_cmp(entities)
-  entities.flat_map {|e| e[:entity]["id"] = e[:entity]["id"].first["id"]; e[:entity]}
+  entities.flat_map {|e| e[:entity]['id'] = e[:entity]['id'].first['id']; e[:entity]}
 end
 
 describe Maestrano::Connector::Rails::Services::DataConsolidator do
@@ -9,31 +9,31 @@ describe Maestrano::Connector::Rails::Services::DataConsolidator do
   let(:external_entities) {
     [
       {
-        "amount" => 8.93,
-        "type" => "RECEIVE",
-        "public_note" => "",
-        "transaction_date" => "2018-07-31 12:00:00 +0000",
-        "name" => "INTEREST PAYMENT",
-        "id" => "TX8934077941420180731",
-        "account_id" => "4518736"
+        'amount' => 8.93,
+        'type' => 'RECEIVE',
+        'public_note' => '',
+        'transaction_date' => '2018-07-31 12:00:00 +0000',
+        'name' => 'INTEREST PAYMENT',
+        'id' => 'TX8934077941420180731',
+        'account_id' => '4518736'
       },
       {
-        "amount" => -26.47,
-        "type" => "SPEND",
-        "public_note" => "DISBURSEMENT TO MORTGAGOR",
-        "transaction_date" => "2018-01-16 12:00:00 +0000",
-        "name" => "DISBURSEMENT TO MORTGAGOR",
-        "id" => "201801160",
-        "account_id" => "4518738"
+        'amount' => -26.47,
+        'type' => 'SPEND',
+        'public_note' => 'DISBURSEMENT TO MORTGAGOR',
+        'transaction_date' => '2018-01-16 12:00:00 +0000',
+        'name' => 'DISBURSEMENT TO MORTGAGOR',
+        'id' => '201801160',
+        'account_id' => '4518738'
       },
       {
-        "amount" => 25.0,
-        "type" => "RECEIVE",
-        "public_note" => "LATE CHARGE PAID",
-        "transaction_date" => "2018-01-12 12:00:00 +0000",
-        "name" => "LATE CHARGE PAID",
-        "id" => "201801121",
-        "account_id" => "4518738"
+        'amount' => 25.0,
+        'type' => 'RECEIVE',
+        'public_note' => 'LATE CHARGE PAID',
+        'transaction_date' => '2018-01-12 12:00:00 +0000',
+        'name' => 'LATE CHARGE PAID',
+        'id' => '201801121',
+        'account_id' => '4518738'
       }
     ]
   }
@@ -53,7 +53,7 @@ describe Maestrano::Connector::Rails::Services::DataConsolidator do
 
   class BankTransaction < Maestrano::Connector::Rails::Entity
     def self.id_from_external_entity_hash(entity)
-      entity["id"]
+      entity['id']
     end
 
     def self.connec_entity_name
@@ -74,37 +74,40 @@ describe Maestrano::Connector::Rails::Services::DataConsolidator do
     end
   end
 
-  describe 'consolidate_external_entities' do
-    it 'should return all external entities' do
-      transaction = BankTransaction.new(organization, nil, nil)
-      allow(BankTransaction).to receive(:immutable?).and_return(false)
-      data_consolidator = Maestrano::Connector::Rails::Services::DataConsolidator.new(organization, transaction, {})
-      entities = data_consolidator.consolidate_external_entities(external_entities, 'BankTransaction')
-      ent = process_entities_to_cmp(entities)
-      expect(ent).to eq(external_entities)
+  describe '#consolidate_external_entities' do
+    let(:transaction) {BankTransaction.new(organization, nil, nil)}
+    let(:data_consolidator) {described_class.new(organization, transaction, {})}
+
+    context 'entity is not immutable, no entity has been pushed to connec! before' do
+      it 'returns all external entities' do
+        allow(BankTransaction).to receive(:immutable?).and_return(false)
+        entities = data_consolidator.consolidate_external_entities(external_entities, 'BankTransaction')
+        ent = process_entities_to_cmp(entities)
+        expect(ent).to eq(external_entities)
+      end
     end
 
-    it 'should return some external entities' do
-      Maestrano::Connector::Rails::IdMap.create(external_id: "TX8934077941420180731", external_entity: 'transaction', organization_id: organization.id, connec_entity: 'banktransaction', connec_id: 1)
-      transaction = BankTransaction.new(organization, nil, nil)
-      allow(BankTransaction).to receive(:immutable?).and_return(true)
-      data_consolidator = Maestrano::Connector::Rails::Services::DataConsolidator.new(organization, transaction, {})
-      entities = data_consolidator.consolidate_external_entities(external_entities, 'BankTransaction')
-      ent = process_entities_to_cmp(entities)
-      expect(ent.count).to eq(2)
-      expect(ent[0]).to eq(external_entities[1])
-      expect(ent[1]).to eq(external_entities[2])
+    context 'entity is immutable and some entities have been pushed to connec! before' do
+      it 'returns some external entities' do
+        Maestrano::Connector::Rails::IdMap.create(external_id: 'TX8934077941420180731', external_entity: 'transaction', organization_id: organization.id, connec_entity: 'banktransaction', connec_id: 1)
+        allow(BankTransaction).to receive(:immutable?).and_return(true)
+        entities = data_consolidator.consolidate_external_entities(external_entities, 'BankTransaction')
+        ent = process_entities_to_cmp(entities)
+        expect(ent.count).to eq(2)
+        expect(ent[0]).to eq(external_entities[1])
+        expect(ent[1]).to eq(external_entities[2])
+      end
     end
 
-    it 'should return empty array' do
-      Maestrano::Connector::Rails::IdMap.create(external_id: "TX8934077941420180731", external_entity: 'transaction', organization_id: organization.id, connec_entity: 'banktransaction', connec_id: 1)
-      Maestrano::Connector::Rails::IdMap.create(external_id: "201801160", external_entity: 'transaction', organization_id: organization.id, connec_entity: 'banktransaction', connec_id: 2)
-      Maestrano::Connector::Rails::IdMap.create(external_id: "201801121", external_entity: 'transaction', organization_id: organization.id, connec_entity: 'banktransaction', connec_id: 3)
-      transaction = BankTransaction.new(organization, nil, nil)
-      allow(BankTransaction).to receive(:immutable?).and_return(true)
-      data_consolidator = Maestrano::Connector::Rails::Services::DataConsolidator.new(organization, transaction, {})
-      entities = data_consolidator.consolidate_external_entities(external_entities, 'BankTransaction')
-      expect(entities.count).to eq(0)
+    context 'entity is immutable and all entities have been pushed to connec! before' do
+      it 'return empty array' do
+        Maestrano::Connector::Rails::IdMap.create(external_id: 'TX8934077941420180731', external_entity: 'transaction', organization_id: organization.id, connec_entity: 'banktransaction', connec_id: 1)
+        Maestrano::Connector::Rails::IdMap.create(external_id: '201801160', external_entity: 'transaction', organization_id: organization.id, connec_entity: 'banktransaction', connec_id: 2)
+        Maestrano::Connector::Rails::IdMap.create(external_id: '201801121', external_entity: 'transaction', organization_id: organization.id, connec_entity: 'banktransaction', connec_id: 3)
+        allow(BankTransaction).to receive(:immutable?).and_return(true)
+        entities = data_consolidator.consolidate_external_entities(external_entities, 'BankTransaction')
+        expect(entities.count).to eq(0)
+      end
     end
   end
 end
