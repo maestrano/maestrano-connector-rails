@@ -53,4 +53,10 @@ class Maestrano::Connector::Rails::Entity < Maestrano::Connector::Rails::EntityB
   def self.inactive_from_external_entity_hash?(entity)
     # TODO
   end
+
+  # This method return true if entity is immutable.
+  # An entity is immutable, if it is only ever created, but never updated. eg. BankTransaction
+  def self.immutable?(entity)
+    # TODO
+  end
 end
