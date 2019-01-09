@@ -203,7 +203,7 @@ module Maestrano::Connector::Rails::Concerns::Entity
   # * __skip_connec for half syncs
   # * __limit and __skip for batch calls
   # Returns an array of connec entities
-  def get_connec_entities(last_synchronization_date = nil)
+  def get_connec_entities(sync_from_date = nil)
     return [] if @opts[:__skip_connec] || !self.class.can_read_connec?
 
     Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, "Fetching Connec! #{self.class.connec_entity_name}")
@@ -217,10 +217,10 @@ module Maestrano::Connector::Rails::Concerns::Entity
       query_params[:$skip] = @opts[:__skip]
     end
 
-    if last_synchronization_date.blank? || @opts[:full_sync]
+    if sync_from_date.blank? || @opts[:full_sync]
       query_params[:$filter] = @opts[:$filter] if @opts[:$filter]
     else
-      query_params[:$filter] = "updated_at gt '#{last_synchronization_date.iso8601}'" + (@opts[:$filter] ? " and #{@opts[:$filter]}" : '')
+      query_params[:$filter] = "updated_at gt '#{sync_from_date.iso8601}'" + (@opts[:$filter] ? " and #{@opts[:$filter]}" : '')
     end
 
     Maestrano::Connector::Rails::ConnectorLogger.log('debug', @organization, "entity=#{self.class.connec_entity_name}, fetching data with #{query_params.to_query}")
@@ -301,14 +301,14 @@ module Maestrano::Connector::Rails::Concerns::Entity
   #                 External methods
   # ----------------------------------------------
   # Wrapper to process options and limitations
-  def get_external_entities_wrapper(last_synchronization_date = nil, entity_name = self.class.external_entity_name)
+  def get_external_entities_wrapper(sync_from_date = nil, entity_name = self.class.external_entity_name)
     return [] if @opts[:__skip_external] || !self.class.can_read_external?
 
-    get_external_entities(entity_name, last_synchronization_date)
+    get_external_entities(entity_name, sync_from_date)
   end
 
   # To be implemented in each connector
-  def get_external_entities(external_entity_name, last_synchronization_date = nil)
+  def get_external_entities(external_entity_name, sync_from_date = nil)
     Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, "Fetching #{Maestrano::Connector::Rails::External.external_name} #{external_entity_name.pluralize}")
     raise 'Not implemented'
   end

@@ -41,6 +41,7 @@ module Maestrano::Connector::Rails::Concerns::SynchronizationJob
   #  * :only_entities => [person, tasks_list]
   #  * :full_sync => true  synchronization is performed without date filtering
   #  * :connec_preemption => true|false : preemption is always|never given to connec in case of conflict (if not set, the most recently updated entity is kept)
+  #  * :sync_from => ActiveSupport::TimeWithZone : sync from this date.
   def perform(organization_id, opts = {})
     organization = Maestrano::Connector::Rails::Organization.find(organization_id)
     return unless organization&.sync_enabled
@@ -64,7 +65,7 @@ module Maestrano::Connector::Rails::Concerns::SynchronizationJob
 
     begin
       last_synchronization = organization.last_successful_synchronization
-      last_synchronization_date = organization.last_synchronization_date
+      sync_from_date = opts[:sync_from] || organization.last_synchronization_date
       connec_client = Maestrano::Connector::Rails::ConnecHelper.get_client(organization)
       external_client = Maestrano::Connector::Rails::External.get_client(organization)
 
@@ -77,22 +78,22 @@ module Maestrano::Connector::Rails::Concerns::SynchronizationJob
           next unless settings[:can_push_to_connec] || settings[:can_push_to_external]
 
           Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "First synchronization ever. Doing half sync from external for #{entity}.")
-          first_sync_entity(entity.to_s, organization, connec_client, external_client, last_synchronization_date, opts, true)
+          first_sync_entity(entity.to_s, organization, connec_client, external_client, sync_from_date, opts, true)
           Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "First synchronization ever. Doing half sync from Connec! for #{entity}.")
-          first_sync_entity(entity.to_s, organization, connec_client, external_client, last_synchronization_date, opts, false)
+          first_sync_entity(entity.to_s, organization, connec_client, external_client, sync_from_date, opts, false)
         end
       elsif opts[:only_entities]
         Maestrano::Connector::Rails::ConnectorLogger.log('info', organization, "Synchronization is partial and will synchronize only #{opts[:only_entities].join(' ')}")
         # The synchronization is marked as partial and will not be considered as the last-synchronization for the next sync
         current_synchronization.mark_as_partial
         opts[:only_entities].each do |entity|
-          sync_entity(entity, organization, connec_client, external_client, last_synchronization_date, opts)
+          sync_entity(entity, organization, connec_client, external_client, sync_from_date, opts)
         end
       else
         organization.synchronized_entities.each do |entity, settings|
           next unless settings[:can_push_to_connec] || settings[:can_push_to_external]
 
-          sync_entity(entity.to_s, organization, connec_client, external_client, last_synchronization_date, opts)
+          sync_entity(entity.to_s, organization, connec_client, external_client, sync_from_date, opts)
         end
       end
 
@@ -104,14 +105,14 @@ module Maestrano::Connector::Rails::Concerns::SynchronizationJob
     end
   end
 
-  def sync_entity(entity_name, organization, connec_client, external_client, last_synchronization_date, opts)
+  def sync_entity(entity_name, organization, connec_client, external_client, sync_from_date, opts)
     entity_instance = instanciate_entity(entity_name, organization, connec_client, external_client, opts)
 
-    perform_sync(entity_instance, last_synchronization_date)
+    perform_sync(entity_instance, sync_from_date)
   end
 
   # Does a batched sync on either external or connec!
-  def first_sync_entity(entity_name, organization, connec_client, external_client, last_synchronization_date, opts, external = true)
+  def first_sync_entity(entity_name, organization, connec_client, external_client, sync_from_date, opts, external = true)
     limit = Settings.first_sync_batch_size || 50
     skip = 0
     entities_count = limit
@@ -130,7 +131,7 @@ module Maestrano::Connector::Rails::Concerns::SynchronizationJob
     while entities_count == limit
       entity_instance.opts_merge!(__skip: skip)
 
-      perform_hash = perform_sync(entity_instance, last_synchronization_date, external)
+      perform_hash = perform_sync(entity_instance, sync_from_date, external)
       entities_count = perform_hash[:count]
 
       # Safety: if the connector does not implement batched calls but has exactly limit entities
@@ -152,14 +153,14 @@ module Maestrano::Connector::Rails::Concerns::SynchronizationJob
     end
 
     # Perform the sync and return the entities_count for either external or connec
-    def perform_sync(entity_instance, last_synchronization_date, external = true)
-      entity_instance.before_sync(last_synchronization_date)
-      external_entities = entity_instance.get_external_entities_wrapper(last_synchronization_date)
-      connec_entities = entity_instance.get_connec_entities(last_synchronization_date)
+    def perform_sync(entity_instance, sync_from_date, external = true)
+      entity_instance.before_sync(sync_from_date)
+      external_entities = entity_instance.get_external_entities_wrapper(sync_from_date)
+      connec_entities = entity_instance.get_connec_entities(sync_from_date)
       mapped_entities = entity_instance.consolidate_and_map_data(connec_entities, external_entities)
       entity_instance.push_entities_to_external(mapped_entities[:connec_entities])
       entity_instance.push_entities_to_connec(mapped_entities[:external_entities])
-      entity_instance.after_sync(last_synchronization_date)
+      entity_instance.after_sync(sync_from_date)
 
       entity_instance.class.count_and_first(external ? external_entities : connec_entities)
     end

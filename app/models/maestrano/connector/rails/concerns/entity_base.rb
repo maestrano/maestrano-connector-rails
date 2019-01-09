@@ -12,11 +12,11 @@ module Maestrano::Connector::Rails::Concerns::EntityBase
     @opts.merge!(opts)
   end
 
-  def before_sync(last_synchronization_date)
+  def before_sync(sync_from_date)
     # Does nothing by default
   end
 
-  def after_sync(last_synchronization_date)
+  def after_sync(sync_from_date)
     # Does nothing by default
   end
 
