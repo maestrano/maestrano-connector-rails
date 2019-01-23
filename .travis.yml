@@ -4,4 +4,4 @@ rvm:
 services:
   - redis-server
 before_install:
-  - gem install bundler # Update bundler version
+  - gem install bundler --version '< 2' # Update bundler version
