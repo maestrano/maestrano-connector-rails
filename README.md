@@ -1,4 +1,4 @@
-[ ![Codeship Status for maestrano/maestrano-connector-rails](https://codeship.com/projects/e7990b70-b04d-0133-c4e7-5e399acd7f73/status?branch=master)](https://codeship.com/projects/132645)
+[![Build Status](https://travis-ci.org/maestrano/maestrano-connector-rails.svg?branch=master)](https://travis-ci.org/maestrano/maestrano-connector-rails)
 [![Code Climate](https://codeclimate.com/github/maestrano/maestrano-connector-rails/badges/gpa.svg)](https://codeclimate.com/github/maestrano/maestrano-connector-rails)
 
 <p align="center">
