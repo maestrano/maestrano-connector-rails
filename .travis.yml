@@ -1,7 +1,7 @@
 language: ruby
 rvm:
- - 2.3
+ - 2.3.8
 services:
   - redis-server
 before_install:
-  - gem install bundler # Update bundler version
+  - gem install bundler --version '< 2' # Update bundler version
