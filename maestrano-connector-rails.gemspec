@@ -29,6 +29,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency('attr_encrypted', '~> 1.4.0')
   s.add_runtime_dependency('autoprefixer-rails')
   s.add_runtime_dependency('bootstrap-sass')
+  s.add_runtime_dependency 'health_check', '~> 2.7'
   s.add_runtime_dependency('config')
   # v1.1 breaks the build. See: https://github.com/ruby-concurrency/concurrent-ruby/issues/768
   # v1.1.1 and v1.1.3 are also causing errors when the app is loaded, hence locking to 1.0.5

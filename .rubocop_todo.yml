@@ -154,3 +154,4 @@ Style/RescueStandardError:
     - 'app/models/maestrano/connector/rails/concerns/entity.rb'
     - 'app/models/maestrano/connector/rails/concerns/organization.rb'
     - 'app/resources/maestrano/api/base_resource.rb'
+    - 'app/models/maestrano/connector/rails/health_check.rb'
