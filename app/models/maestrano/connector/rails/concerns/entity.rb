@@ -242,7 +242,10 @@ module Maestrano::Connector::Rails::Concerns::Entity
     end
 
     entities.flatten!
-    Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, "Received data: Source=Connec!, Entity=#{self.class.connec_entity_name}, Data=#{entities}")
+
+    sanitized_entities = Maestrano::Connector::Rails::Services::DataSanitizer.new('connec_sanitizer_profile.yml').sanitize(self.class.connec_entity_name, entities)
+    Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, "Received data: Source=Connec!, Entity=#{self.class.connec_entity_name}, Data=#{sanitized_entities}")
+
     entities
   end
 
@@ -287,7 +290,8 @@ module Maestrano::Connector::Rails::Concerns::Entity
   # Helper method to build an op for batch call
   # See http://maestrano.github.io/connec/#api-|-batch-calls
   def batch_op(method, mapped_external_entity, id, connec_entity_name)
-    Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, "Sending #{method.upcase} #{connec_entity_name}: #{mapped_external_entity} to Connec! (Preparing batch request)")
+    sanitized_external_entity = Maestrano::Connector::Rails::Services::DataSanitizer.new('connec_sanitizer_profile.yml').sanitize(connec_entity_name, mapped_external_entity)
+    Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, "Sending #{method.upcase} #{connec_entity_name}: #{sanitized_external_entity} to Connec! (Preparing batch request)")
     {
       method: method,
       url: "/api/v2/#{@organization.uid}/#{connec_entity_name}/#{id}", # id should be nil for POST
@@ -480,10 +484,12 @@ module Maestrano::Connector::Rails::Concerns::Entity
         log_info = id_update_only ? 'with only ids' : ''
         Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, "Sending batch request to Connec! #{log_info} for #{self.class.normalize_connec_entity_name(connec_entity_name)}. Batch_request_size: #{batch_request[:ops].size}. Call_number: #{(start / request_per_call) + 1}")
         response = Retriable.with_context(:connec) { @connec_client.batch(batch_request) }
-        Maestrano::Connector::Rails::ConnectorLogger.log('debug', @organization, "Received batch response from Connec! for #{self.class.normalize_connec_entity_name(connec_entity_name)}: #{response}")
         raise "No data received from Connec! when trying to send batch request #{log_info} for #{self.class.connec_entity_name.pluralize}" unless response && response.body.present?
 
         response = JSON.parse(response.body)
+        response_hash = response['results'] ? (response['results'].map { |h| h['body'] }) : response
+        sanitized_response = Maestrano::Connector::Rails::Services::DataSanitizer.new('connec_sanitizer_profile.yml').sanitize(self.class.normalize_connec_entity_name(connec_entity_name), response_hash)
+        Maestrano::Connector::Rails::ConnectorLogger.log('debug', @organization, "Received batch response from Connec! for #{self.class.normalize_connec_entity_name(connec_entity_name)}: #{sanitized_response}")
 
         # Parse batch response
         # Update idmaps with either connec_id and timestamps, or a error message
@@ -510,7 +516,10 @@ module Maestrano::Connector::Rails::Concerns::Entity
       raise "No data received from Connec! when trying to fetch #{self.class.normalized_connec_entity_name}" unless response && response.body.present?
 
       response_hash = JSON.parse(response.body)
-      Maestrano::Connector::Rails::ConnectorLogger.log('debug', @organization, "Received response for entity=#{self.class.connec_entity_name}, response=#{response_hash}")
+      logs_response_hash = response_hash['results'] ? (response_hash['results']&.map { |h| h['body'] }) : response_hash
+      sanitized_response_hash = Maestrano::Connector::Rails::Services::DataSanitizer.new('connec_sanitizer_profile.yml').sanitize(self.class.normalized_connec_entity_name, logs_response_hash)
+
+      Maestrano::Connector::Rails::ConnectorLogger.log('debug', @organization, "Received response for entity=#{self.class.connec_entity_name}, response=#{sanitized_response_hash}")
       raise "Received unrecognized Connec! data when trying to fetch #{self.class.normalized_connec_entity_name}: #{response_hash}" unless response_hash[self.class.normalized_connec_entity_name]
 
       response_hash

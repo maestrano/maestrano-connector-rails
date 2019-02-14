@@ -14,7 +14,7 @@ Lint/AssignmentInCondition:
 
 # Offense count: 28
 Metrics/AbcSize:
-  Max: 70
+  Max: 82
 
 # Offense count: 1
 # Configuration parameters: CountComments.
@@ -23,12 +23,12 @@ Metrics/ClassLength:
 
 # Offense count: 9
 Metrics/CyclomaticComplexity:
-  Max: 14
+  Max: 15
 
 # Offense count: 3
 # Configuration parameters: CountComments.
 Metrics/ModuleLength:
-  Max: 212
+  Max: 221
 
 # Offense count: 2
 # Configuration parameters: CountKeywordArgs.
@@ -37,7 +37,7 @@ Metrics/ParameterLists:
 
 # Offense count: 9
 Metrics/PerceivedComplexity:
-  Max: 15
+  Max: 16
 
 # Offense count: 2
 # Configuration parameters: NamePrefix, NamePrefixBlacklist, NameWhitelist, MethodDefinitionMacros.
@@ -108,6 +108,7 @@ Style/BlockDelimiters:
 Style/ClassVars:
   Exclude:
     - 'app/models/maestrano/connector/rails/concerns/connec_helper.rb'
+    - 'app/models/maestrano/connector/rails/services/data_sanitizer.rb'
 
 # Offense count: 2
 # Cop supports --auto-correct.
@@ -121,6 +122,9 @@ Style/DoubleNegation:
   Exclude:
     - 'app/controllers/maestrano/auth/saml_controller.rb'
 
+Style/ConditionalAssignment:
+  Exclude:
+    - 'app/models/maestrano/connector/rails/services/data_sanitizer.rb'
 # Offense count: 64
 # Cop supports --auto-correct.
 # Configuration parameters: EnforcedStyle.
