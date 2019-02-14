@@ -484,12 +484,12 @@ module Maestrano::Connector::Rails::Concerns::Entity
         log_info = id_update_only ? 'with only ids' : ''
         Maestrano::Connector::Rails::ConnectorLogger.log('info', @organization, "Sending batch request to Connec! #{log_info} for #{self.class.normalize_connec_entity_name(connec_entity_name)}. Batch_request_size: #{batch_request[:ops].size}. Call_number: #{(start / request_per_call) + 1}")
         response = Retriable.with_context(:connec) { @connec_client.batch(batch_request) }
-        response_hash = JSON.parse(response.body)['results'] ? (JSON.parse(response.body)['results']&.map { |h| h['body'] }) : response
-        sanitized_response = Maestrano::Connector::Rails::Services::DataSanitizer.new('connec_sanitizer_profile.yml').sanitize(self.class.normalize_connec_entity_name(connec_entity_name), response_hash)
-        Maestrano::Connector::Rails::ConnectorLogger.log('debug', @organization, "Received batch response from Connec! for #{self.class.normalize_connec_entity_name(connec_entity_name)}: #{sanitized_response}")
         raise "No data received from Connec! when trying to send batch request #{log_info} for #{self.class.connec_entity_name.pluralize}" unless response && response.body.present?
 
         response = JSON.parse(response.body)
+        response_hash = response['results'] ? (response['results'].map { |h| h['body'] }) : response
+        sanitized_response = Maestrano::Connector::Rails::Services::DataSanitizer.new('connec_sanitizer_profile.yml').sanitize(self.class.normalize_connec_entity_name(connec_entity_name), response_hash)
+        Maestrano::Connector::Rails::ConnectorLogger.log('debug', @organization, "Received batch response from Connec! for #{self.class.normalize_connec_entity_name(connec_entity_name)}: #{sanitized_response}")
 
         # Parse batch response
         # Update idmaps with either connec_id and timestamps, or a error message
