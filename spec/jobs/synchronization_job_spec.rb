@@ -97,9 +97,13 @@ describe Maestrano::Connector::Rails::SynchronizationJob do
           end
         end
 
-        context 'with sync_from' do
-          let(:opts) { { sync_from: sync_from } }
-          let(:sync_from) { Time.new(2002, 10, 31, 2, 2, 2, "+02:00") }
+        context 'with sync_delta' do
+          before { Timecop.freeze(Time.utc(2008, 9, 1, 12, 0, 0)) }
+          after { Timecop.return }
+
+          let(:opts) { { sync_delta: sync_delta } }
+          let(:sync_from) { sync_delta.seconds.ago.utc }
+          let(:sync_delta) { 60 }
 
           it { performs }
 

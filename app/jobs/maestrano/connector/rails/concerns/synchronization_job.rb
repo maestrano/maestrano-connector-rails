@@ -41,7 +41,7 @@ module Maestrano::Connector::Rails::Concerns::SynchronizationJob
   #  * :only_entities => [person, tasks_list]
   #  * :full_sync => true  synchronization is performed without date filtering
   #  * :connec_preemption => true|false : preemption is always|never given to connec in case of conflict (if not set, the most recently updated entity is kept)
-  #  * :sync_from => ActiveSupport::TimeWithZone : sync from this date.
+  #  * :sync_delta => Integer, Sync x seconds from this date.
   def perform(organization_id, opts = {})
     organization = Maestrano::Connector::Rails::Organization.find(organization_id)
     return unless organization&.sync_enabled
@@ -65,7 +65,7 @@ module Maestrano::Connector::Rails::Concerns::SynchronizationJob
 
     begin
       last_synchronization = organization.last_successful_synchronization
-      sync_from_date = opts[:sync_from] || organization.last_synchronization_date
+      sync_from_date = find_sync_from_date(organization, opts[:sync_delta])
       connec_client = Maestrano::Connector::Rails::ConnecHelper.get_client(organization)
       external_client = Maestrano::Connector::Rails::External.get_client(organization)
 
@@ -103,6 +103,10 @@ module Maestrano::Connector::Rails::Concerns::SynchronizationJob
       Maestrano::Connector::Rails::ConnectorLogger.log('warn', organization, "Finished synchronization, organization=#{organization.uid}, status=error, message=\"#{e.message}\" backtrace=\"#{e.backtrace}\"")
       current_synchronization.mark_as_error(e.message)
     end
+  end
+
+  def find_sync_from_date(organization, sync_delta)
+    (sync_delta && sync_delta.seconds.ago.utc) || organization.last_synchronization_date
   end
 
   def sync_entity(entity_name, organization, connec_client, external_client, sync_from_date, opts)
