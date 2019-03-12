@@ -10,7 +10,7 @@ describe Maestrano::Connector::Rails::SynchronizationJob do
     expect{ subject }.to change{ Maestrano::Connector::Rails::Synchronization.count }.by(0)
   end
 
-  def performes
+  def performs
     expect{ subject }.to change{ Maestrano::Connector::Rails::Synchronization.count }.by(1)
   end
 
@@ -29,7 +29,7 @@ describe Maestrano::Connector::Rails::SynchronizationJob do
 
       context 'with a sync still running for more than 30 minutes' do
         let!(:running_sync) { create(:synchronization, organization: organization, status: 'RUNNING', created_at: 31.minutes.ago) }
-        it { performes }
+        it { performs }
       end
 
       describe 'recovery mode' do
@@ -43,7 +43,7 @@ describe Maestrano::Connector::Rails::SynchronizationJob do
 
           context 'synchronization is forced' do
             let(:opts) { {forced: true} }
-            it { performes }
+            it { performs }
           end
         end
 
@@ -53,7 +53,7 @@ describe Maestrano::Connector::Rails::SynchronizationJob do
               organization.synchronizations.create(status: 'ERROR', created_at: 2.day.ago, updated_at: 2.day.ago)
             end
           }
-          it { performes }
+          it { performs }
         end
 
         context 'three sync failed but last sync is successfull' do
@@ -63,7 +63,7 @@ describe Maestrano::Connector::Rails::SynchronizationJob do
             end
             organization.synchronizations.create(status: 'SUCCESS', created_at: 1.hour.ago)
           }
-          it { performes }
+          it { performs }
         end
       end
 
@@ -78,7 +78,7 @@ describe Maestrano::Connector::Rails::SynchronizationJob do
       context 'subsequent sync' do
         let!(:old_sync) { create(:synchronization, partial: false, status: 'SUCCESS', organization: organization) }
 
-        it { performes }
+        it { performs }
 
         context 'with options' do
           context 'with only_entities' do
@@ -96,8 +96,27 @@ describe Maestrano::Connector::Rails::SynchronizationJob do
             end
           end
         end
-      end
 
+        context 'with sync_delta' do
+          before { Timecop.freeze(Time.utc(2008, 9, 1, 12, 0, 0)) }
+          after { Timecop.return }
+
+          let(:opts) { { sync_delta: sync_delta } }
+          let(:sync_from) { sync_delta.seconds.ago.utc }
+          let(:sync_delta) { 60 }
+
+          it { performs }
+
+          it 'passes the correct sync_from dates' do
+            organization.synchronized_entities.each do |entity, _|
+              expect_any_instance_of(Maestrano::Connector::Rails::SynchronizationJob).to receive(:sync_entity)
+                .with(entity.to_s, organization, anything, anything, sync_from, anything)
+            end
+
+            subject
+          end
+        end
+      end
     end
   end
 

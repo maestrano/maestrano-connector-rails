@@ -87,22 +87,22 @@ module Maestrano::Connector::Rails::Concerns::ComplexEntity
   # -------------------------------------------------------------
   #          Entity equivalent methods
   # -------------------------------------------------------------
-  def get_connec_entities(last_synchronization_date = nil)
+  def get_connec_entities(sync_from_date = nil)
     entities = ActiveSupport::HashWithIndifferentAccess.new
 
     self.class.formatted_connec_entities_names.each do |connec_entity_name, connec_class_name|
       sub_entity_instance = instantiate_sub_entity_instance(connec_class_name)
-      entities[connec_entity_name] = sub_entity_instance.get_connec_entities(last_synchronization_date)
+      entities[connec_entity_name] = sub_entity_instance.get_connec_entities(sync_from_date)
     end
     entities
   end
 
-  def get_external_entities_wrapper(last_synchronization_date = nil, entity_name = '')
+  def get_external_entities_wrapper(sync_from_date = nil, entity_name = '')
     entities = ActiveSupport::HashWithIndifferentAccess.new
 
     self.class.formatted_external_entities_names.each do |external_entity_name, external_class_name|
       sub_entity_instance = instantiate_sub_entity_instance(external_class_name)
-      entities[external_entity_name] = sub_entity_instance.get_external_entities_wrapper(last_synchronization_date, external_entity_name)
+      entities[external_entity_name] = sub_entity_instance.get_external_entities_wrapper(sync_from_date, external_entity_name)
     end
     entities
   end
