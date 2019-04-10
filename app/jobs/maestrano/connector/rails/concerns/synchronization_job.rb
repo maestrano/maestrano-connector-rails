@@ -64,7 +64,7 @@ module Maestrano::Connector::Rails::Concerns::SynchronizationJob
 
     begin
       last_synchronization = organization.last_successful_synchronization
-      last_synchronization_date = organization.last_synchronization_date
+      last_synchronization_date = opts[:full_sync] ? nil : organization.last_synchronization_date
       connec_client = Maestrano::Connector::Rails::ConnecHelper.get_client(organization)
       external_client = Maestrano::Connector::Rails::External.get_client(organization)
 
